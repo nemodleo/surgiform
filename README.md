@@ -17,7 +17,7 @@
 
 ## 📹 데모 영상
 
-![SurgiForm 데모 하이라이트](src/surgiform_demo.gif)
+![SurgiForm 데모 하이라이트](src/surgiform_demo_3x.gif)
 
 간단한 워크플로우를 GIF로 확인해보세요. 전체 영상은 [여기서 보기](src/SurgiForm_demo_3x.mp4).
 
