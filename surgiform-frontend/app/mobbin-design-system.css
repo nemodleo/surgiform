@@ -148,13 +148,24 @@
 }
 
 @layer utilities {
-  /* Spacing scale */
+  /* Increased spacing for minimalist design */
   .section-spacing {
-    @apply py-16 md:py-24;
+    @apply py-24 md:py-32;
   }
   
+  /* Consistent container with fixed margins */
   .container-max {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-6xl mx-auto px-8 sm:px-12 lg:px-16;
+  }
+  
+  /* Container for overflow elements like images/animations */
+  .container-overflow {
+    @apply max-w-7xl mx-auto;
+  }
+  
+  /* Content wrapper for strict containment */
+  .content-wrapper {
+    @apply max-w-4xl mx-auto;
   }
   
   /* Text utilities */
@@ -235,12 +246,9 @@
     gap: 1.5rem;
   }
   
-  /* Gradient text */
+  /* Removed gradient text for minimalist design - use solid colors */
   .text-gradient {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: hsl(var(--primary));
   }
   
   /* Glassmorphism */

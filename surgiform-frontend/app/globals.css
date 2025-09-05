@@ -68,17 +68,24 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    line-height: 1.5;
+    line-height: 1.6;
     letter-spacing: -0.011em;
-    font-size: 14px;
+    font-size: 16px;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
     color: hsl(0 0% 9%);
   }
+  
+  h1 { font-size: 3.5rem; }
+  h2 { font-size: 2.5rem; }
+  h3 { font-size: 2rem; }
+  h4 { font-size: 1.5rem; }
+  h5 { font-size: 1.25rem; }
+  h6 { font-size: 1rem; }
   
   p {
     line-height: 1.7;
@@ -106,20 +113,7 @@
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
-  /* Minimal gradients */
-  .gradient-primary {
-    background: linear-gradient(135deg, hsl(0 0% 9%) 0%, hsl(0 0% 20%) 100%);
-  }
-  
-  .gradient-subtle {
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.02) 0%, transparent 100%);
-  }
-  
-  .gradient-mesh {
-    background-image: radial-gradient(at 40% 20%, hsla(0, 0%, 0%, 0.02) 0px, transparent 50%),
-                      radial-gradient(at 80% 0%, hsla(0, 0%, 0%, 0.02) 0px, transparent 50%),
-                      radial-gradient(at 0% 50%, hsla(0, 0%, 0%, 0.02) 0px, transparent 50%);
-  }
+  /* Removed gradients for minimalist design - use solid colors instead */
   
   /* Clean surfaces */
   .glass {
@@ -142,9 +136,9 @@
   }
   
   .text-label {
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: hsl(0 0% 45%);
   }
@@ -171,6 +165,11 @@
     50% { opacity: 0.5; }
   }
   
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(var(--rotation, 0deg)) scale(var(--scale, 1)); }
+    50% { transform: translateY(-10px) rotate(var(--rotation, 0deg)) scale(var(--scale, 1)); }
+  }
+  
   .animate-fade-in {
     animation: fadeIn 0.5s ease-out;
   }
@@ -190,7 +189,17 @@
   
   .divider {
     height: 1px;
-    background: hsl(0 0% 92%);
+    background: hsl(0 0% 85%);
+  }
+  
+  .divider-thick {
+    height: 2px;
+    background: hsl(0 0% 85%);
+  }
+  
+  .divider-section {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(0 0% 85%) 20%, hsl(0 0% 85%) 80%, transparent);
   }
   
   /* Interactive states */
@@ -203,14 +212,14 @@
     transform: scale(0.98);
   }
   
-  /* Spacing utilities */
+  /* Increased spacing for minimalist design */
   .section-padding {
-    padding: 80px 0;
+    padding: 120px 0;
   }
   
   @media (max-width: 768px) {
     .section-padding {
-      padding: 48px 0;
+      padding: 80px 0;
     }
   }
 }

@@ -166,7 +166,7 @@ export default function MainPageMinimal({ onComplete }: MainPageProps) {
               size="lg" 
               className="px-8 h-12 text-sm font-medium active-scale"
             >
-              무료로 시작하기
+              동의서 작성 시작
               <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.5} />
             </Button>
           </div>

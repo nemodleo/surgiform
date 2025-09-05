@@ -193,7 +193,7 @@ export default function MainPageModern({ onComplete }: MainPageProps) {
                 variant="secondary"
                 className="px-8 py-6 text-lg rounded-xl hover:shadow-hover transition-all-smooth"
               >
-                무료로 시작하기
+                동의서 작성 시작
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>

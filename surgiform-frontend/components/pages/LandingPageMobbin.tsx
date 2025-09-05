@@ -11,10 +11,9 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section - Clean and Minimal */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-slate-50/20"></div>
-        <div className="relative container-max section-spacing">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <section className="relative overflow-hidden bg-white">
+        <div className="container-max section-spacing">
+          <div className="grid lg:grid-cols-2 gap-16 items-center relative">
             {/* Left Content */}
             <div className="space-y-8">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-medium">
@@ -28,7 +27,7 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
               <div className="space-y-4">
                 <h1 className="text-5xl lg:text-6xl font-bold tracking-tight text-slate-900">
                   1분 1초가 소중한
-                  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-slate-600 to-slate-900">
+                  <span className="block text-slate-900">
                     응급외과의 시간
                   </span>
                 </h1>
@@ -44,7 +43,7 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
                   onClick={onComplete} 
                   className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-6 text-base font-medium rounded-lg group"
                 >
-                  동의서 생성 시작
+                  동의서 작성 시작
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 <button className="text-slate-600 hover:text-slate-900 font-medium text-sm flex items-center gap-1 group">
@@ -68,32 +67,61 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
               </div>
             </div>
 
-            {/* Right Visual - Document Cards */}
+            {/* Right Visual - 3 A4 Documents Horizontally Overlapped */}
             <div className="relative lg:pl-8">
-              <div className="relative">
-                {/* Floating cards */}
-                <div className="space-y-4">
-                  {[0, 1, 2].map((index) => (
-                    <div 
+              <div className="flex items-center justify-center">
+                <div className="flex -space-x-20">
+                  {[
+                    { title: "복강경 수술", subtitle: "동의서", highlight: "최소침습" },
+                    { title: "응급 수술", subtitle: "동의서", highlight: "긴급처치" },
+                    { title: "장 절제술", subtitle: "동의서", highlight: "외과수술" }
+                  ].map((doc, index) => (
+                    <div
                       key={index}
-                      className={`bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all cursor-pointer ${
-                        index === 1 ? 'ml-8' : index === 2 ? 'ml-16' : ''
-                      }`}
+                      className="relative bg-white rounded-lg shadow-xl border border-slate-200 w-48 h-64 p-4 hover:z-10 transition-all hover:scale-105"
                       style={{
-                        transform: `rotate(${index === 0 ? -2 : index === 1 ? 0 : 2}deg)`,
+                        transform: `rotate(${index === 0 ? -5 : index === 1 ? 0 : 5}deg)`,
+                        zIndex: index === 1 ? 2 : 1
                       }}
                     >
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="h-2 bg-slate-200 rounded w-24"></div>
-                          <div className="text-xs text-slate-400">PDF</div>
+                      {/* Document Content */}
+                      <div className="h-full flex flex-col text-xs">
+                        {/* Header */}
+                        <div className="mb-3 text-center">
+                          <h4 className="font-bold text-slate-900 text-sm">{doc.title}</h4>
+                          <p className="text-slate-500 text-xs">{doc.subtitle}</p>
                         </div>
-                        <div className="space-y-2">
-                          <div className="h-1.5 bg-slate-100 rounded"></div>
-                          <div className="h-1.5 bg-slate-100 rounded w-4/5"></div>
-                          <div className="h-1.5 bg-slate-100 rounded w-3/5"></div>
+                        
+                        {/* Content */}
+                        <div className="flex-1 space-y-2 text-slate-600">
+                          <div className="bg-slate-50 p-2 rounded">
+                            <p className="font-semibold text-slate-700 text-xs mb-1">{doc.highlight}</p>
+                            <div className="space-y-0.5">
+                              <div className="h-1 bg-slate-200 rounded"></div>
+                              <div className="h-1 bg-slate-200 rounded w-4/5"></div>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-1">
+                            <p className="text-[10px] leading-relaxed">환자명: ___________</p>
+                            <p className="text-[10px] leading-relaxed">수술일: 2024.__.__</p>
+                            <p className="text-[10px] leading-relaxed">담당의: ___________</p>
+                          </div>
+                          
+                          <div className="space-y-0.5">
+                            <div className="h-1 bg-slate-100 rounded"></div>
+                            <div className="h-1 bg-slate-100 rounded"></div>
+                            <div className="h-1 bg-slate-100 rounded w-3/4"></div>
+                          </div>
                         </div>
-                        <div className="h-16 bg-slate-50 rounded-lg"></div>
+                        
+                        {/* Footer */}
+                        <div className="pt-2 mt-auto border-t text-[10px]">
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">서명란</span>
+                            <div className="h-4 w-12 border-b border-slate-300"></div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -104,102 +132,66 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
         </div>
       </section>
 
-      {/* Problem & Solution Section */}
-      <section className="border-t border-slate-100">
+      {/* Problem & Solution Section - Streamlined */}
+      <section className="bg-white">
         <div className="container-max section-spacing">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-slate-900 mb-3">왜 SurgiForm인가?</h2>
-            <p className="text-lg text-slate-600">응급외과 의료진이 매일 직면하는 문제를 해결합니다</p>
+            <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-4">왜 SurgiForm인가?</h2>
+            <p className="text-xl text-slate-600">응급외과 의료진이 매일 직면하는 문제를 해결합니다</p>
           </div>
           
-          {/* Problems */}
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            {[
-              {
-                icon: AlertCircle,
-                title: "표준화되지 않은 양식",
-                description: "다양한 종류의 수술로 인해 정해진 양식이 없는 응급외상외과 수술 동의서",
-                color: "text-red-500",
-                bg: "bg-red-50"
-              },
-              {
-                icon: Clock,
-                title: "시간 부족",
-                description: "개별 환자의 정보에 맞춰진 최신 레퍼런스 참고 시간 부족",
-                color: "text-amber-500",
-                bg: "bg-amber-50"
-              },
-              {
-                icon: AlertCircle,
-                title: "실수 및 누락",
-                description: "위급한 상황 속 반복되는 업무로 인한 실수 및 누락",
-                color: "text-orange-500",
-                bg: "bg-orange-50"
-              }
-            ].map((problem, index) => (
-              <div key={index} className="group">
-                <div className="h-full p-6 rounded-xl border border-slate-200 hover:border-slate-300 transition-colors">
-                  <div className={`inline-flex p-2 rounded-lg ${problem.bg} mb-4`}>
-                    <problem.icon className={`h-5 w-5 ${problem.color}`} />
+          {/* Combined Problem-Solution List */}
+          <div className="content-wrapper">
+            <div className="space-y-6">
+              {[
+                {
+                  problem: "표준화되지 않은 양식",
+                  solution: "익숙한 템플릿",
+                  detail: "다양한 수술에 대응하는 맞춤형 동의서 템플릿 제공"
+                },
+                {
+                  problem: "시간 부족",
+                  solution: "AI 자동 생성",
+                  detail: "환자 정보 기반 즉시 생성으로 작성 시간 70% 단축"
+                },
+                {
+                  problem: "실수 및 누락",
+                  solution: "최신 데이터베이스",
+                  detail: "검증된 의료 정보로 완벽한 동의서 자동 완성"
+                }
+              ].map((item, index) => (
+                <div key={index} className="flex items-center gap-4 group">
+                  {/* Problem */}
+                  <div className="flex-1 text-right">
+                    <span className="text-lg font-medium text-slate-500 line-through">{item.problem}</span>
                   </div>
-                  <h3 className="font-semibold text-slate-900 mb-2">{problem.title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">
-                    {problem.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Arrow */}
-          <div className="flex justify-center my-8">
-            <ChevronRight className="h-8 w-8 text-slate-300 rotate-90" />
-          </div>
-
-          {/* Solutions */}
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                icon: FileText,
-                title: "익숙한 템플릿",
-                description: "교수님들에게 익숙한 정보 입력 & 출력 템플릿"
-              },
-              {
-                icon: Database,
-                title: "최신 데이터베이스",
-                description: "최신 데이터로 학습한 정확하고 방대한 연구 데이터베이스"
-              },
-              {
-                icon: Zap,
-                title: "AI 자동 생성",
-                description: "LLM을 통한 빠르고 빠짐없는 문서 생성"
-              }
-            ].map((solution, index) => (
-              <div key={index} className="group cursor-pointer">
-                <div className="h-full p-6 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
-                  <div className="inline-flex p-2 rounded-lg bg-white mb-4">
-                    <solution.icon className="h-5 w-5 text-slate-700" />
+                  
+                  {/* Arrow */}
+                  <div className="flex-shrink-0">
+                    <ArrowRight className="h-5 w-5 text-slate-400" />
                   </div>
-                  <h3 className="font-semibold text-slate-900 mb-2">{solution.title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">
-                    {solution.description}
-                  </p>
+                  
+                  {/* Solution */}
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-1">{item.solution}</h3>
+                    <p className="text-sm text-slate-600">{item.detail}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Process Section */}
-      <section className="bg-slate-50 border-t border-slate-100">
+      <section className="bg-white">
         <div className="container-max section-spacing">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-slate-900 mb-3">간단한 3단계</h2>
-            <p className="text-lg text-slate-600">복잡한 과정 없이 빠르게 완성되는 수술 동의서</p>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-4">간단한 3단계</h2>
+            <p className="text-xl text-slate-600">복잡한 과정 없이 빠르게 완성되는 수술 동의서</p>
           </div>
           
-          <div className="max-w-4xl mx-auto">
+          <div className="content-wrapper">
             <div className="relative">
               {/* Connection Line */}
               <div className="absolute top-8 left-8 right-8 h-0.5 bg-slate-200 hidden md:block"></div>
@@ -246,16 +238,16 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
       </section>
 
       {/* Testimonials */}
-      <section className="border-t border-slate-100">
+      <section className="bg-white">
         <div className="container-max section-spacing">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-slate-900 mb-3">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-600 to-slate-900">20개 병원</span>이 선택한 이유
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
+              <span className="text-slate-900">20개 병원</span>이 선택한 이유
             </h2>
-            <p className="text-lg text-slate-600">실제 의료진의 생생한 후기</p>
+            <p className="text-xl text-slate-600">실제 의료진의 생생한 후기</p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               {
                 quote: "수술동의서 작성 시간이 70% 이상 단축되었습니다.",
@@ -300,21 +292,23 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-slate-900">
+      <section className="bg-white">
         <div className="container-max section-spacing text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            지금 시작하세요
-          </h2>
-          <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
-            응급외과 의료진을 위한 최고의 수술동의서 솔루션을 경험해보세요
-          </p>
-          <Button 
-            onClick={onComplete}
-            className="bg-white text-slate-900 hover:bg-slate-100 px-8 py-6 text-base font-medium rounded-lg"
-          >
-            무료로 시작하기
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+          <div className="content-wrapper">
+            <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
+              지금 시작하세요
+            </h2>
+            <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto">
+              응급외과 의료진을 위한 최고의 수술동의서 솔루션을 경험해보세요
+            </p>
+            <Button 
+              onClick={onComplete}
+              className="bg-slate-900 text-white hover:bg-slate-800 px-10 py-6 text-lg font-medium rounded-lg"
+            >
+              동의서 작성 시작
+              <ArrowRight className="ml-3 h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </section>
     </div>
