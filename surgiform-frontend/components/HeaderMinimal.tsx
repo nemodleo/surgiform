@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Bell } from "lucide-react"
+import { Menu, X, Bell, User, Settings } from "lucide-react"
 
 interface HeaderProps {
   onNavigate?: (page: string) => void
@@ -14,9 +14,7 @@ export default function HeaderMinimal({ onNavigate, currentPage = 'home' }: Head
 
   const navItems = [
     { id: 'home', label: '홈' },
-    { id: 'form', label: '동의서 작성' },
-    { id: 'mypage', label: '마이페이지' },
-    { id: 'settings', label: '설정' }
+    { id: 'form', label: '동의서 작성' }
   ]
 
   return (
@@ -51,11 +49,33 @@ export default function HeaderMinimal({ onNavigate, currentPage = 'home' }: Head
           </div>
 
           {/* Right Section */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             {/* Notification */}
             <button className="relative p-2 hover:bg-secondary rounded-lg transition-colors">
-              <Bell className="h-4 w-4" strokeWidth={1.5} />
+              <Bell className="h-5 w-5" strokeWidth={1.5} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+
+            {/* My Page Icon */}
+            <button 
+              onClick={() => onNavigate?.('mypage')}
+              className={`p-2 hover:bg-secondary rounded-lg transition-colors ${
+                currentPage === 'mypage' ? 'bg-secondary' : ''
+              }`}
+              title="마이페이지"
+            >
+              <User className="h-5 w-5" strokeWidth={1.5} />
+            </button>
+
+            {/* Settings Icon */}
+            <button 
+              onClick={() => onNavigate?.('settings')}
+              className={`p-2 hover:bg-secondary rounded-lg transition-colors ${
+                currentPage === 'settings' ? 'bg-secondary' : ''
+              }`}
+              title="설정"
+            >
+              <Settings className="h-5 w-5" strokeWidth={1.5} />
             </button>
 
             {/* User Avatar */}
@@ -101,6 +121,32 @@ export default function HeaderMinimal({ onNavigate, currentPage = 'home' }: Head
                   {item.label}
                 </button>
               ))}
+              <button
+                className={`w-full text-left px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  currentPage === 'mypage' 
+                    ? 'bg-secondary text-foreground' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                }`}
+                onClick={() => {
+                  onNavigate?.('mypage')
+                  setMobileMenuOpen(false)
+                }}
+              >
+                마이페이지
+              </button>
+              <button
+                className={`w-full text-left px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  currentPage === 'settings' 
+                    ? 'bg-secondary text-foreground' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                }`}
+                onClick={() => {
+                  onNavigate?.('settings')
+                  setMobileMenuOpen(false)
+                }}
+              >
+                설정
+              </button>
             </nav>
             <div className="mt-4 pt-4 border-t border-light flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">

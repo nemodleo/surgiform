@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Check, Clock, Database, FileText, AlertCircle, Zap, ChevronRight, ArrowUpRight } from "lucide-react"
+import { ArrowRight, Check, FileText, Zap, ArrowUpRight } from "lucide-react"
 
 interface LandingPageProps {
   onComplete: () => void
@@ -62,7 +62,7 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
                   ))}
                 </div>
                 <p className="text-sm text-slate-600">
-                  <span className="font-semibold text-slate-900">20+ 병원</span>에서 사용중
+                  <span className="font-semibold text-slate-900">00+ 병원</span>에서 사용중
                 </p>
               </div>
             </div>
@@ -242,7 +242,7 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
         <div className="container-max section-spacing">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
-              <span className="text-slate-900">20개 병원</span>이 선택한 이유
+              <span className="text-slate-900">00개 병원</span>이 선택한 이유
             </h2>
             <p className="text-xl text-slate-600">실제 의료진의 생생한 후기</p>
           </div>
@@ -251,22 +251,22 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
             {[
               {
                 quote: "수술동의서 작성 시간이 70% 이상 단축되었습니다.",
-                author: "김철수 교수",
+                author: "김OO 교수",
                 hospital: "서울대학교병원"
               },
               {
                 quote: "응급 상황에서 놓칠 수 있는 부분을 완벽하게 챙겨줍니다.",
-                author: "이영희 교수",
+                author: "이OO 교수",
                 hospital: "분당서울대병원"
               },
               {
                 quote: "환자별 맞춤 정보로 설명 시간이 크게 줄었습니다.",
-                author: "박민수 교수",
+                author: "박OO 교수",
                 hospital: "삼성서울병원"
               },
               {
                 quote: "최신 정보 기반의 정확한 문서를 제공합니다.",
-                author: "정수진 교수",
+                author: "정OO 교수",
                 hospital: "부산대학교병원"
               }
             ].map((testimonial, index) => (
