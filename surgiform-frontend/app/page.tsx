@@ -64,8 +64,8 @@ export default function Home() {
       )}
 
       {currentPage === 'form' && (
-        <div className="container mx-auto px-4 py-8">
-          <div className="mb-12 bg-white rounded-xl border border-light p-8">
+        <div className="container mx-auto px-4 py-4">
+          <div className="mb-8 bg-white rounded-xl px-8 py-4">
             <StepperMinimal 
               steps={STEP_LABELS} 
               currentStep={currentStep} 
@@ -89,6 +89,7 @@ export default function Home() {
                 setConsentData(data)
                 setCurrentStep(2)
               }}
+              onBack={() => setCurrentStep(0)}
               formData={formData}
               initialData={consentData}
             />
@@ -97,6 +98,7 @@ export default function Home() {
           {currentStep === 2 && (
             <ConfirmationPage
               onComplete={() => setCurrentStep(3)}
+              onBack={() => setCurrentStep(1)}
               formData={formData}
               consentData={consentData}
             />
@@ -107,6 +109,7 @@ export default function Home() {
               formData={formData}
               consentData={consentData}
               onHome={handleGoHome}
+              onBack={() => setCurrentStep(2)}
             />
           )}
         </div>

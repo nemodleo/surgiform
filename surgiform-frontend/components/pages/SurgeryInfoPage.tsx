@@ -9,11 +9,12 @@ import toast from "react-hot-toast"
 
 interface SurgeryInfoPageProps {
   onComplete: (data: any) => void
+  onBack?: () => void
   formData: any
   initialData?: any
 }
 
-export default function SurgeryInfoPage({ onComplete, formData, initialData }: SurgeryInfoPageProps) {
+export default function SurgeryInfoPage({ onComplete, onBack, formData, initialData }: SurgeryInfoPageProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [consentData, setConsentData] = useState<any>(initialData || null)
@@ -194,26 +195,26 @@ export default function SurgeryInfoPage({ onComplete, formData, initialData }: S
 
   // 정상 UI - 스크린샷과 동일한 레이아웃
   return (
-    <div className="max-w-6xl mx-auto">
-      <Card className="border-0 shadow-none">
-        <CardContent className="p-0">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-black mb-2">
-              Reference Textbook을 기반으로 작성된 수술 관련 정보입니다.
-            </h2>
-            <p className="text-gray-600">
-              확인 후 수정사항이 있으면 반영한 후 확정해주세요.
-            </p>
-          </div>
+    <div className="max-w-4xl mx-auto">
+      <div className="space-y-8">
+        <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
+          <h2 className="text-lg font-semibold text-slate-900 mb-2">
+            Reference Textbook을 기반으로 작성된 수술 관련 정보입니다.
+          </h2>
+          <p className="text-sm text-slate-600">
+            확인 후 수정사항이 있으면 반영한 후 확정해주세요.
+          </p>
+        </div>
 
-          <div className="space-y-4">
+        <div className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors">
+          <div className="p-6 space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-2">
+              <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
                 1. 예정된 수술 이름과 관련 정보의 제목
-                <button className="w-6 h-6 bg-blue-500 text-white rounded-full text-xs">S</button>
+                <button className="w-5 h-5 bg-slate-500 text-white rounded-full text-xs">S</button>
               </label>
               <textarea
-                className="w-full min-h-[80px] p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-green-dark"
+                className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues.general_info}
                 onChange={(e) => handleTextareaChange('general_info', e.target.value)}
                 placeholder="수술 관련 일반 정보를 입력하세요"
@@ -221,11 +222,11 @@ export default function SurgeryInfoPage({ onComplete, formData, initialData }: S
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">
+              <label className="text-sm font-medium text-slate-700">
                 2. 예정된 수술 이름과 관련 기능의 다른 정보
               </label>
               <textarea
-                className="w-full min-h-[80px] p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-green-dark"
+                className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues.surgical_site}
                 onChange={(e) => handleTextareaChange('surgical_site', e.target.value)}
                 placeholder="수술 부위 정보를 입력하세요"
@@ -233,12 +234,12 @@ export default function SurgeryInfoPage({ onComplete, formData, initialData }: S
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-2">
+              <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
                 3. 수술적 방식/절차/방법
-                <button className="w-6 h-6 bg-blue-500 text-white rounded-full text-xs">S</button>
+                <button className="w-5 h-5 bg-slate-500 text-white rounded-full text-xs">S</button>
               </label>
               <textarea
-                className="w-full min-h-[80px] p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-green-dark"
+                className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues.surgical_method}
                 onChange={(e) => handleTextareaChange('surgical_method', e.target.value)}
                 placeholder="수술 방법을 입력하세요"
@@ -246,11 +247,11 @@ export default function SurgeryInfoPage({ onComplete, formData, initialData }: S
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">
+              <label className="text-sm font-medium text-slate-700">
                 4. 수술적 방법 및 내용
               </label>
               <textarea
-                className="w-full min-h-[80px] p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-green-dark"
+                className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues.purpose}
                 onChange={(e) => handleTextareaChange('purpose', e.target.value)}
                 placeholder="수술 목적을 입력하세요"
@@ -258,11 +259,11 @@ export default function SurgeryInfoPage({ onComplete, formData, initialData }: S
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">
+              <label className="text-sm font-medium text-slate-700">
                 5. 발생 가능한 환자별/수술별/부위별
               </label>
               <textarea
-                className="w-full min-h-[80px] p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-green-dark"
+                className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues.complications}
                 onChange={(e) => handleTextareaChange('complications', e.target.value)}
                 placeholder="수술 관련 합병증을 입력하세요"
@@ -270,11 +271,11 @@ export default function SurgeryInfoPage({ onComplete, formData, initialData }: S
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">
+              <label className="text-sm font-medium text-slate-700">
                 6. 환병 발생시 조치사항
               </label>
               <textarea
-                className="w-full min-h-[80px] p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-green-dark"
+                className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues.postop_course}
                 onChange={(e) => handleTextareaChange('postop_course', e.target.value)}
                 placeholder="수술 후 경과를 입력하세요"
@@ -282,18 +283,19 @@ export default function SurgeryInfoPage({ onComplete, formData, initialData }: S
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-2">
+              <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
                 7. 기타(수술 관련 사전 확인된)
-                <button className="w-6 h-6 bg-blue-500 text-white rounded-full text-xs">S</button>
+                <button className="w-5 h-5 bg-slate-500 text-white rounded-full text-xs">S</button>
               </label>
               <textarea
-                className="w-full min-h-[80px] p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-green-dark"
+                className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues.others}
                 onChange={(e) => handleTextareaChange('others', e.target.value)}
                 placeholder="기타 사항을 입력하세요"
               />
             </div>
           </div>
+        </div>
 
           {/* 챗봇 아이콘 */}
           {showChat && (
@@ -334,24 +336,23 @@ export default function SurgeryInfoPage({ onComplete, formData, initialData }: S
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </button>
-        </CardContent>
-      </Card>
+      </div>
 
       {/* Navigation buttons */}
       <div className="flex justify-between mt-8">
         <Button
           variant="outline"
-          className="flex items-center gap-2 border-gray-300"
-          onClick={() => window.history.back()}
+          onClick={onBack || (() => window.history.back())}
+          className="border-slate-200 hover:bg-slate-50 px-6 py-3 h-auto font-medium rounded-lg transition-all flex items-center gap-2"
         >
           <ChevronLeft className="h-4 w-4" />
-          이전 단계로
+          이전 단계
         </Button>
         <Button
           onClick={handleComplete}
-          className="bg-green-dark hover:bg-green-darker text-white px-8 flex items-center gap-2"
+          className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 h-auto font-medium rounded-lg transition-all flex items-center gap-2"
         >
-          수술 내용 확정하기
+          다음 단계
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
