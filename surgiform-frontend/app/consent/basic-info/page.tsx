@@ -21,7 +21,7 @@ export default function BasicInfoRoute() {
   // Store validation function in window for stepper to access
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      (window as any).validateBasicInfo = () => {
+      (window as Window & { validateBasicInfo?: () => void }).validateBasicInfo = () => {
         // Trigger form validation by clicking the submit button
         const submitButton = document.querySelector('button[type="submit"]')
         if (submitButton) {
@@ -30,7 +30,7 @@ export default function BasicInfoRoute() {
       }
       
       return () => {
-        delete (window as any).validateBasicInfo
+        delete (window as Window & { validateBasicInfo?: () => void }).validateBasicInfo
       }
     }
   }, [])

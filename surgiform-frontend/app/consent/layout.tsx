@@ -41,25 +41,34 @@ export default function ConsentLayout({
   const handleStepClick = (step: number) => {
     // If trying to go to next step from basic info page, validate first
     if (currentStep === 0 && step === 1) {
-      if (typeof window !== 'undefined' && (window as any).validateBasicInfo) {
-        (window as any).validateBasicInfo()
-        return
+      if (typeof window !== 'undefined') {
+        const validateBasicInfo = (window as Window & { validateBasicInfo?: () => void }).validateBasicInfo
+        if (validateBasicInfo) {
+          validateBasicInfo()
+          return
+        }
       }
     }
     
     // If trying to go to next step from surgery info page, validate first
     if (currentStep === 1 && step === 2) {
-      if (typeof window !== 'undefined' && (window as any).validateSurgeryInfo) {
-        (window as any).validateSurgeryInfo()
-        return
+      if (typeof window !== 'undefined') {
+        const validateSurgeryInfo = (window as Window & { validateSurgeryInfo?: () => void }).validateSurgeryInfo
+        if (validateSurgeryInfo) {
+          validateSurgeryInfo()
+          return
+        }
       }
     }
     
     // If trying to go to next step from confirmation page, validate first
     if (currentStep === 2 && step === 3) {
-      if (typeof window !== 'undefined' && (window as any).validateConfirmation) {
-        (window as any).validateConfirmation()
-        return
+      if (typeof window !== 'undefined') {
+        const validateConfirmation = (window as Window & { validateConfirmation?: () => void }).validateConfirmation
+        if (validateConfirmation) {
+          validateConfirmation()
+          return
+        }
       }
     }
     
