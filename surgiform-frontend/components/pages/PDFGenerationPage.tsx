@@ -1,9 +1,11 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Download, FileText, Loader2, Check, Home, ChevronLeft } from "lucide-react"
-import { generateKoreanPDF } from "@/lib/koreanPdfGenerator"
+// import { generateKoreanPDF } from "@/lib/koreanPdfGenerator"
+// import { generateKoreanPDFWithJsPDF } from "@/lib/jsPdfKoreanGenerator"
+import { generateKoreanPDFFromDOM } from "@/lib/domPdfGenerator"
 
 interface FormData {
   patient_name?: string
@@ -15,8 +17,15 @@ interface ConsentData {
   [key: string]: unknown
 }
 
+interface DrawingItem {
+  title?: string
+  imageData?: string
+}
+
 interface SignatureData {
-  canvases?: unknown[]
+  patient?: string
+  doctor?: string
+  canvases?: DrawingItem[]
   [key: string]: unknown
 }
 
@@ -33,8 +42,9 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [signatureData, setSignatureData] = useState<SignatureData | null>(null)
   const [, setShowPreview] = useState(false)
+  const [dataLoaded, setDataLoaded] = useState(false)
 
-  const generatePDF = useCallback(async () => {
+  const generatePDF = async () => {
     setGenerating(true)
     
     try {
@@ -44,12 +54,23 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
         signatureData
       })
       
-      // Use the Korean PDF generator with proper font support
-      const pdfBlob = await generateKoreanPDF(
-        formData,
-        consentData,
-        signatureData as never
+      // Add timeout for PDF generation using DOM approach
+      const pdfGenerationPromise = generateKoreanPDFFromDOM(
+        formData || {},
+        consentData || {},
+        signatureData || {}
       )
+      
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('PDF 생성 시간 초과 (30초)')), 30000)
+      )
+      
+      // Use the Korean PDF generator with proper font support
+      const pdfBlob = await Promise.race([
+        pdfGenerationPromise,
+        timeoutPromise
+      ]) as Blob
+      
       const url = URL.createObjectURL(pdfBlob)
       setPdfUrl(url)
       setPdfGenerated(true)
@@ -57,35 +78,55 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
       
     } catch (error) {
       console.error('PDF generation error:', error)
-      alert('PDF 생성 중 오류가 발생했습니다.')
+      console.error('Error details:', {
+        formData,
+        consentData,
+        signatureData,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorStack: error instanceof Error ? error.stack : undefined
+      })
+      alert(`PDF 생성 중 오류가 발생했습니다.\n\n오류 내용: ${error instanceof Error ? error.message : '알 수 없는 오류'}\n\n브라우저 콘솔에서 자세한 내용을 확인하세요.`)
     }
     
     setGenerating(false)
-  }, [formData, consentData, signatureData])
+  }
 
   useEffect(() => {
     const savedSignatures = localStorage.getItem('signatureData')
     const canvasDrawings = localStorage.getItem('canvasDrawings')
     
+    console.log('Loading signature data from localStorage...')
+    
+    let finalSignatureData: SignatureData = {}
+    
     if (savedSignatures) {
       const sigData = JSON.parse(savedSignatures)
       console.log('Loaded signature data:', sigData)
+      finalSignatureData = sigData
       
       // Include canvas drawings in signature data
       if (canvasDrawings) {
         const drawings = JSON.parse(canvasDrawings)
         console.log('Loaded canvas drawings:', drawings)
-        sigData.canvases = drawings
+        finalSignatureData.canvases = drawings
       }
       
-      setSignatureData(sigData)
+      setSignatureData(finalSignatureData)
     }
     
-    // Auto-generate PDF on mount
-    setTimeout(() => {
-      generatePDF()
-    }, 500)
-  }, [generatePDF])
+    setDataLoaded(true)
+  }, [])
+
+  useEffect(() => {
+    // Generate PDF only once when data is loaded
+    if (dataLoaded && !pdfGenerated && !generating) {
+      console.log('Data loaded, generating PDF with signature data:', signatureData)
+      const timer = setTimeout(() => {
+        generatePDF()
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [dataLoaded, signatureData]) // Watch for data loading
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -103,42 +144,6 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
         {/* Main Content */}
         <div className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors">
           <div className="p-6 space-y-6">
-            <div className="bg-slate-50 rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <FileText className="h-8 w-8 text-slate-700" />
-                  <div>
-                    <h3 className="font-semibold text-slate-900">수술 동의서</h3>
-                    <p className="text-sm text-slate-600">
-                      환자: {formData.patient_name || "지정되지 않음"} | 수술명: {formData.surgery_name || "지정되지 않음"}
-                    </p>
-                  </div>
-                </div>
-                {pdfGenerated && (
-                  <Check className="h-6 w-6 text-emerald-500" />
-                )}
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-sm text-slate-700">
-                  <Check className="h-4 w-4 text-emerald-500" />
-                  <span>환자 정보 포함</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-700">
-                  <Check className="h-4 w-4 text-emerald-500" />
-                  <span>수술 상세 정보 포함</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-700">
-                  <Check className="h-4 w-4 text-emerald-500" />
-                  <span>전자 서명 포함</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-700">
-                  <Check className="h-4 w-4 text-emerald-500" />
-                  <span>작성 날짜 자동 기록</span>
-                </div>
-              </div>
-            </div>
-
             {generating ? (
             <div className="text-center py-8">
               <div className="inline-flex items-center gap-2">

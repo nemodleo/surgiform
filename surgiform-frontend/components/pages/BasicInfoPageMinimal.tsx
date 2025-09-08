@@ -80,6 +80,7 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
   const [isValidating, setIsValidating] = useState<Partial<Record<keyof FormData, boolean>>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [completedFields, setCompletedFields] = useState<Set<keyof FormData>>(new Set())
+  const [isComposing, setIsComposing] = useState(false)
   
   // Refs for auto-focus on error
   const inputRefs = useRef<{ [key: string]: HTMLInputElement | HTMLSelectElement | null }>({})
@@ -92,17 +93,19 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
     return `${numbers.slice(0, 4)}-${numbers.slice(4, 8)}`
   }
 
-  // Real-time validation with debounce
+  // Real-time validation with debounce (skip during IME composition)
   useEffect(() => {
+    if (isComposing) return // Skip validation during IME composition
+    
     const timer = setTimeout(() => {
       Object.keys(touched).forEach(field => {
         if (touched[field as keyof FormData]) {
           validateField(field as keyof FormData, formData[field as keyof FormData], false)
         }
       })
-    }, 300)
+    }, 500) // Increased delay for better Korean input
     return () => clearTimeout(timer)
-  }, [formData, touched])
+  }, [formData, touched, isComposing])
 
   // Comprehensive validation function
   const validateField = useCallback(async (field: keyof FormData, value: unknown, showLoading = true) => {
@@ -122,9 +125,9 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
         const cleanedNum = regValue.replace(/[^\d]/g, '')
         if (!regValue) {
           newErrors.registration_number = '등록번호를 입력해주세요'
-        } else if (cleanedNum.length < 8) {
-          newErrors.registration_number = '8자리 숫자를 입력해주세요'
-        } else if (!/^\d{4}-\d{4}$/.test(regValue)) {
+        } else if (cleanedNum.length !== 8) {
+          newErrors.registration_number = '등록번호는 8자리 숫자여야 합니다'
+        } else if (regValue !== formatRegistrationNumber(regValue)) {
           newErrors.registration_number = '올바른 형식이 아닙니다 (XXXX-XXXX)'
         } else {
           delete newErrors.registration_number
@@ -138,8 +141,6 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
           newErrors.patient_name = '환자명을 입력해주세요'
         } else if (nameValue.length < 2) {
           newErrors.patient_name = '2자 이상 입력해주세요'
-        } else if (!/^[가-힣a-zA-Z\s]+$/.test(nameValue)) {
-          newErrors.patient_name = '한글 또는 영문만 입력 가능합니다'
         } else {
           delete newErrors.patient_name
           isValid = true
@@ -236,10 +237,7 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
       processedValue = cleanedAge
     }
     
-    if (field === 'patient_name') {
-      // Remove special characters except spaces
-      processedValue = value.replace(/[^가-힣a-zA-Z\s]/g, '')
-    }
+    // No filtering for patient_name - allow all characters
     
     setFormData({ ...formData, [field]: processedValue })
     
@@ -416,6 +414,12 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
                     value={formData.patient_name}
                     onChange={(e) => handleFieldChange('patient_name', e.target.value)}
                     onBlur={() => handleBlur('patient_name')}
+                    onCompositionStart={() => setIsComposing(true)}
+                    onCompositionEnd={(e) => {
+                      setIsComposing(false)
+                      const event = e as React.CompositionEvent<HTMLInputElement>
+                      handleFieldChange('patient_name', event.currentTarget.value)
+                    }}
                     className={getInputStyle('patient_name')}
                     placeholder="홍길동"
                     autoComplete="name"

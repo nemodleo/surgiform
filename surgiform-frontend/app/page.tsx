@@ -1,51 +1,23 @@
 "use client"
 
 import { useState } from "react"
-import { StepperMinimal } from "@/components/ui/stepper-minimal"
+import { useRouter } from "next/navigation"
 import LandingPageMobbin from "@/components/pages/LandingPageMobbin"
-import BasicInfoPageMinimal from "@/components/pages/BasicInfoPageMinimal"
-import SurgeryInfoPage from "@/components/pages/SurgeryInfoPage"
-import ConfirmationPage from "@/components/pages/ConfirmationPage"
-import PDFGenerationPage from "@/components/pages/PDFGenerationPage"
 import HeaderMinimal from "@/components/HeaderMinimal"
-
-const STEP_LABELS = [
-  "기본 정보",
-  "수술 정보",
-  "확인 및 서명",
-  "PDF 생성"
-]
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<'home' | 'form' | 'mypage' | 'settings'>('home')
-  const [currentStep, setCurrentStep] = useState(0)
-  const [formData, setFormData] = useState<Record<string, unknown>>({})
-  const [consentData, setConsentData] = useState<Record<string, unknown> | null>(null)
+  const router = useRouter()
 
   const handleNavigate = (page: string) => {
     setCurrentPage(page as 'home' | 'form' | 'mypage' | 'settings')
-    if (page === 'home') {
-      setCurrentStep(0)
-      setFormData({})
-      setConsentData(null)
+    if (page === 'form') {
+      router.push('/consent')
     }
   }
 
   const handleMainPageComplete = () => {
-    setCurrentPage('form')
-    setCurrentStep(0)
-  }
-
-
-  const handleStepClick = (step: number) => {
-    setCurrentStep(step)
-  }
-
-  const handleGoHome = () => {
-    setCurrentPage('home')
-    setCurrentStep(0)
-    setFormData({})
-    setConsentData(null)
+    router.push('/consent/basic-info')
   }
 
   return (
@@ -54,58 +26,6 @@ export default function Home() {
       
       {currentPage === 'home' && (
         <LandingPageMobbin onComplete={handleMainPageComplete} />
-      )}
-
-      {currentPage === 'form' && (
-        <div className="container mx-auto px-4 py-4">
-          <div className="mb-8 bg-white rounded-xl px-8 py-4">
-            <StepperMinimal 
-              steps={STEP_LABELS} 
-              currentStep={currentStep} 
-              onStepClick={handleStepClick}
-            />
-          </div>
-
-          {currentStep === 0 && (
-            <BasicInfoPageMinimal 
-              onComplete={(data) => {
-                setFormData(data as unknown as Record<string, unknown>)
-                setCurrentStep(1)
-              }}
-              initialData={formData}
-            />
-          )}
-          
-          {currentStep === 1 && (
-            <SurgeryInfoPage
-              onComplete={(data) => {
-                setConsentData(data)
-                setCurrentStep(2)
-              }}
-              onBack={() => setCurrentStep(0)}
-              formData={formData}
-              initialData={consentData as Record<string, unknown> | undefined}
-            />
-          )}
-          
-          {currentStep === 2 && (
-            <ConfirmationPage
-              onComplete={() => setCurrentStep(3)}
-              onBack={() => setCurrentStep(1)}
-              formData={formData as never}
-              consentData={consentData as never}
-            />
-          )}
-          
-          {currentStep === 3 && (
-            <PDFGenerationPage
-              formData={formData as never}
-              consentData={consentData as never}
-              onHome={handleGoHome}
-              onBack={() => setCurrentStep(2)}
-            />
-          )}
-        </div>
       )}
 
       {currentPage === 'mypage' && (

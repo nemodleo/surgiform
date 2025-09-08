@@ -193,7 +193,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
               <div className="flex gap-3 pt-4">
                 <Button 
                   onClick={generateConsent} 
-                  className="flex items-center gap-2"
+                  className="bg-slate-900 hover:bg-slate-800 text-white flex items-center gap-2"
                 >
                   <RefreshCw className="h-4 w-4" />
                   다시 시도

@@ -1,19 +1,16 @@
 import React from 'react'
 import { Document, Page, Text, View, StyleSheet, pdf, Font, Image } from '@react-pdf/renderer'
 
-// Register Korean font - we'll use a web font service
-Font.register({
-  family: 'Noto Sans KR',
-  fonts: [
-    {
-      src: 'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-kr@5.0.0/files/noto-sans-kr-korean-400-normal.woff',
-      fontWeight: 400,
-    },
-    {
-      src: 'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-kr@5.0.0/files/noto-sans-kr-korean-700-normal.woff',
-      fontWeight: 700,
-    },
-  ],
+// Skip font registration entirely to avoid errors
+// PDF will use default Helvetica font (Korean won't display perfectly but PDF will generate)
+
+// Hyphenation for text wrapping
+Font.registerHyphenationCallback(word => {
+  // Allow text to break at any character for better wrapping
+  if (word.length > 15) {
+    return word.split('')
+  }
+  return [word]
 })
 
 // Create styles
@@ -22,7 +19,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     backgroundColor: '#ffffff',
     padding: 40,
-    fontFamily: 'Noto Sans KR',
+    // Use default font
   },
   title: {
     fontSize: 24,
@@ -180,9 +177,14 @@ interface PDFProps {
 }
 
 // PDF Document Component
-const SurgicalConsentPDF = ({ formData, consentData, signatureData }: PDFProps) => {
+const SurgicalConsentPDF = ({ formData = {}, consentData = {}, signatureData = {} }: PDFProps) => {
   // Parse canvas drawings if they exist
-  const canvasDrawings = signatureData?.canvases || []
+  const canvasDrawings = Array.isArray(signatureData?.canvases) ? signatureData.canvases : []
+  
+  console.log('PDF Component received signatureData:', signatureData)
+  console.log('Canvas drawings count:', canvasDrawings.length)
+  console.log('Patient signature exists:', !!signatureData?.patient)
+  console.log('Doctor signature exists:', !!signatureData?.doctor)
   
   return (
   <Document>
@@ -301,24 +303,27 @@ const SurgicalConsentPDF = ({ formData, consentData, signatureData }: PDFProps) 
       )}
 
       {/* Additional Drawings not related to specific sections */}
-      {canvasDrawings.length > 0 && (
+      {Array.isArray(canvasDrawings) && canvasDrawings.length > 0 && (
         <View style={styles.section}>
           {canvasDrawings.filter((d) => {
+            if (!d || !d.imageData) return false
             // Show only drawings that weren't already shown with consent items
             const isRelatedToConsent = consentData?.consents?.some((consent) => 
               d.title && d.title.includes(consent.item_title || consent.category || '')
             )
-            return !isRelatedToConsent && d.imageData
+            return !isRelatedToConsent
           }).map((drawing, index: number) => (
-            <View key={index} style={{ marginBottom: 15 }}>
-              <Text style={{ fontSize: 11, fontWeight: 700, marginBottom: 5, color: '#333333' }}>
-                {drawing.title || `추가 설명 그림 ${index + 1}`}
-              </Text>
-              <Image 
-                style={{ width: 250, height: 180, borderWidth: 1, borderColor: '#e0e0e0' }} 
-                src={drawing.imageData} 
-              />
-            </View>
+            drawing?.imageData && (
+              <View key={index} style={{ marginBottom: 15 }}>
+                <Text style={{ fontSize: 11, fontWeight: 700, marginBottom: 5, color: '#333333' }}>
+                  {drawing.title || `추가 설명 그림 ${index + 1}`}
+                </Text>
+                <Image 
+                  style={{ width: 250, height: 180, borderWidth: 1, borderColor: '#e0e0e0' }} 
+                  src={drawing.imageData} 
+                />
+              </View>
+            )
           ))}
         </View>
       )}
@@ -329,27 +334,23 @@ const SurgicalConsentPDF = ({ formData, consentData, signatureData }: PDFProps) 
           <Text style={styles.sectionTitle}>서명</Text>
           <View style={styles.divider} />
           
-          {signatureData.patient && (
+          {signatureData.patient && typeof signatureData.patient === 'string' && (
             <View style={styles.signature}>
               <Text style={styles.text}>환자: {formData.patient_name || '환자'}</Text>
-              {signatureData.patient && (
-                <Image 
-                  style={styles.signatureImage} 
-                  src={signatureData.patient} 
-                />
-              )}
+              <Image 
+                style={styles.signatureImage} 
+                src={signatureData.patient} 
+              />
             </View>
           )}
           
-          {signatureData.doctor && (
+          {signatureData.doctor && typeof signatureData.doctor === 'string' && (
             <View style={styles.signature}>
               <Text style={styles.text}>의사: {formData.medical_team?.[0]?.name || '의사'}</Text>
-              {signatureData.doctor && (
-                <Image 
-                  style={styles.signatureImage} 
-                  src={signatureData.doctor} 
-                />
-              )}
+              <Image 
+                style={styles.signatureImage} 
+                src={signatureData.doctor} 
+              />
             </View>
           )}
           
@@ -366,13 +367,30 @@ const SurgicalConsentPDF = ({ formData, consentData, signatureData }: PDFProps) 
 // Export function to generate PDF blob
 export const generateKoreanPDF = async (formData: FormData, consentData: ConsentData, signatureData: SignatureData) => {
   try {
+    // Validate input data
+    if (!formData) {
+      throw new Error('formData is required for PDF generation')
+    }
+    if (!consentData) {
+      throw new Error('consentData is required for PDF generation')
+    }
+    
+    console.log('Starting PDF generation with data:', {
+      formData,
+      consentData,
+      signatureData
+    })
+    
     const doc = <SurgicalConsentPDF formData={formData} consentData={consentData} signatureData={signatureData} />
     const asPdf = pdf()
     asPdf.updateContainer(doc)
     const blob = await asPdf.toBlob()
+    
+    console.log('PDF generated successfully, blob size:', blob.size)
     return blob
   } catch (error) {
     console.error('PDF generation error:', error)
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     throw error
   }
 }
