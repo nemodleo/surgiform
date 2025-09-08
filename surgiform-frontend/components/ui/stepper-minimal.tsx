@@ -33,7 +33,7 @@ export function StepperMinimal({ steps, currentStep, onStepClick }: StepperProps
                       : 'bg-white text-muted-foreground border-light hover:border-foreground'
                   }
                 `}
-                disabled={!isCompleted && !isActive}
+                disabled={index > currentStep + 1}
               >
                 {isCompleted ? (
                   <Check className="w-4 h-4" strokeWidth={2} />
