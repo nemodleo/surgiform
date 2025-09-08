@@ -104,7 +104,7 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
                           
                           <div className="space-y-1">
                             <p className="text-[10px] leading-relaxed">환자명: ___________</p>
-                            <p className="text-[10px] leading-relaxed">수술일: 2024.__.__</p>
+                            <p className="text-[10px] leading-relaxed">수술일: 2025.__.__</p>
                             <p className="text-[10px] leading-relaxed">담당의: ___________</p>
                           </div>
                           
@@ -252,22 +252,22 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
               {
                 quote: "수술동의서 작성 시간이 70% 이상 단축되었습니다.",
                 author: "김OO 교수",
-                hospital: "서울대학교병원"
+                hospital: "서울OO 병원"
               },
               {
                 quote: "응급 상황에서 놓칠 수 있는 부분을 완벽하게 챙겨줍니다.",
                 author: "이OO 교수",
-                hospital: "분당서울대병원"
+                hospital: "분당OO 병원"
               },
               {
                 quote: "환자별 맞춤 정보로 설명 시간이 크게 줄었습니다.",
                 author: "박OO 교수",
-                hospital: "삼성서울병원"
+                hospital: "서울OO병원"
               },
               {
                 quote: "최신 정보 기반의 정확한 문서를 제공합니다.",
                 author: "정OO 교수",
-                hospital: "부산대학교병원"
+                hospital: "부산OO 병원"
               }
             ].map((testimonial, index) => (
               <div key={index} className="group">
