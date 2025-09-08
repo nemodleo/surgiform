@@ -176,7 +176,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                   consents: []
                 }
                 setConsentData(dummyData)
-                toast.success('테스트 모드로 진행합니다')
+                toast.success('수기 입력 모드로 진행합니다')
               }}
             >
               <X className="h-4 w-4" />
@@ -206,10 +206,10 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                     }
                     setConsentData(dummyData)
                     setError(null)
-                    toast.success('테스트 모드로 진행합니다')
+                    toast.success('수기 입력 모드로 진행합니다')
                   }}
                 >
-                  테스트 모드로 진행
+                  수기 입력 모드로 진행
                 </Button>
               </div>
             </div>
