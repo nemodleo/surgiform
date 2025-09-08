@@ -1,9 +1,0 @@
-{
-  "buildCommand": "cd surgiform-frontend && npm run build",
-  "outputDirectory": "surgiform-frontend/.next",
-  "installCommand": "cd surgiform-frontend && npm install",
-  "framework": "nextjs",
-  "settings": {
-    "rootDirectory": "surgiform-frontend"
-  }
-}
