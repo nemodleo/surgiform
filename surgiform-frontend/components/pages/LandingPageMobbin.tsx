@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Check, FileText, Zap, ArrowUpRight } from "lucide-react"
 
@@ -8,6 +9,40 @@ interface LandingPageProps {
 }
 
 export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
+  const [displayedText, setDisplayedText] = useState("")
+  const [showCursor, setShowCursor] = useState(true)
+  const fullText = "1분 1초가 소중한"
+  
+  useEffect(() => {
+    const typewriterLoop = () => {
+      let currentIndex = 0
+      setDisplayedText("")
+      setShowCursor(true)
+      
+      const typingInterval = setInterval(() => {
+        if (currentIndex <= fullText.length) {
+          setDisplayedText(fullText.slice(0, currentIndex))
+          currentIndex++
+        } else {
+          clearInterval(typingInterval)
+          setShowCursor(false)
+          
+          // Wait 3 seconds then restart
+          setTimeout(() => {
+            typewriterLoop()
+          }, 3000)
+        }
+      }, 100) // 100ms per character
+      
+      return typingInterval
+    }
+    
+    const initialInterval = typewriterLoop()
+    
+    return () => {
+      if (initialInterval) clearInterval(initialInterval)
+    }
+  }, [])
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section - Clean and Minimal */}
@@ -26,7 +61,10 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
               
               <div className="space-y-4">
                 <h1 className="text-5xl lg:text-6xl font-bold tracking-tight text-slate-900">
-                  1분 1초가 소중한
+                  <span className="inline-block min-h-[1.2em]">
+                    {displayedText}
+                    {showCursor && <span className="animate-pulse">|</span>}
+                  </span>
                   <span className="block text-slate-900">
                     응급외과의 시간
                   </span>
