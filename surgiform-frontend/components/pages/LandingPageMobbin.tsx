@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Check, FileText, Zap, ArrowUpRight } from "lucide-react"
 
@@ -12,6 +12,8 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
   const [displayedText, setDisplayedText] = useState("")
   const [showCursor, setShowCursor] = useState(true)
   const fullText = "1분 1초가 소중한"
+  const button1Ref = useRef<HTMLButtonElement>(null)
+  const button2Ref = useRef<HTMLButtonElement>(null)
   
   useEffect(() => {
     const typewriterLoop = () => {
@@ -41,6 +43,41 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
     
     return () => {
       if (initialInterval) clearInterval(initialInterval)
+    }
+  }, [])
+  
+  // Magnet effect for buttons
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const applyMagnetEffect = (button: HTMLButtonElement | null) => {
+        if (!button) return
+        
+        const rect = button.getBoundingClientRect()
+        const buttonCenterX = rect.left + rect.width / 2
+        const buttonCenterY = rect.top + rect.height / 2
+        
+        const distance = Math.sqrt(
+          Math.pow(e.clientX - buttonCenterX, 2) + 
+          Math.pow(e.clientY - buttonCenterY, 2)
+        )
+        
+        // Exponential decay for smooth effect at any distance
+        const strength = Math.exp(-distance / 300)
+        const moveX = (e.clientX - buttonCenterX) * strength * 0.08
+        const moveY = (e.clientY - buttonCenterY) * strength * 0.08
+        
+        button.style.transform = `translate(${moveX}px, ${moveY}px)`
+        button.style.transition = 'transform 0.1s ease-out'
+      }
+      
+      applyMagnetEffect(button1Ref.current)
+      applyMagnetEffect(button2Ref.current)
+    }
+    
+    window.addEventListener('mousemove', handleMouseMove)
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
     }
   }, [])
   return (
@@ -78,6 +115,7 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
               
               <div className="flex items-center gap-4">
                 <Button 
+                  ref={button1Ref}
                   onClick={onComplete} 
                   className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-6 text-base font-medium rounded-lg group"
                 >
@@ -340,6 +378,7 @@ export default function LandingPageMobbin({ onComplete }: LandingPageProps) {
               응급외과 의료진을 위한 최고의 수술동의서 솔루션을 경험해보세요
             </p>
             <Button 
+              ref={button2Ref}
               onClick={onComplete}
               className="bg-slate-900 text-white hover:bg-slate-800 px-10 py-6 text-lg font-medium rounded-lg"
             >
