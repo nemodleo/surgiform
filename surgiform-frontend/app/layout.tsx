@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "SurgiForm - AI 기반 수술 동의서 생성 시스템",
   description: "빠르고 정확하게 수술 동의서를 작성하는 인공지능 기반 의료 문서 지원 시스템",
+  icons: {
+    icon: '/surgiform-icon.png',
+    shortcut: '/surgiform-icon.png',
+    apple: '/surgiform-icon.png',
+  },
 };
 
 import { Toaster } from 'react-hot-toast';
