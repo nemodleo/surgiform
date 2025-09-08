@@ -1,5 +1,5 @@
 import React from 'react'
-import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, pdf, Font, Image } from '@react-pdf/renderer'
+import { Document, Page, Text, View, StyleSheet, pdf, Font, Image } from '@react-pdf/renderer'
 
 // Register Korean font - we'll use a web font service
 Font.register({
@@ -134,8 +134,53 @@ const styles = StyleSheet.create({
   },
 })
 
+interface FormData {
+  registration_number?: string
+  patient_name?: string
+  patient_age?: string
+  patient_gender?: string
+  surgery_date?: string
+  diagnosis?: string
+  diagnosis_detail?: string
+  surgery_site?: string
+  surgery_site_detail?: string
+  other_conditions?: string
+  medical_team?: Array<{
+    name: string
+    department: string
+    is_specialist: boolean
+  }>
+}
+
+interface ConsentItem {
+  item_title?: string
+  category?: string
+  description?: string
+}
+
+interface ConsentData {
+  consents?: ConsentItem[]
+}
+
+interface DrawingItem {
+  title?: string
+  imageData?: string
+}
+
+interface SignatureData {
+  patient?: string
+  doctor?: string
+  canvases?: DrawingItem[]
+}
+
+interface PDFProps {
+  formData: FormData
+  consentData: ConsentData
+  signatureData: SignatureData
+}
+
 // PDF Document Component
-const SurgicalConsentPDF = ({ formData, consentData, signatureData }: any) => {
+const SurgicalConsentPDF = ({ formData, consentData, signatureData }: PDFProps) => {
   // Parse canvas drawings if they exist
   const canvasDrawings = signatureData?.canvases || []
   
@@ -194,7 +239,7 @@ const SurgicalConsentPDF = ({ formData, consentData, signatureData }: any) => {
           <View style={styles.divider} />
           
           <View style={styles.table}>
-            {formData.medical_team.map((member: any, index: number) => (
+            {formData.medical_team.map((member, index: number) => (
               <View key={index} style={styles.tableRow}>
                 <Text style={styles.tableCell}>
                   {index + 1}. {member.name} - {member.department} ({member.is_specialist ? '전문의' : '일반의'})
@@ -211,10 +256,10 @@ const SurgicalConsentPDF = ({ formData, consentData, signatureData }: any) => {
           <Text style={styles.sectionTitle}>수술 동의 내용</Text>
           <View style={styles.divider} />
           
-          {consentData.consents.map((consent: any, index: number) => {
+          {consentData.consents.map((consent, index: number) => {
             // Find drawings related to this consent item
-            const relatedDrawings = canvasDrawings.filter((drawing: any) => 
-              drawing.title && drawing.title.includes(consent.item_title || consent.category)
+            const relatedDrawings = canvasDrawings.filter((drawing) => 
+              drawing.title && drawing.title.includes(consent.item_title || consent.category || '')
             )
             
             return (
@@ -227,7 +272,7 @@ const SurgicalConsentPDF = ({ formData, consentData, signatureData }: any) => {
                 </Text>
                 
                 {/* Add related drawings */}
-                {relatedDrawings.map((drawing: any, drawIndex: number) => (
+                {relatedDrawings.map((drawing, drawIndex: number) => (
                   drawing.imageData && (
                     <View key={drawIndex} style={{ marginTop: 10 }}>
                       <Text style={styles.drawingLabel}>
@@ -258,13 +303,13 @@ const SurgicalConsentPDF = ({ formData, consentData, signatureData }: any) => {
       {/* Additional Drawings not related to specific sections */}
       {canvasDrawings.length > 0 && (
         <View style={styles.section}>
-          {canvasDrawings.filter((d: any) => {
+          {canvasDrawings.filter((d) => {
             // Show only drawings that weren't already shown with consent items
-            const isRelatedToConsent = consentData?.consents?.some((consent: any) => 
-              d.title && d.title.includes(consent.item_title || consent.category)
+            const isRelatedToConsent = consentData?.consents?.some((consent) => 
+              d.title && d.title.includes(consent.item_title || consent.category || '')
             )
             return !isRelatedToConsent && d.imageData
-          }).map((drawing: any, index: number) => (
+          }).map((drawing, index: number) => (
             <View key={index} style={{ marginBottom: 15 }}>
               <Text style={{ fontSize: 11, fontWeight: 700, marginBottom: 5, color: '#333333' }}>
                 {drawing.title || `추가 설명 그림 ${index + 1}`}
@@ -319,7 +364,7 @@ const SurgicalConsentPDF = ({ formData, consentData, signatureData }: any) => {
 }
 
 // Export function to generate PDF blob
-export const generateKoreanPDF = async (formData: any, consentData: any, signatureData: any) => {
+export const generateKoreanPDF = async (formData: FormData, consentData: ConsentData, signatureData: SignatureData) => {
   try {
     const doc = <SurgicalConsentPDF formData={formData} consentData={consentData} signatureData={signatureData} />
     const asPdf = pdf()

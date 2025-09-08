@@ -2,15 +2,31 @@
 
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { RotateCcw, Check, Plus, ChevronLeft, ChevronRight, X } from "lucide-react"
 import SignatureCanvas from "react-signature-canvas"
+
+interface ConsentItem {
+  item_title: string
+  description: string
+}
+
+interface ConsentData {
+  consents: ConsentItem[]
+}
+
+interface FormData {
+  patient_name: string
+  patient_age: string
+  patient_gender: string
+  surgery_name?: string
+  participants?: { name: string }[]
+}
 
 interface ConfirmationPageProps {
   onComplete: () => void
   onBack?: () => void
-  formData: any
-  consentData: any
+  formData: FormData
+  consentData: ConsentData
 }
 
 interface CanvasData {
@@ -136,7 +152,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
             <div className="p-6">
               <h3 className="text-base font-semibold text-slate-900 mb-6">수술 동의 내용</h3>
               <div className="space-y-4">
-                {consentData.consents.map((consent: any, index: number) => (
+                {consentData.consents.map((consent: ConsentItem, index: number) => (
                   <div key={index} className="p-4 bg-slate-50 rounded-lg">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="font-medium text-slate-900">{consent.item_title}</h4>

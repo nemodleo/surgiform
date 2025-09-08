@@ -1,14 +1,28 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Download, FileText, Loader2, Check, Home, ChevronLeft } from "lucide-react"
 import { generateKoreanPDF } from "@/lib/koreanPdfGenerator"
 
+interface FormData {
+  patient_name?: string
+  surgery_name?: string
+  [key: string]: unknown
+}
+
+interface ConsentData {
+  [key: string]: unknown
+}
+
+interface SignatureData {
+  canvases?: unknown[]
+  [key: string]: unknown
+}
+
 interface PDFGenerationPageProps {
-  formData: any
-  consentData: any
+  formData: FormData
+  consentData: ConsentData
   onHome?: () => void
   onBack?: () => void
 }
@@ -17,8 +31,37 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
   const [generating, setGenerating] = useState(false)
   const [pdfGenerated, setPdfGenerated] = useState(false)
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
-  const [signatureData, setSignatureData] = useState<any>(null)
-  const [showPreview, setShowPreview] = useState(false)
+  const [signatureData, setSignatureData] = useState<SignatureData | null>(null)
+  const [, setShowPreview] = useState(false)
+
+  const generatePDF = useCallback(async () => {
+    setGenerating(true)
+    
+    try {
+      console.log('Generating PDF with data:', {
+        formData,
+        consentData,
+        signatureData
+      })
+      
+      // Use the Korean PDF generator with proper font support
+      const pdfBlob = await generateKoreanPDF(
+        formData,
+        consentData,
+        signatureData as never
+      )
+      const url = URL.createObjectURL(pdfBlob)
+      setPdfUrl(url)
+      setPdfGenerated(true)
+      setShowPreview(true)
+      
+    } catch (error) {
+      console.error('PDF generation error:', error)
+      alert('PDF 생성 중 오류가 발생했습니다.')
+    }
+    
+    setGenerating(false)
+  }, [formData, consentData, signatureData])
 
   useEffect(() => {
     const savedSignatures = localStorage.getItem('signatureData')
@@ -42,36 +85,7 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
     setTimeout(() => {
       generatePDF()
     }, 500)
-  }, [])
-
-  const generatePDF = async () => {
-    setGenerating(true)
-    
-    try {
-      console.log('Generating PDF with data:', {
-        formData,
-        consentData,
-        signatureData
-      })
-      
-      // Use the Korean PDF generator with proper font support
-      const pdfBlob = await generateKoreanPDF(
-        formData,
-        consentData,
-        signatureData
-      )
-      const url = URL.createObjectURL(pdfBlob)
-      setPdfUrl(url)
-      setPdfGenerated(true)
-      setShowPreview(true)
-      
-    } catch (error) {
-      console.error('PDF generation error:', error)
-      alert('PDF 생성 중 오류가 발생했습니다.')
-    }
-    
-    setGenerating(false)
-  }
+  }, [generatePDF])
 
   return (
     <div className="max-w-4xl mx-auto">

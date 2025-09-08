@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { ArrowRight, Clock, CheckCircle, FileText, Shield, Sparkles, TrendingUp, Users, Zap } from "lucide-react"
 
 interface MainPageProps {

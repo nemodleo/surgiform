@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Check, Zap, Shield, Users, Clock } from "lucide-react"
+import { ArrowRight, Check, Zap, Shield, Users } from "lucide-react"
 
 interface MainPageProps {
   onComplete: () => void

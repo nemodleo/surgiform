@@ -2,16 +2,62 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import toast from "react-hot-toast"
 
+interface FormData {
+  patient_name: string
+  patient_id: string
+  patient_age: string
+  patient_gender: string
+  insurance_type: string
+  surgery_part: string
+  surgery_name: string
+  surgery_date: string
+  symptoms: string
+  surgery_objective: string
+  diagnosis1: string
+  diagnosis2: string
+  diagnosis3: string
+  anesthesia_general: boolean
+  anesthesia_spinal: boolean
+  anesthesia_epidural: boolean
+  anesthesia_local: boolean
+  anesthesia_sedation: boolean
+  anesthesia_other: boolean
+  anesthesia1: string
+  anesthesia2: string
+  anesthesia3: string
+  surgeon: string
+  assistant: string
+  anesthesiologist: string
+  nurse: string
+  recovery_nurse: string
+  ward_nurse: string
+  scrub_nurse: string
+  resident: string
+  intern: string
+  other_personnel: string
+  surgeon_check: boolean
+  assistant_check: boolean
+  anesthesiologist_check: boolean
+  nurse_check: boolean
+  recovery_nurse_check: boolean
+  ward_nurse_check: boolean
+  scrub_nurse_check: boolean
+  resident_check: boolean
+  intern_check: boolean
+  gender_analysis: string
+  exclude_limit: boolean
+}
+
 interface BasicInfoPageProps {
-  onComplete: (data: any) => void
-  initialData?: any
+  onComplete: (data: FormData) => void
+  initialData?: Partial<FormData>
 }
 
 export default function BasicInfoPage({ onComplete, initialData }: BasicInfoPageProps) {
@@ -74,7 +120,7 @@ export default function BasicInfoPage({ onComplete, initialData }: BasicInfoPage
     exclude_limit: initialData?.exclude_limit || false,
   })
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 

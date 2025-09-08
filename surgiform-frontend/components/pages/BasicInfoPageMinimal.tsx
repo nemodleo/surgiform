@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -82,7 +82,7 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
   const [completedFields, setCompletedFields] = useState<Set<keyof FormData>>(new Set())
   
   // Refs for auto-focus on error
-  const inputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
+  const inputRefs = useRef<{ [key: string]: HTMLInputElement | HTMLSelectElement | null }>({})
 
   // Auto-format registration number with hyphen (XXXX-XXXX format)
   const formatRegistrationNumber = (value: string) => {
@@ -102,10 +102,10 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
       })
     }, 300)
     return () => clearTimeout(timer)
-  }, [formData])
+  }, [formData, touched])
 
   // Comprehensive validation function
-  const validateField = async (field: keyof FormData, value: any, showLoading = true) => {
+  const validateField = useCallback(async (field: keyof FormData, value: unknown, showLoading = true) => {
     const newErrors = { ...errors }
     let isValid = false
     
@@ -118,12 +118,13 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
     
     switch (field) {
       case 'registration_number':
-        const cleanedNum = value.replace(/[^\d]/g, '')
-        if (!value) {
+        const regValue = value as string
+        const cleanedNum = regValue.replace(/[^\d]/g, '')
+        if (!regValue) {
           newErrors.registration_number = '등록번호를 입력해주세요'
         } else if (cleanedNum.length < 8) {
           newErrors.registration_number = '8자리 숫자를 입력해주세요'
-        } else if (!/^\d{4}-\d{4}$/.test(value)) {
+        } else if (!/^\d{4}-\d{4}$/.test(regValue)) {
           newErrors.registration_number = '올바른 형식이 아닙니다 (XXXX-XXXX)'
         } else {
           delete newErrors.registration_number
@@ -132,11 +133,12 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
         break
         
       case 'patient_name':
-        if (!value) {
+        const nameValue = value as string
+        if (!nameValue) {
           newErrors.patient_name = '환자명을 입력해주세요'
-        } else if (value.length < 2) {
+        } else if (nameValue.length < 2) {
           newErrors.patient_name = '2자 이상 입력해주세요'
-        } else if (!/^[가-힣a-zA-Z\s]+$/.test(value)) {
+        } else if (!/^[가-힣a-zA-Z\s]+$/.test(nameValue)) {
           newErrors.patient_name = '한글 또는 영문만 입력 가능합니다'
         } else {
           delete newErrors.patient_name
@@ -145,8 +147,9 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
         break
         
       case 'patient_age':
-        const age = parseInt(value)
-        if (!value) {
+        const ageValue = value as string
+        const age = parseInt(ageValue)
+        if (!ageValue) {
           newErrors.patient_age = '나이를 입력해주세요'
         } else if (isNaN(age) || age < 0 || age > 150) {
           newErrors.patient_age = '올바른 나이를 입력해주세요 (0-150)'
@@ -157,7 +160,8 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
         break
         
       case 'patient_gender':
-        if (!value) {
+        const genderValue = value as string
+        if (!genderValue) {
           newErrors.patient_gender = '성별을 선택해주세요'
         } else {
           delete newErrors.patient_gender
@@ -166,8 +170,9 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
         break
         
       case 'surgery_date':
-        if (value) {
-          const selectedDate = new Date(value)
+        const dateValue = value as string
+        if (dateValue) {
+          const selectedDate = new Date(dateValue)
           const today = new Date()
           today.setHours(0, 0, 0, 0)
           selectedDate.setHours(0, 0, 0, 0)
@@ -182,16 +187,18 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
         break
         
       case 'diagnosis':
-        if (value && value.length < 2) {
+        const diagnosisValue = value as string
+        if (diagnosisValue && diagnosisValue.length < 2) {
           newErrors.diagnosis = '2자 이상 입력해주세요'
-        } else if (value) {
+        } else if (diagnosisValue) {
           delete newErrors.diagnosis
           isValid = true
         }
         break
         
       case 'surgery_site':
-        if (value) {
+        const siteValue = value as string
+        if (siteValue) {
           delete newErrors.surgery_site
           isValid = true
         }
@@ -211,9 +218,9 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
         return newSet
       })
     }
-  }
+  }, [errors, isValidating])
 
-  const handleFieldChange = async (field: keyof FormData, value: any) => {
+  const handleFieldChange = async (field: keyof FormData, value: string) => {
     let processedValue = value
     
     // Apply formatting based on field type
@@ -333,7 +340,7 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
     })
   }
 
-  const updateMedicalTeamMember = (index: number, field: keyof MedicalTeamMember, value: any) => {
+  const updateMedicalTeamMember = (index: number, field: keyof MedicalTeamMember, value: string | boolean) => {
     const updatedTeam = [...formData.medical_team]
     updatedTeam[index] = { ...updatedTeam[index], [field]: value }
     setFormData({ ...formData, medical_team: updatedTeam })
@@ -446,7 +453,7 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
                     />
                   </div>
                   <select 
-                    ref={el => { inputRefs.current['patient_gender'] = el as any; }}
+                    ref={el => { inputRefs.current['patient_gender'] = el; }}
                     className={`${getInputStyle('patient_gender')} px-3 rounded-md text-sm flex-1 cursor-pointer`}
                     value={formData.patient_gender}
                     onChange={(e) => handleFieldChange('patient_gender', e.target.value)}

@@ -23,10 +23,16 @@ interface ConsentData {
   }>
 }
 
+interface SignatureData {
+  patient?: string
+  doctor?: string
+  [key: string]: unknown
+}
+
 export async function generateHighQualityPDF(
   formData: PatientData,
   consentData: ConsentData,
-  signatureData?: any
+  signatureData?: SignatureData
 ): Promise<Blob> {
   // Create a new PDF document
   const pdfDoc = await PDFDocument.create()
@@ -47,8 +53,8 @@ export async function generateHighQualityPDF(
     y: number,
     options?: {
       size?: number
-      font?: any
-      color?: any
+      font?: typeof font
+      color?: ReturnType<typeof rgb>
     }
   ) => {
     page.drawText(text, {
@@ -254,5 +260,5 @@ export async function generateHighQualityPDF(
   
   // Save the PDF and return as blob
   const pdfBytes = await pdfDoc.save()
-  return new Blob([pdfBytes], { type: 'application/pdf' })
+  return new Blob([pdfBytes as unknown as BlobPart], { type: 'application/pdf' })
 }

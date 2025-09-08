@@ -1,23 +1,48 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, AlertCircle, RefreshCw, WifiOff, X, ChevronLeft, ChevronRight } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Loader2, RefreshCw, WifiOff, X, ChevronLeft, ChevronRight } from "lucide-react"
 import { surgiformAPI } from "@/lib/api"
 import toast from "react-hot-toast"
 
+interface FormData {
+  patient_name?: string
+  patient_age?: string
+  patient_gender?: string
+  surgery_name?: string
+  symptoms?: string
+  surgery_objective?: string
+  diagnosis_codes?: string
+  anesthesia_codes?: string
+  special_conditions?: string
+  participants?: unknown[]
+  [key: string]: unknown
+}
+
+interface ConsentItem {
+  category?: string
+  description?: string
+  item_title?: string
+}
+
+interface ConsentData {
+  consents?: ConsentItem[]
+  [key: string]: unknown
+}
+
 interface SurgeryInfoPageProps {
-  onComplete: (data: any) => void
+  onComplete: (data: ConsentData) => void
   onBack?: () => void
-  formData: any
-  initialData?: any
+  formData: FormData
+  initialData?: ConsentData
 }
 
 export default function SurgeryInfoPage({ onComplete, onBack, formData, initialData }: SurgeryInfoPageProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [consentData, setConsentData] = useState<any>(initialData || null)
+  const [consentData, setConsentData] = useState<ConsentData | null>(initialData || null)
   const [textareaValues, setTextareaValues] = useState({
     general_info: "",
     surgical_site: "",
@@ -31,34 +56,28 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   const [showChat, setShowChat] = useState(false)
   const [chatMessage, setChatMessage] = useState("")
 
-  useEffect(() => {
-    if (!consentData && formData) {
-      generateConsent()
-    }
-  }, [formData])
-
-  const generateConsent = async () => {
+  const generateConsent = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
       const response = await surgiformAPI.generateConsent({
-        patient_name: formData.patient_name,
-        patient_age: formData.patient_age,
-        patient_gender: formData.patient_gender,
-        surgery_name: formData.surgery_name,
-        symptoms: formData.symptoms,
-        surgery_objective: formData.surgery_objective,
+        patient_name: formData.patient_name || '',
+        patient_age: parseInt(formData.patient_age || '0'),
+        patient_gender: (formData.patient_gender === '여' ? 'FEMALE' : 'MALE') as 'MALE' | 'FEMALE',
+        surgery_name: formData.surgery_name || '',
+        symptoms: formData.symptoms || '',
+        surgery_objective: formData.surgery_objective || '',
         diagnosis_codes: formData.diagnosis_codes ? [formData.diagnosis_codes] : undefined,
         anesthesia_codes: formData.anesthesia_codes ? [formData.anesthesia_codes] : undefined,
-        special_conditions: formData.special_conditions,
-        participants: formData.participants
+        special_conditions: undefined,
+        participants: formData.participants as Array<{ name: string; department: string; role: string }> | undefined
       })
       
-      setConsentData(response.data)
+      setConsentData(response.data as unknown as ConsentData)
       // Populate textareas with generated content
       if (response.data?.consents) {
-        const newValues: any = {}
-        response.data.consents.forEach((consent: any) => {
+        const newValues: Record<string, string> = {}
+        response.data.consents.forEach((consent: ConsentItem) => {
           if (consent.category === "수술 정보") {
             newValues.general_info = consent.description || ""
           } else if (consent.category === "수술 부위") {
@@ -73,29 +92,36 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             newValues.postop_course = consent.description || ""
           }
         })
-        setTextareaValues(newValues)
+        setTextareaValues(prev => ({ ...prev, ...newValues }))
       }
       toast.success('수술 정보가 성공적으로 생성되었습니다')
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { code?: string; response?: { status?: number; data?: { message?: string } } }
       console.error("Error generating consent:", error)
       
       let errorMessage = "수술 동의서 생성 중 오류가 발생했습니다."
       
-      if (error.code === 'ERR_NETWORK') {
+      if (err.code === 'ERR_NETWORK') {
         errorMessage = "네트워크 연결 오류: API 서버가 실행 중인지 확인해주세요."
-      } else if (error.response?.status === 404) {
+      } else if (err.response?.status === 404) {
         errorMessage = "API 엔드포인트를 찾을 수 없습니다."
-      } else if (error.response?.status === 500) {
+      } else if (err.response?.status === 500) {
         errorMessage = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message
       }
       
       setError(errorMessage)
       toast.error(errorMessage)
     }
     setLoading(false)
-  }
+  }, [formData])
+
+  useEffect(() => {
+    if (!consentData && formData) {
+      generateConsent()
+    }
+  }, [consentData, formData, generateConsent])
 
   const handleTextareaChange = (field: string, value: string) => {
     setTextareaValues(prev => ({ ...prev, [field]: value }))
@@ -150,7 +176,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                   consents: []
                 }
                 setConsentData(dummyData)
-                toast.info('테스트 모드로 진행합니다')
+                toast.success('테스트 모드로 진행합니다')
               }}
             >
               <X className="h-4 w-4" />
@@ -180,7 +206,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                     }
                     setConsentData(dummyData)
                     setError(null)
-                    toast.info('테스트 모드로 진행합니다')
+                    toast.success('테스트 모드로 진행합니다')
                   }}
                 >
                   테스트 모드로 진행

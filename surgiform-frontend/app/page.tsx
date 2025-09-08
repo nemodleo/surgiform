@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { StepperMinimal } from "@/components/ui/stepper-minimal"
-import { Button } from "@/components/ui/button"
 import LandingPageMobbin from "@/components/pages/LandingPageMobbin"
 import BasicInfoPageMinimal from "@/components/pages/BasicInfoPageMinimal"
 import SurgeryInfoPage from "@/components/pages/SurgeryInfoPage"
@@ -20,11 +19,11 @@ const STEP_LABELS = [
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<'home' | 'form' | 'mypage' | 'settings'>('home')
   const [currentStep, setCurrentStep] = useState(0)
-  const [formData, setFormData] = useState<any>({})
-  const [consentData, setConsentData] = useState<any>(null)
+  const [formData, setFormData] = useState<Record<string, unknown>>({})
+  const [consentData, setConsentData] = useState<Record<string, unknown> | null>(null)
 
   const handleNavigate = (page: string) => {
-    setCurrentPage(page as any)
+    setCurrentPage(page as 'home' | 'form' | 'mypage' | 'settings')
     if (page === 'home') {
       setCurrentStep(0)
       setFormData({})
@@ -37,12 +36,6 @@ export default function Home() {
     setCurrentStep(0)
   }
 
-  const handleStepComplete = (data: any) => {
-    setFormData((prev: any) => ({ ...prev, ...data }))
-    if (currentStep < STEP_LABELS.length - 1) {
-      setCurrentStep(currentStep + 1)
-    }
-  }
 
   const handleStepClick = (step: number) => {
     setCurrentStep(step)
@@ -76,7 +69,7 @@ export default function Home() {
           {currentStep === 0 && (
             <BasicInfoPageMinimal 
               onComplete={(data) => {
-                setFormData(data)
+                setFormData(data as unknown as Record<string, unknown>)
                 setCurrentStep(1)
               }}
               initialData={formData}
@@ -91,7 +84,7 @@ export default function Home() {
               }}
               onBack={() => setCurrentStep(0)}
               formData={formData}
-              initialData={consentData}
+              initialData={consentData as Record<string, unknown> | undefined}
             />
           )}
           
@@ -99,15 +92,15 @@ export default function Home() {
             <ConfirmationPage
               onComplete={() => setCurrentStep(3)}
               onBack={() => setCurrentStep(1)}
-              formData={formData}
-              consentData={consentData}
+              formData={formData as never}
+              consentData={consentData as never}
             />
           )}
           
           {currentStep === 3 && (
             <PDFGenerationPage
-              formData={formData}
-              consentData={consentData}
+              formData={formData as never}
+              consentData={consentData as never}
               onHome={handleGoHome}
               onBack={() => setCurrentStep(2)}
             />

@@ -6,8 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 
+interface PossumScore {
+  physiological_score: number
+  surgery_score: number
+  mortality_risk: number
+  morbidity_risk: number
+}
+
 interface PossumCalculatorProps {
-  onComplete: (score: any) => void
+  onComplete: (score: PossumScore) => void
   onCancel: () => void
 }
 

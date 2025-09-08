@@ -50,18 +50,34 @@ export interface ConsentGenerateOut {
   }>;
 }
 
+interface ConsentItem {
+  category: string;
+  item_title: string;
+  description: string;
+}
+
+interface ReferenceItem {
+  category: string;
+  title: string;
+  content: string;
+  references: Array<{
+    title: string;
+    url: string;
+  }>;
+}
+
 export interface ChatMessage {
   message: string;
   conversation_id?: string;
-  consents?: any[];
-  references?: any[];
+  consents?: ConsentItem[];
+  references?: ReferenceItem[];
 }
 
 export interface ChatResponse {
   answer: string;
   conversation_id: string;
   is_content_modified: boolean;
-  response?: any;
+  response?: Record<string, unknown>;
 }
 
 export const surgiformAPI = {
