@@ -67,17 +67,27 @@ interface ReferenceItem {
 }
 
 export interface ChatMessage {
+  role: "user" | "assistant" | "system";
+  content: string;
+  timestamp?: Date;
+}
+
+export interface ChatRequest {
   message: string;
   conversation_id?: string;
+  history?: ChatMessage[];
+  system_prompt?: string;
   consents?: ConsentItem[];
   references?: ReferenceItem[];
 }
 
 export interface ChatResponse {
-  answer: string;
+  message: string;
   conversation_id: string;
+  history: ChatMessage[];
+  updated_consents?: ConsentItem[];
+  updated_references?: ReferenceItem[];
   is_content_modified: boolean;
-  response?: Record<string, unknown>;
 }
 
 export const surgiformAPI = {
@@ -93,12 +103,18 @@ export const surgiformAPI = {
     api.post('/transform', data),
 
   // Chat APIs
-  createChatSession: (systemPrompt: string) =>
+  createChatSession: (systemPrompt?: string) =>
     api.post('/chat/session', { system_prompt: systemPrompt }),
 
-  sendChatMessage: (data: ChatMessage) =>
+  sendChatMessage: (data: ChatRequest) =>
     api.post<ChatResponse>('/chat', data),
+
+  getChatHistory: (conversationId: string) =>
+    api.get<ChatMessage[]>(`/chat/${conversationId}/history`),
 
   getChatSessions: () =>
     api.get('/chat/sessions'),
+
+  deleteChatSession: (conversationId: string) =>
+    api.delete(`/chat/${conversationId}`),
 };

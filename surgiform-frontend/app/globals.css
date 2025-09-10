@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom scrollbar styles */
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .scrollbar-thumb-gray-600::-webkit-scrollbar-thumb {
+    background-color: #4B5563;
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thumb-gray-600::-webkit-scrollbar-thumb:hover {
+    background-color: #6B7280;
+  }
+  
+  .scrollbar-track-gray-800::-webkit-scrollbar-track {
+    background-color: #1F2937;
+    border-radius: 3px;
+  }
+}
+
 @layer base {
   :root {
     /* Mobbin-inspired neutral color scheme */

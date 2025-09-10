@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, RefreshCw, WifiOff, X, ChevronLeft, ChevronRight } from "lucide-react"
-import { surgiformAPI } from "@/lib/api"
+import { Loader2, RefreshCw, WifiOff, X, ChevronLeft, ChevronRight, Bot, Sparkles } from "lucide-react"
+import { surgiformAPI, ChatMessage, ChatRequest } from "@/lib/api"
+import { ChatUI } from "@/components/ui/chat"
 import toast from "react-hot-toast"
 
 interface FormData {
@@ -54,7 +55,8 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   })
   
   const [showChat, setShowChat] = useState(false)
-  const [chatMessage, setChatMessage] = useState("")
+  const [conversationId, setConversationId] = useState<string | undefined>()
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
 
   const generateConsent = useCallback(async () => {
     setLoading(true)
@@ -125,6 +127,77 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
 
   const handleTextareaChange = (field: string, value: string) => {
     setTextareaValues(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleSendChatMessage = async (message: string, history: ChatMessage[]) => {
+    try {
+      const currentConsents = [
+        { category: "수술 정보", item_title: "일반 정보", description: textareaValues.general_info },
+        { category: "수술 부위", item_title: "수술 부위", description: textareaValues.surgical_site },
+        { category: "수술 방법", item_title: "수술 방법", description: textareaValues.surgical_method },
+        { category: "수술 목적", item_title: "수술 목적", description: textareaValues.purpose },
+        { category: "합병증", item_title: "수술 관련 합병증", description: textareaValues.complications },
+        { category: "수술 후 경과", item_title: "수술 후 경과", description: textareaValues.postop_course },
+        { category: "기타", item_title: "기타 사항", description: textareaValues.others }
+      ]
+
+      const chatRequest: ChatRequest = {
+        message,
+        conversation_id: conversationId,
+        history,
+        consents: currentConsents,
+        system_prompt: `당신의 이름은 '이음'입니다. 의료진과 환자를 신뢰와 책임으로 이어주는 AI 도우미입니다.
+        당신은 수술 동의서 작성을 도와주는 의료 AI 어시스턴트입니다. 
+        환자 정보: ${formData.patient_name}, ${formData.patient_age}세, ${formData.patient_gender}
+        수술명: ${formData.surgery_name}
+        증상: ${formData.symptoms}
+        수술 목적: ${formData.surgery_objective}
+        
+        사용자의 질문에 정확하고 친절하게 답변하며, 필요시 수술 정보를 수정하는 데 도움을 주세요.`
+      }
+
+      const response = await surgiformAPI.sendChatMessage(chatRequest)
+      
+      // Update conversation ID if new
+      if (!conversationId && response.data.conversation_id) {
+        setConversationId(response.data.conversation_id)
+      }
+      
+      // Update messages state
+      setChatMessages(response.data.history || [...messages, userMessage, { role: "assistant", content: response.data.message, timestamp: new Date() }])
+
+      // Update consents if modified
+      if (response.data.is_content_modified && response.data.updated_consents) {
+        const updatedConsents = response.data.updated_consents
+        const newValues: Record<string, string> = {}
+        
+        updatedConsents.forEach((consent) => {
+          if (consent.category === "수술 정보") {
+            newValues.general_info = consent.description || ""
+          } else if (consent.category === "수술 부위") {
+            newValues.surgical_site = consent.description || ""
+          } else if (consent.category === "수술 방법") {
+            newValues.surgical_method = consent.description || ""
+          } else if (consent.category === "수술 목적") {
+            newValues.purpose = consent.description || ""
+          } else if (consent.category === "합병증") {
+            newValues.complications = consent.description || ""
+          } else if (consent.category === "수술 후 경과") {
+            newValues.postop_course = consent.description || ""
+          } else if (consent.category === "기타") {
+            newValues.others = consent.description || ""
+          }
+        })
+        
+        setTextareaValues(prev => ({ ...prev, ...newValues }))
+        toast.success('수술 정보가 AI의 제안에 따라 업데이트되었습니다')
+      }
+
+      return response.data
+    } catch (error) {
+      console.error("Error sending chat message:", error)
+      throw error
+    }
   }
 
   const handleComplete = () => {
@@ -323,45 +396,55 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
           </div>
         </div>
 
-          {/* 챗봇 아이콘 */}
+          {/* Chat UI */}
           {showChat && (
-            <div className="fixed bottom-20 right-8 w-80 h-96 bg-white border border-gray-300 rounded-lg shadow-lg p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold">AI 어시스턴트</h3>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowChat(false)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="h-64 overflow-y-auto mb-4 border border-gray-200 rounded p-2">
-                <p className="text-sm text-gray-500">수술 정보에 대해 궁금한 점을 물어보세요.</p>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-green-dark"
-                  placeholder="메시지를 입력하세요..."
-                  value={chatMessage}
-                  onChange={(e) => setChatMessage(e.target.value)}
-                />
-                <Button size="sm" className="bg-green-dark hover:bg-green-darker text-white">
-                  전송
-                </Button>
-              </div>
+            <div className="fixed bottom-8 right-8 z-50">
+              <ChatUI
+                onClose={() => {
+                  setShowChat(false)
+                  setConversationId(undefined) // Clear conversation on close
+                  setChatMessages([]) // Clear messages on close
+                }}
+                onMinimize={(messages) => {
+                  setChatMessages(messages) // Save messages before hiding
+                  setShowChat(false)
+                }} // Save and hide, keep conversation
+                onSendMessage={handleSendChatMessage}
+                conversationId={conversationId}
+                initialMessages={chatMessages} // Pass saved messages
+                title="이음"
+                placeholder="수술 정보에 대해 궁금한 점을 물어보세요..."
+              />
             </div>
           )}
           
-          <button
-            onClick={() => setShowChat(!showChat)}
-            className="fixed bottom-8 right-8 w-14 h-14 bg-green-dark text-white rounded-full shadow-lg hover:bg-green-darker transition-colors flex items-center justify-center"
-          >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </button>
+          {/* Chat Button with Animation - Hide when chat is open */}
+          {!showChat && (
+            <div className="fixed bottom-8 right-8 z-40">
+              {/* Pulsing background effect */}
+              <div className="absolute inset-0 w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse opacity-75" />
+              
+              {/* Main button */}
+              <button
+                onClick={() => setShowChat(true)}
+                className="relative w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 flex items-center justify-center group overflow-hidden"
+              >
+                {/* Sparkle effect */}
+                <Sparkles className="absolute top-1 right-1 h-4 w-4 text-yellow-300 animate-pulse" />
+                
+                {/* AI Bot Icon */}
+                <Bot className="h-8 w-8 z-10 group-hover:scale-110 transition-transform" />
+                
+                {/* Rotating gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent rotate-45 translate-x-12 group-hover:translate-x-[-12rem] transition-transform duration-700" />
+              </button>
+              
+              {/* "이음" label */}
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                이음 - 의료진과 환자를 잇는 AI
+              </div>
+            </div>
+          )}
       </div>
 
       {/* Navigation buttons */}
