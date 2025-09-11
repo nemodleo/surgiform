@@ -90,14 +90,30 @@ export const generateSimplePDF = async (
   // Add consent items
   if (consentData?.consents) {
     consentData.consents.forEach((item, index) => {
+      // Debug log to check original data
+      console.log(`Item ${index + 1} description:`, item.description)
+      console.log(`Has line breaks: ${item.description?.includes('\n')}`)
+      console.log(`Has tabs: ${item.description?.includes('\t')}`)
+      
+      // Preserve original formatting including line breaks and tabs
+      // Convert line breaks to <br> tags for HTML rendering
+      const description = (item.description || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
+        .replace(/\n/g, '<br>')
+        .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;')
+      
       html += `
         <div style="margin: 15px 0; padding: 10px; background: #f5f5f5; border-radius: 5px;">
           <h3 style="font-size: 16px; margin-bottom: 8px; color: #333;">
             ${index + 1}. ${item.category || item.item_title || ''}
           </h3>
-          <p style="margin: 5px 0; padding-left: 20px; line-height: 1.6;">
-            ${item.description || ''}
-          </p>
+          <div style="margin: 5px 0; padding-left: 20px; line-height: 1.6; font-family: 'Malgun Gothic', Arial, sans-serif;">
+            ${description}
+          </div>
         </div>
       `
     })

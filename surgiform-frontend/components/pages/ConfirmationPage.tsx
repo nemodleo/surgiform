@@ -408,7 +408,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                         그림 추가
                       </Button>
                     </div>
-                    <p className="text-sm text-slate-600">{consent.description}</p>
+                    <p className="text-sm text-slate-600 whitespace-pre-wrap">{consent.description}</p>
                     
                     {canvases.filter(c => c.title.includes(consent.item_title)).map(canvas => (
                       <div key={canvas.id} className="mt-3 p-3 bg-white rounded-md border border-slate-200">
