@@ -36,8 +36,38 @@ interface CanvasData {
 }
 
 export default function ConfirmationPage({ onComplete, onBack, formData, consentData }: ConfirmationPageProps) {
-  const [signatures, setSignatures] = useState<Record<string, string>>({})
-  const [canvases, setCanvases] = useState<CanvasData[]>([])
+  const [signatures, setSignatures] = useState<Record<string, string>>(() => {
+    // Try to restore signatures from sessionStorage on initial load
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('confirmationSignatures')
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved)
+          console.log('🖋️ Restored signatures from sessionStorage on init:', Object.keys(parsed))
+          return parsed
+        } catch (e) {
+          console.error('Failed to parse saved signatures:', e)
+        }
+      }
+    }
+    return {}
+  })
+  const [canvases, setCanvases] = useState<CanvasData[]>(() => {
+    // Try to restore canvases from sessionStorage on initial load
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('confirmationCanvases')
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved)
+          console.log('🎨 Restored canvases from sessionStorage on init:', parsed.length, 'canvases')
+          return parsed
+        } catch (e) {
+          console.error('Failed to parse saved canvases:', e)
+        }
+      }
+    }
+    return []
+  })
   const signatureRefs = useRef<Record<string, SignatureCanvas>>({})
   const restoredCanvases = useRef<Set<string>>(new Set())
   const pendingRestores = useRef<Record<string, string>>({})
@@ -124,36 +154,16 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     const allKeys = Object.keys(sessionStorage)
     console.log('📦 All sessionStorage keys:', allKeys)
     
-    // Load signature data from sessionStorage (consent flow specific)
-    const savedSignatures = sessionStorage.getItem('confirmationSignatures')
-    console.log('🖋️ confirmationSignatures in sessionStorage:', savedSignatures ? 'Found' : 'Not found')
-    if (savedSignatures) {
-      try {
-        const parsed = JSON.parse(savedSignatures)
-        setSignatures(parsed)
-        console.log('✅ Loaded signatures from sessionStorage:', Object.keys(parsed))
-      } catch (e) {
-        console.error('❌ Error loading signatures:', e)
-      }
-    }
+    // Signature data is now loaded in the state initializer
+    // Just log what we have
+    console.log('🖋️ Current signatures on mount:', Object.keys(signatures))
 
-    // Load canvas data from sessionStorage
-    const savedCanvases = sessionStorage.getItem('confirmationCanvases')
-    console.log('🎨 confirmationCanvases in sessionStorage:', savedCanvases ? `Found (${savedCanvases.length} chars)` : 'Not found')
-    if (savedCanvases) {
-      try {
-        const parsed = JSON.parse(savedCanvases)
-        setCanvases(parsed)
-        console.log('✅ Loaded canvases from sessionStorage:', parsed.length, 'canvases')
-        parsed.forEach((c: CanvasData, index: number) => {
-          console.log(`📋 Canvas ${index + 1}: id=${c.id}, title="${c.title}", hasData=${!!c.imageData}, dataLength=${c.imageData?.length || 0}`)
-        })
-      } catch (e) {
-        console.error('❌ Error loading canvases:', e)
-      }
-    } else {
-      console.log('⚠️ No canvas data found in sessionStorage')
-    }
+    // Canvas data is now loaded in the state initializer
+    // Just log what we have
+    console.log('🎨 Current canvases on mount:', canvases.length, 'canvases')
+    canvases.forEach((c: CanvasData, index: number) => {
+      console.log(`📋 Canvas ${index + 1}: id=${c.id}, title="${c.title}", hasData=${!!c.imageData}, dataLength=${c.imageData?.length || 0}`)
+    })
   }, [])
 
   // Save signatures whenever they change
@@ -273,6 +283,9 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     setCanvases(prev => {
       const updated = [...prev, newCanvas]
       console.log('➕ New canvas added, total canvases:', updated.length)
+      // Immediately save to sessionStorage
+      sessionStorage.setItem('confirmationCanvases', JSON.stringify(updated))
+      console.log('💾 Saved new canvas to sessionStorage')
       return updated
     })
   }
@@ -291,6 +304,9 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
             canvas.id === canvasId ? { ...canvas, imageData: dataUrl } : canvas
           )
           console.log('💾 Updated canvases state, total canvases:', updated.length)
+          // Immediately save to sessionStorage
+          sessionStorage.setItem('confirmationCanvases', JSON.stringify(updated))
+          console.log('💾 Saved to sessionStorage immediately')
           return updated
         })
       } else {
@@ -452,12 +468,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                         
                         {/* Drawing canvas with auto-save */}
                         <div className="border border-slate-200 rounded bg-white relative">
-                          {canvas.imageData && (
-                            <div className="absolute top-2 right-2 z-10 text-xs text-green-600 bg-green-50 px-2 py-1 rounded flex items-center gap-1">
-                              <Check className="h-3 w-3" />
-                              저장됨
-                            </div>
-                          )}
                           <SignatureCanvas
                             ref={(ref) => {
                               if (ref) {
@@ -477,7 +487,13 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                               className: "w-full",
                               height: 250
                             }}
-                            onEnd={() => handleCanvasEnd(canvas.id)}
+                            onEnd={() => {
+                              console.log(`🎨 onEnd triggered for canvas ${canvas.id}`)
+                              handleCanvasEnd(canvas.id)
+                            }}
+                            onBegin={() => {
+                              console.log(`✏️ Drawing started on canvas ${canvas.id}`)
+                            }}
                           />
                         </div>
                       </div>

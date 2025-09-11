@@ -44,19 +44,35 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [consentData, setConsentData] = useState<ConsentData | null>(initialData || null)
-  const [textareaValues, setTextareaValues] = useState({
-    general_info: "",
-    surgical_site: "",
-    surgical_method: "",
-    purpose: "",
-    complications: "",
-    postop_course: "",
-    others: ""
+  const [textareaValues, setTextareaValues] = useState(() => {
+    // Try to restore saved values from sessionStorage
+    const saved = sessionStorage.getItem('surgeryInfoTextareas')
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch (e) {
+        console.error('Failed to parse saved textarea values:', e)
+      }
+    }
+    return {
+      general_info: "",
+      surgical_site: "",
+      surgical_method: "",
+      purpose: "",
+      complications: "",
+      postop_course: "",
+      others: ""
+    }
   })
   
   const [showChat, setShowChat] = useState(false)
   const [conversationId, setConversationId] = useState<string | undefined>()
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+
+  // Save textarea values to sessionStorage whenever they change
+  useEffect(() => {
+    sessionStorage.setItem('surgeryInfoTextareas', JSON.stringify(textareaValues))
+  }, [textareaValues])
 
   const generateConsent = useCallback(async () => {
     setLoading(true)
@@ -94,7 +110,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             newValues.postop_course = consent.description || ""
           }
         })
-        setTextareaValues(prev => ({ ...prev, ...newValues }))
+        setTextareaValues((prev: typeof textareaValues) => ({ ...prev, ...newValues }))
       }
       toast.success('수술 정보가 성공적으로 생성되었습니다')
     } catch (error: unknown) {
@@ -126,7 +142,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   }, [consentData, formData, generateConsent])
 
   const handleTextareaChange = (field: string, value: string) => {
-    setTextareaValues(prev => ({ ...prev, [field]: value }))
+    setTextareaValues((prev: typeof textareaValues) => ({ ...prev, [field]: value }))
   }
 
   const handleSendChatMessage = async (message: string, history: ChatMessage[]) => {
@@ -189,7 +205,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
           }
         })
         
-        setTextareaValues(prev => ({ ...prev, ...newValues }))
+        setTextareaValues((prev: typeof textareaValues) => ({ ...prev, ...newValues }))
         toast.success('수술 정보가 AI의 제안에 따라 업데이트되었습니다')
       }
 
