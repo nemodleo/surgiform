@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Download, Loader2, Home, ChevronLeft } from "lucide-react"
 // import { generateKoreanPDF } from "@/lib/koreanPdfGenerator"
 // import { generateKoreanPDFWithJsPDF } from "@/lib/jsPdfKoreanGenerator"
-import { generateKoreanPDFFromDOM } from "@/lib/domPdfGenerator"
+// import { generateKoreanPDFFromDOM } from "@/lib/domPdfGenerator"
+import { generateSimplePDF } from "@/lib/simplePdfGenerator"
 
 interface FormData {
   patient_name?: string
@@ -55,7 +56,7 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
       })
       
       // Add timeout for PDF generation using DOM approach
-      const pdfGenerationPromise = generateKoreanPDFFromDOM(
+      const pdfGenerationPromise = generateSimplePDF(
         formData || {},
         consentData || {},
         signatureData || {}
@@ -92,28 +93,36 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
   }
 
   useEffect(() => {
-    const savedSignatures = localStorage.getItem('signatureData')
-    const canvasDrawings = localStorage.getItem('canvasDrawings')
+    // Try sessionStorage first (for consent flow), then localStorage
+    const savedSignatures = sessionStorage.getItem('signatureData') || localStorage.getItem('signatureData')
+    const canvasDrawings = sessionStorage.getItem('canvasDrawings') || localStorage.getItem('canvasDrawings')
     
-    console.log('Loading signature data from localStorage...')
+    console.log('Loading signature data from storage...')
+    console.log('Session signatureData:', sessionStorage.getItem('signatureData'))
+    console.log('Session canvasDrawings:', sessionStorage.getItem('canvasDrawings'))
+    console.log('Local signatureData:', localStorage.getItem('signatureData'))
+    console.log('Local canvasDrawings:', localStorage.getItem('canvasDrawings'))
     
     let finalSignatureData: SignatureData = {}
     
     if (savedSignatures) {
       const sigData = JSON.parse(savedSignatures)
-      console.log('Loaded signature data:', sigData)
-      finalSignatureData = sigData
-      
-      // Include canvas drawings in signature data
-      if (canvasDrawings) {
-        const drawings = JSON.parse(canvasDrawings)
-        console.log('Loaded canvas drawings:', drawings)
-        finalSignatureData.canvases = drawings
-      }
-      
-      setSignatureData(finalSignatureData)
+      console.log('Parsed signature data:', sigData)
+      finalSignatureData = { ...sigData }
     }
     
+    // Include canvas drawings in signature data
+    if (canvasDrawings) {
+      const drawings = JSON.parse(canvasDrawings)
+      console.log('Parsed canvas drawings:', drawings)
+      // If canvases not already in signatureData, add them
+      if (!finalSignatureData.canvases) {
+        finalSignatureData.canvases = drawings
+      }
+    }
+    
+    console.log('Final signature data to use:', finalSignatureData)
+    setSignatureData(finalSignatureData)
     setDataLoaded(true)
   }, [])
 

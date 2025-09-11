@@ -35,14 +35,24 @@ export const generateKoreanPDFFromDOM = async (
   consentData: ConsentData,
   signatureData: SignatureData
 ) => {
-  // Create a hidden div to render the content
+  console.log('=== PDF Generation Debug ===')
+  console.log('FormData:', formData)
+  console.log('ConsentData:', consentData)
+  console.log('SignatureData:', signatureData)
+  console.log('Patient signature exists:', !!signatureData?.patient)
+  console.log('Doctor signature exists:', !!signatureData?.doctor)
+  
+  // Create a div to render the content (visible but behind)
   const container = document.createElement('div')
-  container.style.position = 'absolute'
-  container.style.left = '-9999px'
+  container.style.position = 'fixed'
+  container.style.top = '0'
+  container.style.left = '0'
   container.style.width = '210mm'
   container.style.padding = '20mm'
   container.style.backgroundColor = 'white'
   container.style.fontFamily = '"Noto Sans KR", sans-serif'
+  container.style.zIndex = '-9999'
+  container.style.opacity = '1' // Keep visible for rendering
   document.body.appendChild(container)
 
   // Build HTML content
@@ -59,8 +69,24 @@ export const generateKoreanPDFFromDOM = async (
       .consent-item { margin: 15px 0; }
       .consent-title { font-weight: bold; margin-bottom: 5px; }
       .consent-desc { padding-left: 20px; color: #333; }
-      .signature-section { margin-top: 40px; }
-      .signature-img { max-width: 200px; border: 1px solid #ddd; margin: 10px 0; }
+      .signature-section { 
+        margin-top: 40px; 
+        page-break-inside: avoid;
+      }
+      .signature-img { 
+        max-width: 200px; 
+        max-height: 100px;
+        border: 1px solid #ddd; 
+        margin: 10px 0; 
+        display: block;
+      }
+      .signature-item {
+        margin-bottom: 20px;
+      }
+      .signature-label {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
     </style>
     
     <h1>수술 동의서</h1>
@@ -104,19 +130,19 @@ export const generateKoreanPDFFromDOM = async (
     <div class="signature-section">
       <h2>서명</h2>
       ${signatureData?.patient ? `
-        <div>
-          <div>환자: ${formData.patient_name || '환자'}</div>
-          <img src="${signatureData.patient}" class="signature-img" />
+        <div class="signature-item">
+          <div class="signature-label">환자: ${formData.patient_name || '환자'}</div>
+          <img src="${signatureData.patient}" class="signature-img" alt="Patient signature" />
         </div>
-      ` : ''}
+      ` : '<div class="signature-item"><div class="signature-label">환자 서명: (서명 없음)</div></div>'}
       ${signatureData?.doctor ? `
-        <div>
-          <div>의사: ${formData.medical_team?.[0]?.name || '의사'}</div>
-          <img src="${signatureData.doctor}" class="signature-img" />
+        <div class="signature-item">
+          <div class="signature-label">의사: ${formData.medical_team?.[0]?.name || '의사'}</div>
+          <img src="${signatureData.doctor}" class="signature-img" alt="Doctor signature" />
         </div>
-      ` : ''}
+      ` : '<div class="signature-item"><div class="signature-label">의사 서명: (서명 없음)</div></div>'}
       <div style="margin-top: 20px">
-        작성일: ${new Date().toLocaleDateString('ko-KR')}
+        <strong>작성일:</strong> ${new Date().toLocaleDateString('ko-KR')}
       </div>
     </div>
   `
@@ -125,13 +151,40 @@ export const generateKoreanPDFFromDOM = async (
     // Wait for fonts to load
     await document.fonts.ready
     
+    // Wait a bit for images to load
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+    console.log('Container HTML:', container.innerHTML)
+    console.log('Container dimensions:', {
+      width: container.offsetWidth,
+      height: container.offsetHeight
+    })
+    
     // Convert HTML to canvas
     const canvas = await html2canvas(container, {
       scale: 2,
       useCORS: true,
-      logging: false,
-      backgroundColor: '#ffffff'
+      allowTaint: true,
+      logging: true, // Enable logging to debug
+      backgroundColor: '#ffffff',
+      foreignObjectRendering: false, // Change to false for better compatibility
+      imageTimeout: 15000,
+      onclone: (clonedDoc) => {
+        const clonedContainer = clonedDoc.querySelector('div')
+        if (clonedContainer) {
+          console.log('Cloned container exists')
+        }
+      }
     })
+    
+    console.log('Canvas dimensions:', {
+      width: canvas.width,
+      height: canvas.height
+    })
+    
+    if (canvas.width === 0 || canvas.height === 0) {
+      throw new Error('Canvas is empty - no content rendered')
+    }
     
     // Create PDF from canvas
     const imgWidth = 210
@@ -143,6 +196,7 @@ export const generateKoreanPDFFromDOM = async (
     let position = 0
     
     const imgData = canvas.toDataURL('image/png')
+    console.log('Image data length:', imgData.length)
     
     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
     heightLeft -= pageHeight

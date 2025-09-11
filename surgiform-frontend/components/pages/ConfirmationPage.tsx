@@ -244,10 +244,23 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
   }
 
   const handleSignatureSave = (key: string) => {
+    console.log('handleSignatureSave called for:', key)
     if (signatureRefs.current[key]) {
-      const dataUrl = signatureRefs.current[key].toDataURL()
-      console.log('Saving signature:', key, dataUrl.substring(0, 50) + '...')
-      setSignatures(prev => ({ ...prev, [key]: dataUrl }))
+      if (!signatureRefs.current[key].isEmpty()) {
+        const dataUrl = signatureRefs.current[key].toDataURL()
+        console.log('Saving signature:', key, 'Data URL length:', dataUrl.length)
+        setSignatures(prev => {
+          const updated = { ...prev, [key]: dataUrl }
+          console.log('Updated signatures state:', Object.keys(updated))
+          // Also save to sessionStorage immediately
+          sessionStorage.setItem('tempSignatures', JSON.stringify(updated))
+          return updated
+        })
+      } else {
+        console.log('Signature canvas is empty for:', key)
+      }
+    } else {
+      console.log('Signature ref not found for:', key)
     }
   }
 
@@ -302,6 +315,12 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
   }
 
   const handleComplete = () => {
+    console.log('handleComplete called')
+    console.log('Current signatures:', Object.keys(signatures))
+    console.log('Signatures patient exists:', !!signatures.patient)
+    console.log('Signatures doctor exists:', !!signatures.doctor)
+    
+    // 서명 데이터와 캔버스 데이터를 모두 저장 (페이지에서는 사용, PDF에서는 제외)
     const allSignatureData = {
       ...signatures,
       canvases: canvases.filter(c => c.imageData).map(c => ({
@@ -311,10 +330,17 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       }))
     }
     
+    console.log('Saving signature data:', Object.keys(allSignatureData))
+    
     // Save to sessionStorage for consent flow persistence
     sessionStorage.setItem('signatureData', JSON.stringify(allSignatureData))
     sessionStorage.setItem('confirmationCompleted', 'true')
+    sessionStorage.setItem('canvasDrawings', JSON.stringify(canvases.filter(c => c.imageData)))
+    // Also save to localStorage as backup
+    localStorage.setItem('signatureData', JSON.stringify(allSignatureData))
     localStorage.setItem('canvasDrawings', JSON.stringify(canvases.filter(c => c.imageData)))
+    
+    console.log('Data saved to storage')
     onComplete()
   }
 
