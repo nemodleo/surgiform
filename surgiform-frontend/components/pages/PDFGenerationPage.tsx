@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Download, FileText, Loader2, Check, Home, ChevronLeft } from "lucide-react"
+import { Download, Loader2, Home, ChevronLeft } from "lucide-react"
 // import { generateKoreanPDF } from "@/lib/koreanPdfGenerator"
 // import { generateKoreanPDFWithJsPDF } from "@/lib/jsPdfKoreanGenerator"
 import { generateKoreanPDFFromDOM } from "@/lib/domPdfGenerator"

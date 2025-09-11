@@ -76,7 +76,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     
     // Expose debug functions to window for manual testing
     if (typeof window !== 'undefined') {
-      (window as any).debugCanvas = {
+      (window as unknown as { debugCanvas?: { checkStorage: () => void; forceRestore: () => void } }).debugCanvas = {
         checkStorage: () => {
           console.log('=== MANUAL STORAGE CHECK ===')
           const storage = sessionStorage.getItem('confirmationCanvases')
@@ -111,7 +111,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     return () => {
       console.log('🔄 ConfirmationPage unmounting')
       if (typeof window !== 'undefined') {
-        delete (window as any).debugCanvas
+        delete (window as unknown as { debugCanvas?: unknown }).debugCanvas
       }
     }
   }, [])

@@ -1,9 +1,8 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Send, X, Bot, User } from "lucide-react"
+import { X, Bot } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Message {
@@ -19,7 +18,7 @@ interface ChatUIProps {
     message: string
     conversation_id: string
     history: Message[]
-    updated_consents?: any
+    updated_consents?: unknown
     is_content_modified?: boolean
   }>
   conversationId?: string
@@ -34,7 +33,6 @@ export function ChatUI({
   onSendMessage, 
   conversationId: initialConversationId,
   initialMessages = [],
-  placeholder = "메시지를 입력하세요...",
   title = "이음"
 }: ChatUIProps) {
   // Initialize with introduction message if no initial messages
@@ -56,7 +54,7 @@ export function ChatUI({
   }, [initialMessages.length]) // Only depend on length to avoid infinite loop
   const [inputMessage, setInputMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [conversationId, setConversationId] = useState(initialConversationId)
+  const [, setConversationId] = useState(initialConversationId)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
