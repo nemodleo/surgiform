@@ -420,27 +420,91 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
           
           {/* Chat Button with Animation - Hide when chat is open */}
           {!showChat && (
-            <div className="fixed bottom-8 right-8 z-40">
+            <div style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 40 }}>
               {/* Pulsing background effect */}
-              <div className="absolute inset-0 w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse opacity-75" />
+              <div 
+                className="absolute inset-0 rounded-full"
+                style={{ 
+                  width: '64px', 
+                  height: '64px',
+                  background: 'linear-gradient(to right, #3b82f6, #a855f7)',
+                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                  opacity: 0.75
+                }} 
+              />
               
               {/* Main button */}
               <button
                 onClick={() => setShowChat(true)}
-                className="relative w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 flex items-center justify-center group overflow-hidden"
+                className="relative flex items-center justify-center overflow-hidden group"
+                style={{ 
+                  width: '64px', 
+                  height: '64px',
+                  background: 'linear-gradient(to right, #2563eb, #9333ea)',
+                  color: 'white',
+                  borderRadius: '50%',
+                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                  transition: 'all 0.3s',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)'
+                  e.currentTarget.style.boxShadow = '0 35px 60px -15px rgba(0, 0, 0, 0.3)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)'
+                  e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+                }}
               >
                 {/* Sparkle effect */}
-                <Sparkles className="absolute top-1 right-1 h-4 w-4 text-yellow-300 animate-pulse" />
+                <Sparkles 
+                  className="absolute"
+                  style={{ 
+                    top: '4px', 
+                    right: '4px', 
+                    width: '16px', 
+                    height: '16px',
+                    color: '#fde047',
+                    animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                  }} 
+                />
                 
                 {/* AI Bot Icon */}
-                <Bot className="h-8 w-8 z-10 group-hover:scale-110 transition-transform" />
+                <Bot 
+                  className="transition-transform group-hover:scale-110"
+                  style={{ 
+                    width: '32px', 
+                    height: '32px',
+                    zIndex: 10,
+                    color: 'white'
+                  }} 
+                />
                 
                 {/* Rotating gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent rotate-45 translate-x-12 group-hover:translate-x-[-12rem] transition-transform duration-700" />
+                <div 
+                  className="absolute inset-0 rotate-45 transition-transform duration-700 group-hover:translate-x-[-12rem]"
+                  style={{ 
+                    background: 'linear-gradient(to top right, transparent, rgba(255,255,255,0.2), transparent)',
+                    transform: 'translateX(48px) rotate(45deg)'
+                  }} 
+                />
               </button>
               
               {/* "이음" label */}
-              <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <div 
+                className="absolute whitespace-nowrap pointer-events-none transition-opacity opacity-0 group-hover:opacity-100"
+                style={{ 
+                  top: '-32px', 
+                  left: '50%', 
+                  transform: 'translateX(-50%)',
+                  backgroundColor: '#1f2937',
+                  color: 'white',
+                  fontSize: '12px',
+                  padding: '4px 8px',
+                  borderRadius: '4px'
+                }}
+              >
                 이음 - 의료진과 환자를 잇는 AI
               </div>
             </div>
