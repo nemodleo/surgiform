@@ -32,13 +32,25 @@ export default function ConsentLayout({
   const currentStep = STEP_PATHS.findIndex(path => pathname.startsWith(path))
   
   const handleNavigate = (page: string) => {
+    console.log('🧭 Navigation requested to page:', page)
     setCurrentPage(page as 'home' | 'form' | 'mypage' | 'settings')
     if (page === 'home') {
+      console.log('🏠 Leaving consent flow - clearing sessionStorage')
+      // Clear consent-related sessionStorage when leaving consent flow
+      sessionStorage.removeItem('formData')
+      sessionStorage.removeItem('consentData')
+      sessionStorage.removeItem('confirmationSignatures')
+      sessionStorage.removeItem('confirmationCanvases')
+      sessionStorage.removeItem('signatureData')
+      sessionStorage.removeItem('confirmationCompleted')
+      console.log('🗑️ SessionStorage cleared')
       router.push('/')
     }
   }
   
   const handleStepClick = (step: number) => {
+    console.log(`📍 Step click: from step ${currentStep} to step ${step}`)
+    
     // If trying to go to next step from basic info page, validate first
     if (currentStep === 0 && step === 1) {
       if (typeof window !== 'undefined') {
@@ -73,6 +85,7 @@ export default function ConsentLayout({
     }
     
     // Otherwise, allow navigation for going backward or same step
+    console.log(`➡️ Navigating to path: ${STEP_PATHS[step]}`)
     router.push(STEP_PATHS[step])
   }
   
