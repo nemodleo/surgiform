@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { StepperMinimal } from "@/components/ui/stepper-minimal"
 import HeaderMinimal from "@/components/HeaderMinimal"
 import { usePathname, useRouter } from "next/navigation"
@@ -31,25 +31,44 @@ export default function ConsentLayout({
   // Determine current step based on pathname
   const currentStep = STEP_PATHS.findIndex(path => pathname.startsWith(path))
   
+  // Function to clear all consent-related data
+  const clearConsentData = () => {
+    console.log('🗑️ Clearing all consent-related data...')
+    // Clear sessionStorage
+    sessionStorage.removeItem('formData')
+    sessionStorage.removeItem('consentData')
+    sessionStorage.removeItem('confirmationSignatures')
+    sessionStorage.removeItem('confirmationCanvases')
+    sessionStorage.removeItem('signatureData')
+    sessionStorage.removeItem('confirmationCompleted')
+    sessionStorage.removeItem('surgeryInfoTextareas')
+    sessionStorage.removeItem('canvasDrawings')
+    // Clear localStorage backup
+    localStorage.removeItem('signatureData')
+    localStorage.removeItem('canvasDrawings')
+    console.log('✅ All consent data cleared')
+  }
+  
+  // Clear data when navigating away from consent
+  useEffect(() => {
+    // Check if we're not on a consent page
+    if (!pathname.startsWith('/consent')) {
+      console.log('🚪 Left consent flow - pathname:', pathname)
+      clearConsentData()
+    }
+  }, [pathname])
+  
   const handleNavigate = (page: string) => {
     console.log('🧭 Navigation requested to page:', page)
     setCurrentPage(page as 'home' | 'form' | 'mypage' | 'settings')
     if (page === 'home') {
-      console.log('🏠 Leaving consent flow - clearing sessionStorage')
-      // Clear consent-related sessionStorage when leaving consent flow
-      sessionStorage.removeItem('formData')
-      sessionStorage.removeItem('consentData')
-      sessionStorage.removeItem('confirmationSignatures')
-      sessionStorage.removeItem('confirmationCanvases')
-      sessionStorage.removeItem('signatureData')
-      sessionStorage.removeItem('confirmationCompleted')
-      console.log('🗑️ SessionStorage cleared')
+      console.log('🏠 Leaving consent flow')
+      clearConsentData()
       router.push('/')
     }
   }
   
   const handleStepClick = (step: number) => {
-    console.log(`📍 Step click: from step ${currentStep} to step ${step}`)
     
     // If trying to go to next step from basic info page, validate first
     if (currentStep === 0 && step === 1) {
@@ -60,6 +79,10 @@ export default function ConsentLayout({
           return
         }
       }
+      // If no validation function exists, allow navigation
+      console.log(`➡️ No validation for basic-info, navigating to: ${STEP_PATHS[step]}`)
+      router.push(STEP_PATHS[step])
+      return
     }
     
     // If trying to go to next step from surgery info page, validate first
@@ -71,6 +94,10 @@ export default function ConsentLayout({
           return
         }
       }
+      // If no validation function exists, allow navigation
+      console.log(`➡️ No validation for surgery-info, navigating to: ${STEP_PATHS[step]}`)
+      router.push(STEP_PATHS[step])
+      return
     }
     
     // If trying to go to next step from confirmation page, validate first
@@ -82,6 +109,10 @@ export default function ConsentLayout({
           return
         }
       }
+      // If no validation function exists, allow navigation
+      console.log(`➡️ No validation for confirmation, navigating to: ${STEP_PATHS[step]}`)
+      router.push(STEP_PATHS[step])
+      return
     }
     
     // Otherwise, allow navigation for going backward or same step

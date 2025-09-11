@@ -69,10 +69,46 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   const [conversationId, setConversationId] = useState<string | undefined>()
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
 
+  // Save current data function - defined early to avoid hoisting issues
+  const saveCurrentData = useCallback(() => {
+    const dataToSubmit = {
+      ...consentData,
+      consents: [
+        { category: "수술 정보", item_title: "일반 정보", description: textareaValues.general_info },
+        { category: "수술 부위", item_title: "수술 부위", description: textareaValues.surgical_site },
+        { category: "수술 방법", item_title: "수술 방법", description: textareaValues.surgical_method },
+        { category: "수술 목적", item_title: "수술 목적", description: textareaValues.purpose },
+        { category: "합병증", item_title: "수술 관련 합병증", description: textareaValues.complications },
+        { category: "수술 후 경과", item_title: "수술 후 경과", description: textareaValues.postop_course },
+        { category: "기타", item_title: "기타 사항", description: textareaValues.others }
+      ]
+    }
+    // Save to sessionStorage directly
+    sessionStorage.setItem('consentData', JSON.stringify(dataToSubmit))
+    return dataToSubmit
+  }, [consentData, textareaValues])
+
   // Save textarea values to sessionStorage whenever they change
   useEffect(() => {
     sessionStorage.setItem('surgeryInfoTextareas', JSON.stringify(textareaValues))
   }, [textareaValues])
+
+  // Expose save function to window for progress bar navigation
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as Window & { validateSurgeryInfo?: () => void }).validateSurgeryInfo = () => {
+        // Save data before navigating
+        saveCurrentData()
+        // Navigate to confirmation page
+        window.location.href = '/consent/confirmation'
+      }
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete (window as Window & { validateSurgeryInfo?: () => void }).validateSurgeryInfo
+      }
+    }
+  }, [textareaValues, consentData, saveCurrentData])
 
   const generateConsent = useCallback(async () => {
     setLoading(true)
@@ -217,18 +253,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   }
 
   const handleComplete = () => {
-    const dataToSubmit = {
-      ...consentData,
-      consents: [
-        { category: "수술 정보", item_title: "일반 정보", description: textareaValues.general_info },
-        { category: "수술 부위", item_title: "수술 부위", description: textareaValues.surgical_site },
-        { category: "수술 방법", item_title: "수술 방법", description: textareaValues.surgical_method },
-        { category: "수술 목적", item_title: "수술 목적", description: textareaValues.purpose },
-        { category: "합병증", item_title: "수술 관련 합병증", description: textareaValues.complications },
-        { category: "수술 후 경과", item_title: "수술 후 경과", description: textareaValues.postop_course },
-        { category: "기타", item_title: "기타 사항", description: textareaValues.others }
-      ]
-    }
+    const dataToSubmit = saveCurrentData()
     onComplete(dataToSubmit)
     toast.success('수술 정보가 저장되었습니다')
   }

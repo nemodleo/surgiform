@@ -468,10 +468,10 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
                     <option value="여">여</option>
                   </select>
                 </div>
-                {(errors.patient_age || errors.patient_gender) && (touched.patient_age || touched.patient_gender) && (
+                {((errors.patient_age && touched.patient_age) || (errors.patient_gender && touched.patient_gender)) && (
                   <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
-                    {errors.patient_age || errors.patient_gender}
+                    {(errors.patient_age && touched.patient_age) ? errors.patient_age : errors.patient_gender}
                   </p>
                 )}
               </div>
