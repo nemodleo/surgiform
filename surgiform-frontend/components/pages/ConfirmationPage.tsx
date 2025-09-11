@@ -76,7 +76,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     
     // Expose debug functions to window for manual testing
     if (typeof window !== 'undefined') {
-      (window as unknown as { debugCanvas?: { checkStorage: () => void; forceRestore: () => void } }).debugCanvas = {
+      (window as unknown as { debugCanvas?: { checkStorage: () => void; forceRestore: () => void; clearStorage: () => void } }).debugCanvas = {
         checkStorage: () => {
           console.log('=== MANUAL STORAGE CHECK ===')
           const storage = sessionStorage.getItem('confirmationCanvases')
@@ -217,7 +217,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         delete pendingRestores.current[canvasId]
         console.log(`✅ Canvas ${canvasId} restored successfully on attempt ${attempts + 1}`)
       } catch (e) {
-        console.log(`❌ Canvas ${canvasId} restore attempt ${attempts + 1} failed:`, e.message)
+        console.log(`❌ Canvas ${canvasId} restore attempt ${attempts + 1} failed:`, (e as Error).message)
         if (attempts < 15) {
           setTimeout(() => attemptRestore(attempts + 1), 100 + (attempts * 50))
         } else {

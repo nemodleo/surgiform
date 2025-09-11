@@ -164,7 +164,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       }
       
       // Update messages state
-      setChatMessages(response.data.history || [...messages, userMessage, { role: "assistant", content: response.data.message, timestamp: new Date() }])
+      setChatMessages(response.data.history || [...history, { role: "user", content: message }, { role: "assistant", content: response.data.message, timestamp: new Date() }])
 
       // Update consents if modified
       if (response.data.is_content_modified && response.data.updated_consents) {
