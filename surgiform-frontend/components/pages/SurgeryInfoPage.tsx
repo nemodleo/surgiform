@@ -308,7 +308,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
         <div className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors">
           <div className="p-6 space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+              <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 1. 예정된 수술 이름과 관련 정보의 제목
                 <button className="w-5 h-5 bg-slate-500 text-white rounded-full text-xs">S</button>
               </label>
@@ -321,7 +321,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">
+              <label className="text-xs font-medium text-slate-600">
                 2. 예정된 수술 이름과 관련 기능의 다른 정보
               </label>
               <textarea
@@ -333,7 +333,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+              <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 3. 수술적 방식/절차/방법
                 <button className="w-5 h-5 bg-slate-500 text-white rounded-full text-xs">S</button>
               </label>
@@ -346,7 +346,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">
+              <label className="text-xs font-medium text-slate-600">
                 4. 수술적 방법 및 내용
               </label>
               <textarea
@@ -358,7 +358,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">
+              <label className="text-xs font-medium text-slate-600">
                 5. 발생 가능한 환자별/수술별/부위별
               </label>
               <textarea
@@ -370,7 +370,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">
+              <label className="text-xs font-medium text-slate-600">
                 6. 환병 발생시 조치사항
               </label>
               <textarea
@@ -382,7 +382,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+              <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 7. 기타(수술 관련 사전 확인된)
                 <button className="w-5 h-5 bg-slate-500 text-white rounded-full text-xs">S</button>
               </label>

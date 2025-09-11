@@ -3,10 +3,8 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Download, Loader2, Home, ChevronLeft } from "lucide-react"
-// import { generateKoreanPDF } from "@/lib/koreanPdfGenerator"
-// import { generateKoreanPDFWithJsPDF } from "@/lib/jsPdfKoreanGenerator"
-// import { generateKoreanPDFFromDOM } from "@/lib/domPdfGenerator"
-import { generateSimplePDF } from "@/lib/simplePdfGenerator"
+import { generatePlatePDF } from "@/lib/platePdfGenerator"
+import DocumentViewer from "@/components/ui/document-viewer"
 
 interface FormData {
   patient_name?: string
@@ -55,8 +53,8 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
         signatureData
       })
       
-      // Add timeout for PDF generation using DOM approach
-      const pdfGenerationPromise = generateSimplePDF(
+      // Generate PDF using Plate-based approach
+      const pdfGenerationPromise = generatePlatePDF(
         formData || {},
         consentData || {},
         signatureData || {}
@@ -162,24 +160,23 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
             </div>
           ) : pdfGenerated && pdfUrl ? (
             <>
-              {/* PDF Preview */}
+              {/* Document Preview */}
               <div className="bg-slate-100 p-4 rounded-lg">
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-900">PDF 미리보기</h3>
-                  <span className="text-xs text-slate-600">수술동의서_{formData.patient_name || '환자'}_{new Date().toISOString().split('T')[0]}.pdf</span>
+                  <h3 className="text-sm font-semibold text-slate-900">문서 미리보기</h3>
+                  <span className="text-xs text-slate-600">PDF 생성 완료</span>
                 </div>
-                <div className="border border-slate-300 rounded-lg overflow-hidden bg-white" style={{ height: '600px' }}>
-                  <iframe
-                    src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1`}
-                    className="w-full h-full"
-                    title="PDF Preview"
-                    style={{ border: 'none' }}
+                <div className="max-h-[600px] overflow-y-auto">
+                  <DocumentViewer 
+                    formData={formData}
+                    consentData={consentData}
+                    signatureData={signatureData || {}}
                   />
                 </div>
               </div>
               
               {/* Action Buttons */}
-              <div className="flex justify-center pt-4">
+              <div className="flex flex-col items-center gap-3 pt-4">
                 <Button 
                   onClick={() => {
                     if (pdfUrl) {
@@ -194,6 +191,7 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
                   <Download className="h-5 w-5" />
                   PDF 다운로드
                 </Button>
+                <span className="text-xs text-slate-500">수술동의서_{formData.patient_name || '환자'}_{new Date().toISOString().split('T')[0]}.pdf</span>
               </div>
             </>
           ) : null}
