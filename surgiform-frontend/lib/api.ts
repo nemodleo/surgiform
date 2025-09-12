@@ -11,13 +11,19 @@ export const api = axios.create({
 
 export interface ConsentGenerateIn {
   patient_name: string;
-  patient_age: number;
-  patient_gender: 'MALE' | 'FEMALE';
+  age: number;
+  gender: 'M' | 'F';
   surgery_name: string;
-  symptoms: string;
-  diagnosis_codes?: string[];
-  surgery_objective: string;
-  anesthesia_codes?: string[];
+  scheduled_date: string;
+  diagnosis: string;
+  surgical_site_mark: string;
+  patient_condition: string;
+  registration_no: string;
+  participants?: Array<{
+    name: string;
+    is_specialist: boolean;
+    department: string;
+  }>;
   special_conditions?: {
     possum_score?: {
       physiological_score: number;
@@ -26,11 +32,6 @@ export interface ConsentGenerateIn {
       morbidity_risk: number;
     };
   };
-  participants?: Array<{
-    name: string;
-    department: string;
-    role: string;
-  }>;
 }
 
 export interface ConsentGenerateOut {

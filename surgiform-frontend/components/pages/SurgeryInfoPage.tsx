@@ -19,6 +19,10 @@ interface FormData {
   anesthesia_codes?: string
   special_conditions?: string
   participants?: unknown[]
+  medical_team?: Array<{ name?: string; is_specialist?: boolean; department?: string }>
+  surgery_date?: string
+  diagnosis?: string
+  surgical_site?: string
   [key: string]: unknown
 }
 
@@ -30,7 +34,7 @@ interface ConsentItem {
 
 interface ConsentData {
   consents?: ConsentItem[]
-  [key: string]: unknown
+  references?: unknown
 }
 
 interface SurgeryInfoPageProps {
@@ -114,11 +118,8 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
     setLoading(true)
     setError(null)
     try {
-      console.log("Full FormData:", formData)
-      console.log("FormData medical_team:", formData.medical_team)
       const response = await surgiformAPI.generateConsent({
         patient_name: formData.patient_name || '',
-        registration_no: formData.registration_number || '',
         age: parseInt(formData.patient_age || '0'),
         gender: formData.patient_gender === '여' ? 'F' : 'M',
         surgery_name: formData.surgery_name || '',
@@ -126,65 +127,60 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
         diagnosis: formData.diagnosis || '',
         surgical_site_mark: formData.surgical_site || '',
         patient_condition: formData.symptoms || '',
-        participants: formData.medical_team?.map((p: any) => ({
+        registration_no: formData.registration_number || '',
+        participants: formData.medical_team?.map((p: { name?: string; is_specialist?: boolean; department?: string }) => ({
           name: p.name || '',
           is_specialist: p.is_specialist !== undefined ? p.is_specialist : true,
           department: p.department || ''
         })) || [],
         special_conditions: {
-          past_history: false,
-          diabetes: false,
-          smoking: false,
-          hypertension: false,
-          allergy: false,
-          cardiovascular: false,
-          respiratory: false,
-          coagulation: false,
-          medications: false,
-          renal: false,
-          drug_abuse: false,
-          other: ''
-        },
-        possum_score: {
-          mortality_risk: 0,
-          morbidity_risk: 0
+          possum_score: {
+            physiological_score: 0,
+            surgery_score: 0,
+            mortality_risk: 0,
+            morbidity_risk: 0
+          }
         }
-      } as any)
-      console.log("API Response:", response.data)
+      })
       
-      const responseData = response.data as any
-      setConsentData(responseData as ConsentData)
+      const responseData = response.data
+      setConsentData({ 
+        consents: responseData.consents,
+        references: responseData.references
+      })
       
       // Populate textareas with generated content based on new API structure
-      if (responseData?.consents) {
+      if (responseData?.consents && Array.isArray(responseData.consents)) {
         const newValues: Record<string, string> = {}
-        const consents = responseData.consents
         
-        // Map the new API structure to textarea fields
-        if (consents.prognosis_without_surgery) {
-          newValues.general_info = consents.prognosis_without_surgery
-        }
-        if (consents.alternative_treatments) {
-          newValues.surgical_method = consents.alternative_treatments
-        }
-        if (consents.surgery_purpose_necessity_effect) {
-          newValues.purpose = consents.surgery_purpose_necessity_effect
-        }
-        if (consents.surgery_method_content?.overall_description) {
-          newValues.surgical_site = consents.surgery_method_content.overall_description
-        }
-        if (consents.possible_complications_sequelae) {
-          newValues.complications = consents.possible_complications_sequelae
-        }
-        if (consents.emergency_measures) {
-          newValues.postop_course = consents.emergency_measures
-        }
+        // Map the consents array items by category
+        responseData.consents.forEach((consent: ConsentItem) => {
+          if (consent.category === "예후" && consent.item_title === "수술하지 않을 경우 예후") {
+            newValues.general_info = consent.description || ""
+          } else if (consent.category === "대체치료" && consent.item_title === "대체 가능한 치료") {
+            newValues.surgical_site = consent.description || ""
+          } else if (consent.category === "수술 목적" && consent.item_title === "수술의 목적, 필요성, 효과") {
+            newValues.purpose = consent.description || ""
+          } else if (consent.category === "수술 방법" && consent.item_title === "수술 방법 및 내용") {
+            newValues.surgical_method = consent.description || ""
+          } else if (consent.category === "합병증" && (consent.item_title === "발생 가능한 합병증 및 후유증" || consent.item_title === "수술 관련 합병증")) {
+            newValues.complications = consent.description || ""
+          } else if (consent.category === "응급조치" && consent.item_title === "응급상황 발생 시 조치사항") {
+            newValues.postop_course = consent.description || ""
+          } else if (consent.category === "수술 정보" && consent.item_title === "일반 정보") {
+            newValues.general_info = consent.description || ""
+          } else if (consent.category === "수술 부위" && consent.item_title === "수술 부위") {
+            newValues.surgical_site = consent.description || ""
+          } else if (consent.category === "기타" && consent.item_title === "기타 사항") {
+            newValues.others = consent.description || ""
+          }
+        })
         
         setTextareaValues((prev: typeof textareaValues) => ({ ...prev, ...newValues }))
       }
       toast.success('수술 정보가 성공적으로 생성되었습니다')
     } catch (error: unknown) {
-      const err = error as { code?: string; response?: { status?: number; data?: { message?: string; detail?: any } } }
+      const err = error as { code?: string; response?: { status?: number; data?: { message?: string; detail?: unknown } } }
       console.error("Error generating consent:", error)
       if (err.response?.data?.detail) {
         console.error("Validation error details:", JSON.stringify(err.response.data.detail, null, 2))
@@ -220,15 +216,16 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
 
   const handleSendChatMessage = async (message: string, history: ChatMessage[]) => {
     try {
-      const currentConsents = [
-        { category: "수술 정보", item_title: "일반 정보", description: textareaValues.general_info },
-        { category: "수술 부위", item_title: "수술 부위", description: textareaValues.surgical_site },
-        { category: "수술 방법", item_title: "수술 방법", description: textareaValues.surgical_method },
-        { category: "수술 목적", item_title: "수술 목적", description: textareaValues.purpose },
-        { category: "합병증", item_title: "수술 관련 합병증", description: textareaValues.complications },
-        { category: "수술 후 경과", item_title: "수술 후 경과", description: textareaValues.postop_course },
-        { category: "기타", item_title: "기타 사항", description: textareaValues.others }
-      ]
+      // Unused variable - commented out to fix build error
+      // const currentConsents = [
+      //   { category: "수술 정보", item_title: "일반 정보", description: textareaValues.general_info },
+      //   { category: "수술 부위", item_title: "수술 부위", description: textareaValues.surgical_site },
+      //   { category: "수술 방법", item_title: "수술 방법", description: textareaValues.surgical_method },
+      //   { category: "수술 목적", item_title: "수술 목적", description: textareaValues.purpose },
+      //   { category: "합병증", item_title: "수술 관련 합병증", description: textareaValues.complications },
+      //   { category: "수술 후 경과", item_title: "수술 후 경과", description: textareaValues.postop_course },
+      //   { category: "기타", item_title: "기타 사항", description: textareaValues.others }
+      // ]
 
       const chatRequest: ChatRequest = {
         message,
@@ -254,9 +251,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
         사용자의 질문에 정확하고 친절하게 답변하며, 필요시 수술 정보를 수정하는 데 도움을 주세요.`
       }
 
-      console.log('Sending chat message with request:', chatRequest)
       const response = await surgiformAPI.sendChatMessage(chatRequest)
-      console.log('Chat response received:', response.data)
       
       // Update conversation ID if new
       if (!conversationId && response.data.conversation_id) {
@@ -294,13 +289,8 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       }
 
       return response.data
-    } catch (error: any) {
-      console.error("Error sending chat message:", error)
-      console.error("Error details:", error.response?.data)
-      console.error("Error status:", error.response?.status)
-      if (error.response?.data?.detail) {
-        console.error("Error validation details:", JSON.stringify(error.response.data.detail, null, 2))
-      }
+    } catch (error) {
+      const err = error as { response?: { data?: { detail?: unknown }, status?: number } }
       throw error
     }
   }

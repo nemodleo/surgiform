@@ -4,6 +4,12 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import SurgeryInfoPage from "@/components/pages/SurgeryInfoPage"
 
+interface ConsentItem {
+  category?: string
+  description?: string
+  item_title?: string
+}
+
 export default function SurgeryInfoRoute() {
   const router = useRouter()
   const [formData, setFormData] = useState<Record<string, unknown>>({})
@@ -26,7 +32,7 @@ export default function SurgeryInfoRoute() {
     }
   }, [router])
   
-  const handleComplete = (data: Record<string, unknown>) => {
+  const handleComplete = (data: { consents?: unknown[]; references?: unknown }) => {
     // Store consent data
     sessionStorage.setItem('consentData', JSON.stringify(data))
     router.push('/consent/confirmation')
@@ -45,7 +51,10 @@ export default function SurgeryInfoRoute() {
       onComplete={handleComplete}
       onBack={handleBack}
       formData={formData}
-      initialData={consentData as Record<string, unknown> | undefined}
+      initialData={consentData ? {
+        consents: consentData.consents as ConsentItem[] | undefined,
+        references: consentData.references
+      } : undefined}
     />
   )
 }

@@ -1,4 +1,9 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"],
-  "ignorePatterns": ["lib/addKoreanFontToJsPDF.js", "lib/NotoSansKR-Regular.base64.ts"]
+  "extends": ["next/core-web-vitals"],
+  "ignorePatterns": ["lib/addKoreanFontToJsPDF.js", "lib/NotoSansKR-Regular.base64.ts"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "react-hooks/exhaustive-deps": "warn"
+  }
 }

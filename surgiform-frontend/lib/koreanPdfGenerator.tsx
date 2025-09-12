@@ -282,7 +282,7 @@ const SurgicalConsentPDF = ({ formData = {}, consentData = {}, signatureData = {
                       </Text>
                       <Image 
                         style={[styles.drawingImage, { width: 200, height: 150 }]} 
-                        src={drawing.imageData} 
+                        src={drawing.imageData}
                       />
                     </View>
                   )
@@ -320,7 +320,7 @@ const SurgicalConsentPDF = ({ formData = {}, consentData = {}, signatureData = {
                 </Text>
                 <Image 
                   style={{ width: 250, height: 180, borderWidth: 1, borderColor: '#e0e0e0' }} 
-                  src={drawing.imageData} 
+                  src={drawing.imageData}
                 />
               </View>
             )
@@ -339,7 +339,7 @@ const SurgicalConsentPDF = ({ formData = {}, consentData = {}, signatureData = {
               <Text style={styles.text}>환자: {formData.patient_name || '환자'}</Text>
               <Image 
                 style={styles.signatureImage} 
-                src={signatureData.patient} 
+                src={signatureData.patient}
               />
             </View>
           )}
@@ -349,7 +349,7 @@ const SurgicalConsentPDF = ({ formData = {}, consentData = {}, signatureData = {
               <Text style={styles.text}>의사: {formData.medical_team?.[0]?.name || '의사'}</Text>
               <Image 
                 style={styles.signatureImage} 
-                src={signatureData.doctor} 
+                src={signatureData.doctor}
               />
             </View>
           )}
