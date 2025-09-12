@@ -119,15 +119,15 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
     setError(null)
     try {
       const response = await surgiformAPI.generateConsent({
-        patient_name: formData.patient_name || '',
-        age: parseInt(formData.patient_age || '0'),
-        gender: formData.patient_gender === '여' ? 'F' : 'M',
-        surgery_name: formData.surgery_name || '',
-        scheduled_date: formData.surgery_date || new Date().toISOString().split('T')[0],
-        diagnosis: formData.diagnosis || '',
-        surgical_site_mark: formData.surgical_site || '',
-        patient_condition: formData.symptoms || '',
-        registration_no: formData.registration_number || '',
+        patient_name: (formData.patient_name as string) || '',
+        age: parseInt((formData.patient_age as string) || '0'),
+        gender: (formData.patient_gender as string) === '여' ? 'F' : 'M',
+        surgery_name: (formData.surgery_name as string) || '',
+        scheduled_date: (formData.surgery_date as string) || new Date().toISOString().split('T')[0],
+        diagnosis: (formData.diagnosis as string) || '',
+        surgical_site_mark: (formData.surgical_site as string) || '',
+        patient_condition: (formData.symptoms as string) || '',
+        registration_no: (formData.registration_number as string) || '',
         participants: formData.medical_team?.map((p: { name?: string; is_specialist?: boolean; department?: string }) => ({
           name: p.name || '',
           is_specialist: p.is_specialist !== undefined ? p.is_specialist : true,
