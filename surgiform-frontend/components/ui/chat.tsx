@@ -38,12 +38,12 @@ export function ChatUI({
   // Initialize with introduction message if no initial messages
   const introMessage: Message = {
     role: "assistant",
-    content: "안녕하세요. 의료진과 환자를 신뢰와 책임으로 잇는\nAI 도우미 이음입니다.\n수술 정보 문의부터 동의서 검토·수정까지 도와드릴게요.",
+    content: "안녕하세요. 의료진과 환자를 신뢰와 책임으로 잇는 AI 도우미 이음입니다.\n수술 정보 문의부터 동의서 검토·수정까지 도와드릴게요.",
     timestamp: new Date()
   }
   
   const [messages, setMessages] = useState<Message[]>([])
-  
+
   // Initialize messages on mount or when initialMessages change
   useEffect(() => {
     if (initialMessages.length > 0) {
@@ -58,6 +58,16 @@ export function ChatUI({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
+  // Drag functionality
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
+  const [size, setSize] = useState({ width: 400, height: 600 })
+  const [isResizing, setIsResizing] = useState(false)
+  const [resizeDirection, setResizeDirection] = useState<'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw' | null>(null)
+  const [resizeOffset, setResizeOffset] = useState({ x: 0, y: 0 })
+  const chatRef = useRef<HTMLDivElement>(null)
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
@@ -65,6 +75,191 @@ export function ChatUI({
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  // Drag event handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!chatRef.current) return
+
+    const rect = chatRef.current.getBoundingClientRect()
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    })
+    setIsDragging(true)
+  }
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (isDragging) {
+      const newX = e.clientX - dragOffset.x
+      const newY = e.clientY - dragOffset.y
+
+      // Constrain to viewport
+      const maxX = window.innerWidth - size.width
+      const maxY = window.innerHeight - size.height
+
+      setPosition({
+        x: Math.max(0, Math.min(maxX, newX)),
+        y: Math.max(0, Math.min(maxY, newY))
+      })
+    } else if (isResizing && resizeDirection && position) {
+      const minWidth = 300
+      const minHeight = 400
+
+      let newWidth = size.width
+      let newHeight = size.height
+      let newX = position.x
+      let newY = position.y
+
+      if (resizeDirection.includes('e')) {
+        // Right edge resize
+        const maxWidth = window.innerWidth - position.x
+        newWidth = Math.max(minWidth, Math.min(maxWidth, e.clientX - position.x))
+      }
+      if (resizeDirection.includes('w')) {
+        // Left edge resize
+        const maxX = position.x + size.width - minWidth
+        newX = Math.max(0, Math.min(maxX, e.clientX))
+        newWidth = position.x + size.width - newX
+      }
+      if (resizeDirection.includes('s')) {
+        // Bottom edge resize
+        const maxHeight = window.innerHeight - position.y
+        newHeight = Math.max(minHeight, Math.min(maxHeight, e.clientY - position.y))
+      }
+      if (resizeDirection.includes('n')) {
+        // Top edge resize
+        const maxY = position.y + size.height - minHeight
+        newY = Math.max(0, Math.min(maxY, e.clientY))
+        newHeight = position.y + size.height - newY
+      }
+
+      setSize({ width: newWidth, height: newHeight })
+      setPosition({ x: newX, y: newY })
+    }
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+    setIsResizing(false)
+    setResizeDirection(null)
+  }
+
+  // Resize handlers
+  const handleResizeStart = (e: React.MouseEvent, direction: 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw') => {
+    e.stopPropagation()
+    setIsResizing(true)
+    setResizeDirection(direction)
+    setResizeOffset({
+      x: e.clientX - size.width,
+      y: e.clientY - size.height
+    })
+  }
+
+  // Add global mouse events
+  useEffect(() => {
+    if (isDragging || isResizing) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+
+      if (isDragging) {
+        document.body.style.cursor = 'grabbing'
+      } else if (isResizing) {
+        const cursorMap = {
+          'n': 'ns-resize',
+          's': 'ns-resize',
+          'e': 'ew-resize',
+          'w': 'ew-resize',
+          'ne': 'nesw-resize',
+          'sw': 'nesw-resize',
+          'nw': 'nwse-resize',
+          'se': 'nwse-resize'
+        }
+        document.body.style.cursor = cursorMap[resizeDirection!] || 'default'
+      }
+
+      document.body.style.userSelect = 'none'
+
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+      }
+    }
+  }, [isDragging, isResizing, dragOffset.x, dragOffset.y, resizeDirection, position, size])
+
+  // Initialize position and size on mount
+  useEffect(() => {
+    const initializeChat = () => {
+      // Try to get saved data from localStorage
+      const savedData = localStorage.getItem('chatWindowData')
+      if (savedData) {
+        try {
+          const { position: savedPos, size: savedSize } = JSON.parse(savedData)
+
+          // Validate and restore size
+          if (savedSize && savedSize.width >= 300 && savedSize.height >= 400) {
+            setSize(savedSize)
+          }
+
+          // Validate and restore position
+          if (savedPos) {
+            const maxX = window.innerWidth - (savedSize?.width || size.width)
+            const maxY = window.innerHeight - (savedSize?.height || size.height)
+
+            if (savedPos.x >= 0 && savedPos.x <= maxX && savedPos.y >= 0 && savedPos.y <= maxY) {
+              setPosition(savedPos)
+              return
+            }
+          }
+        } catch (e) {
+          console.error('Failed to parse saved chat data:', e)
+        }
+      }
+
+      // Fallback to default position - align with chat button (bottom: 32px, right: 32px)
+      // Chat button is 64px square, so position window so its bottom-right aligns with button's bottom-right
+      const chatButtonRight = 32
+      const chatButtonBottom = 32
+      const chatButtonSize = 64
+
+      const x = Math.max(0, window.innerWidth - chatButtonRight - size.width)
+      const y = Math.max(0, window.innerHeight - chatButtonBottom - size.height)
+
+      setPosition({ x, y })
+    }
+
+    // Only initialize if position is not set yet
+    if (position === null) {
+      initializeChat()
+    }
+
+    // Update bounds on window resize
+    const handleResize = () => {
+      if (position) {
+        const maxX = window.innerWidth - size.width
+        const maxY = window.innerHeight - size.height
+        setPosition(prev => prev ? {
+          x: Math.max(0, Math.min(maxX, prev.x)),
+          y: Math.max(0, Math.min(maxY, prev.y))
+        } : prev)
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [position, size])
+
+  // Save position and size to localStorage when they change
+  useEffect(() => {
+    if (position && (position.x !== 0 || position.y !== 0)) {
+      const dataToSave = {
+        position,
+        size
+      }
+      localStorage.setItem('chatWindowData', JSON.stringify(dataToSave))
+    }
+  }, [position, size])
 
   const handleSend = async () => {
     if (!inputMessage.trim() || isLoading || !onSendMessage) return
@@ -140,22 +335,37 @@ export function ChatUI({
           animation: chat-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
       `}</style>
-      <Card 
-        className="flex flex-col overflow-hidden"
-        style={{ 
-          height: '600px', 
-          width: '400px',
-          backgroundColor: '#111827', 
+      <Card
+        ref={chatRef}
+        className="flex flex-col overflow-hidden relative"
+        style={{
+          height: `${size.height}px`,
+          width: `${size.width}px`,
+          backgroundColor: 'rgba(17, 24, 39, 0.6)',
           color: 'white',
           borderRadius: '1rem',
           border: 'none',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          position: 'fixed' as const,
+          left: position ? `${position.x}px` : 'auto',
+          top: position ? `${position.y}px` : 'auto',
+          zIndex: 50,
+          cursor: isDragging ? 'grabbing' : 'default',
+          display: position ? 'flex' : 'none' // Hide until position is set
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3" style={{ backgroundColor: '#111827' }}>
-          <div className="flex items-center gap-3">
-            <button className="text-gray-400 hover:text-white">
+        <div
+          className="flex items-center justify-between px-4 py-3 cursor-grab active:cursor-grabbing select-none"
+          style={{ backgroundColor: 'rgba(17, 24, 39, 0.6)' }}
+          onMouseDown={handleMouseDown}
+          title="드래그하여 이동"
+        >
+          <div className="flex items-center gap-3 pointer-events-none">
+            <button
+              className="text-gray-400 hover:text-white transition-colors pointer-events-auto"
+              title="드래그 핸들"
+            >
               <svg className="w-2 h-4" viewBox="0 0 8 16" fill="currentColor">
                 <circle cx="4" cy="2" r="1.5" />
                 <circle cx="4" cy="8" r="1.5" />
@@ -167,9 +377,9 @@ export function ChatUI({
             </div>
             <h3 className="font-medium text-base text-white">{title}</h3>
           </div>
-          <div className="flex items-center gap-3">
-            <button 
-              className="text-gray-400 hover:text-white transition-colors"
+          <div className="flex items-center gap-3 pointer-events-none">
+            <button
+              className="text-gray-400 hover:text-white transition-colors pointer-events-auto"
               onClick={() => onMinimize?.(messages)}
               title="최소화 (대화 유지)"
             >
@@ -184,7 +394,7 @@ export function ChatUI({
                   setConversationId(undefined)
                   onClose()
                 }}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-colors pointer-events-auto"
                 title="닫기 (대화 삭제)"
               >
                 <X className="h-6 w-6" />
@@ -194,7 +404,7 @@ export function ChatUI({
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4" style={{ backgroundColor: '#111827' }}>
+        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4" style={{ backgroundColor: 'rgba(17, 24, 39, 0.6)' }}>
           {messages.map((message, index) => (
               <div
                 key={index}
@@ -203,13 +413,6 @@ export function ChatUI({
                   message.role === "user" ? "justify-end" : "justify-start"
                 )}
               >
-                {message.role === "assistant" && (
-                  <div className="flex-shrink-0">
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #c084fc, #f472b6)' }}>
-                      <Bot className="h-5 w-5 text-white" />
-                    </div>
-                  </div>
-                )}
                 {message.role === "assistant" ? (
                   <div className="flex-1">
                     <p className="text-sm leading-relaxed whitespace-pre-wrap break-words" style={{ color: '#d1d5db' }}>
@@ -245,7 +448,7 @@ export function ChatUI({
         </div>
 
         {/* Input - Positioned at bottom, expands upward */}
-        <div className="relative" style={{ backgroundColor: '#111827' }}>
+        <div className="relative" style={{ backgroundColor: 'rgba(17, 24, 39, 0.6)' }}>
           <div className="p-4">
             <div className="relative flex items-end">
               <textarea
@@ -263,7 +466,8 @@ export function ChatUI({
                 placeholder="Message..."
                 className="w-full resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all overflow-y-auto"
                 style={{ 
-                  backgroundColor: '#1f2937', 
+                  // backgroundColor: '#1f2937', 
+                  backgroundColor: 'rgba(17, 24, 39, 0.6)',
                   color: 'white',
                   minHeight: '50px',
                   maxHeight: '300px',
@@ -300,15 +504,71 @@ export function ChatUI({
                 </svg>
               </button>
             </div>
-            
             {/* Footer */}
             <div className="mt-3 text-center">
-              <p className="text-xs" style={{ color: '#6b7280' }}>
-                AI Agent powered by <span style={{ color: '#9ca3af' }}>SurgiForm</span>
+              <p className="text-xs" style={{ color: '#9ca3af' }}>
+                AI Agent powered by SurgiForm
               </p>
             </div>
           </div>
         </div>
+
+        {/* Resize handles */}
+        {/* Edge resize handles */}
+        <div
+          className="absolute top-0 left-0 w-full h-1 cursor-ns-resize hover:bg-blue-500/20 transition-colors"
+          onMouseDown={(e) => handleResizeStart(e, 'n')}
+          style={{ zIndex: 60 }}
+        />
+        <div
+          className="absolute bottom-0 left-0 w-full h-1 cursor-ns-resize hover:bg-blue-500/20 transition-colors"
+          onMouseDown={(e) => handleResizeStart(e, 's')}
+          style={{ zIndex: 60 }}
+        />
+        <div
+          className="absolute top-0 left-0 w-1 h-full cursor-ew-resize hover:bg-blue-500/20 transition-colors"
+          onMouseDown={(e) => handleResizeStart(e, 'w')}
+          style={{ zIndex: 60 }}
+        />
+        <div
+          className="absolute top-0 right-0 w-1 h-full cursor-ew-resize hover:bg-blue-500/20 transition-colors"
+          onMouseDown={(e) => handleResizeStart(e, 'e')}
+          style={{ zIndex: 60 }}
+        />
+
+        {/* Corner resize handles */}
+        <div
+          className="absolute top-0 left-0 w-3 h-3 cursor-nwse-resize hover:bg-blue-500/40 transition-colors"
+          onMouseDown={(e) => handleResizeStart(e, 'nw')}
+          style={{
+            zIndex: 60,
+            borderTopLeftRadius: '1rem'
+          }}
+        />
+        <div
+          className="absolute top-0 right-0 w-3 h-3 cursor-nesw-resize hover:bg-blue-500/40 transition-colors"
+          onMouseDown={(e) => handleResizeStart(e, 'ne')}
+          style={{
+            zIndex: 60,
+            borderTopRightRadius: '1rem'
+          }}
+        />
+        <div
+          className="absolute bottom-0 left-0 w-3 h-3 cursor-nesw-resize hover:bg-blue-500/40 transition-colors"
+          onMouseDown={(e) => handleResizeStart(e, 'sw')}
+          style={{
+            zIndex: 60,
+            borderBottomLeftRadius: '1rem'
+          }}
+        />
+        <div
+          className="absolute bottom-0 right-0 w-3 h-3 cursor-nwse-resize hover:bg-blue-500/40 transition-colors"
+          onMouseDown={(e) => handleResizeStart(e, 'se')}
+          style={{
+            zIndex: 60,
+            borderBottomRightRadius: '1rem'
+          }}
+        />
       </Card>
     </>
   )
