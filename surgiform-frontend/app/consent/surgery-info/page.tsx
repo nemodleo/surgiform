@@ -4,16 +4,29 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import SurgeryInfoPage from "@/components/pages/SurgeryInfoPage"
 
-interface ConsentItem {
-  category?: string
-  description?: string
-  item_title?: string
+interface ConsentData {
+  consents?: {
+    prognosis_without_surgery?: string
+    alternative_treatments?: string
+    surgery_purpose_necessity_effect?: string
+    surgery_method_content?: {
+      overall_description?: string
+      estimated_duration?: string
+      method_change_or_addition?: string
+      transfusion_possibility?: string
+      surgeon_change_possibility?: string
+    }
+    possible_complications_sequelae?: string
+    emergency_measures?: string
+    mortality_risk?: string
+  }
+  references?: unknown
 }
 
 export default function SurgeryInfoRoute() {
   const router = useRouter()
   const [formData, setFormData] = useState<Record<string, unknown>>({})
-  const [consentData, setConsentData] = useState<Record<string, unknown> | null>(null)
+  const [consentData, setConsentData] = useState<ConsentData | null>(null)
   
   useEffect(() => {
     // Load form data from sessionStorage
@@ -32,7 +45,7 @@ export default function SurgeryInfoRoute() {
     }
   }, [router])
   
-  const handleComplete = (data: { consents?: unknown; references?: unknown }) => {
+  const handleComplete = (data: ConsentData) => {
     // Store consent data
     sessionStorage.setItem('consentData', JSON.stringify(data))
     router.push('/consent/confirmation')
@@ -51,10 +64,7 @@ export default function SurgeryInfoRoute() {
       onComplete={handleComplete}
       onBack={handleBack}
       formData={formData}
-      initialData={consentData ? {
-        consents: consentData.consents as unknown,
-        references: consentData.references
-      } : undefined}
+      initialData={consentData || undefined}
     />
   )
 }

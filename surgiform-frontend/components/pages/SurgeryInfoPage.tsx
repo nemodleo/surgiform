@@ -26,11 +26,6 @@ interface FormData {
   [key: string]: unknown
 }
 
-interface ConsentItem {
-  category?: string
-  description?: string
-  item_title?: string
-}
 
 interface ConsentData {
   consents?: {
@@ -89,17 +84,19 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
 
   // Save current data function - defined early to avoid hoisting issues
   const saveCurrentData = useCallback(() => {
-    const dataToSubmit = {
+    const dataToSubmit: ConsentData = {
       ...consentData,
-      consents: [
-        { category: "수술 정보", item_title: "일반 정보", description: textareaValues.general_info },
-        { category: "수술 부위", item_title: "수술 부위", description: textareaValues.surgical_site },
-        { category: "수술 방법", item_title: "수술 방법", description: textareaValues.surgical_method },
-        { category: "수술 목적", item_title: "수술 목적", description: textareaValues.purpose },
-        { category: "합병증", item_title: "수술 관련 합병증", description: textareaValues.complications },
-        { category: "수술 후 경과", item_title: "수술 후 경과", description: textareaValues.postop_course },
-        { category: "기타", item_title: "기타 사항", description: textareaValues.others }
-      ]
+      consents: {
+        prognosis_without_surgery: textareaValues.general_info,
+        alternative_treatments: textareaValues.surgical_site,
+        surgery_purpose_necessity_effect: textareaValues.purpose,
+        surgery_method_content: {
+          overall_description: textareaValues.surgical_method
+        },
+        possible_complications_sequelae: textareaValues.complications,
+        emergency_measures: textareaValues.postop_course,
+        mortality_risk: textareaValues.others
+      }
     }
     // Save to sessionStorage directly
     sessionStorage.setItem('consentData', JSON.stringify(dataToSubmit))
@@ -158,24 +155,24 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       })
       
       const responseData = response.data
-      setConsentData({ 
-        consents: responseData.consents,
+      setConsentData({
+        consents: responseData.consents as ConsentData['consents'],
         references: responseData.references
       })
       
       // Populate textareas with generated content based on new API structure
       if (responseData?.consents) {
         const newValues: Record<string, string> = {}
-        const consents = responseData.consents
+        const consents = responseData.consents as ConsentData['consents']
 
         // Map the new API object structure to textarea fields
-        newValues.general_info = consents.prognosis_without_surgery || ""
-        newValues.surgical_site = consents.alternative_treatments || ""
-        newValues.surgical_method = consents.surgery_method_content?.overall_description || ""
-        newValues.purpose = consents.surgery_purpose_necessity_effect || ""
-        newValues.complications = consents.possible_complications_sequelae || ""
-        newValues.postop_course = consents.emergency_measures || ""
-        newValues.others = consents.mortality_risk || ""
+        newValues.general_info = consents?.prognosis_without_surgery || ""
+        newValues.surgical_site = consents?.alternative_treatments || ""
+        newValues.surgical_method = consents?.surgery_method_content?.overall_description || ""
+        newValues.purpose = consents?.surgery_purpose_necessity_effect || ""
+        newValues.complications = consents?.possible_complications_sequelae || ""
+        newValues.postop_course = consents?.emergency_measures || ""
+        newValues.others = consents?.mortality_risk || ""
 
         setTextareaValues((prev: typeof textareaValues) => ({ ...prev, ...newValues }))
       }
@@ -330,8 +327,8 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
               onClick={() => {
                 setError(null)
                 // 더미 데이터로 진행
-                const dummyData = {
-                  consents: []
+                const dummyData: ConsentData = {
+                  consents: undefined
                 }
                 setConsentData(dummyData)
                 toast.success('수기 입력 모드로 진행합니다')
@@ -359,8 +356,8 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                 <Button 
                   variant="outline"
                   onClick={() => {
-                    const dummyData = {
-                      consents: []
+                    const dummyData: ConsentData = {
+                      consents: undefined
                     }
                     setConsentData(dummyData)
                     setError(null)
