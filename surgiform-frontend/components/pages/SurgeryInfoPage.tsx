@@ -108,6 +108,21 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
     sessionStorage.setItem('surgeryInfoTextareas', JSON.stringify(textareaValues))
   }, [textareaValues])
 
+  // Auto-resize textareas on initial load and when values change
+  useEffect(() => {
+    const adjustTextareaHeight = (field: string) => {
+      const textarea = document.querySelector(`textarea[data-field="${field}"]`) as HTMLTextAreaElement
+      if (textarea && textareaValues[field]) {
+        textarea.style.height = 'auto'
+        const newHeight = Math.max(80, textarea.scrollHeight + 24)
+        textarea.style.height = `${newHeight}px`
+      }
+    }
+
+    // Adjust all textareas
+    Object.keys(textareaValues).forEach(adjustTextareaHeight)
+  }, [textareaValues])
+
   // Expose save function to window for progress bar navigation
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -210,6 +225,21 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
 
   const handleTextareaChange = (field: string, value: string) => {
     setTextareaValues((prev: typeof textareaValues) => ({ ...prev, [field]: value }))
+  }
+
+  // Auto-resize textarea function
+  const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>, field: string) => {
+    const textarea = e.target
+
+    // Reset height to auto to get the correct scrollHeight
+    textarea.style.height = 'auto'
+
+    // Set height to scrollHeight + some padding for an extra line
+    const newHeight = Math.max(80, textarea.scrollHeight + 24) // 80px minimum, +24px for extra line
+    textarea.style.height = `${newHeight}px`
+
+    // Update the value
+    handleTextareaChange(field, textarea.value)
   }
 
   const handleSendChatMessage = async (message: string, history: ChatMessage[]) => {
@@ -395,9 +425,10 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                 <button className="w-5 h-5 bg-slate-500 text-white rounded-full text-xs">S</button>
               </label>
               <textarea
-                className="w-full min-h-[160px] p-3 bg-white border border-slate-200 rounded-md resize-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
+                data-field="general_info"
+                className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-y focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues.general_info}
-                onChange={(e) => handleTextareaChange('general_info', e.target.value)}
+                onChange={(e) => handleTextareaInput(e, 'general_info')}
                 placeholder="수술 관련 일반 정보를 입력하세요"
               />
             </div>
@@ -407,9 +438,10 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                 2. 예정된 수술 이름과 관련 기능의 다른 정보
               </label>
               <textarea
-                className="w-full min-h-[160px] p-3 bg-white border border-slate-200 rounded-md resize-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
+                data-field="surgical_site"
+                className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-y focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues.surgical_site}
-                onChange={(e) => handleTextareaChange('surgical_site', e.target.value)}
+                onChange={(e) => handleTextareaInput(e, 'surgical_site')}
                 placeholder="수술 부위 정보를 입력하세요"
               />
             </div>
@@ -420,9 +452,10 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                 <button className="w-5 h-5 bg-slate-500 text-white rounded-full text-xs">S</button>
               </label>
               <textarea
-                className="w-full min-h-[160px] p-3 bg-white border border-slate-200 rounded-md resize-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
+                data-field="surgical_method"
+                className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-y focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues.surgical_method}
-                onChange={(e) => handleTextareaChange('surgical_method', e.target.value)}
+                onChange={(e) => handleTextareaInput(e, 'surgical_method')}
                 placeholder="수술 방법을 입력하세요"
               />
             </div>
@@ -432,9 +465,10 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                 4. 수술적 방법 및 내용
               </label>
               <textarea
-                className="w-full min-h-[160px] p-3 bg-white border border-slate-200 rounded-md resize-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
+                data-field="purpose"
+                className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-y focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues.purpose}
-                onChange={(e) => handleTextareaChange('purpose', e.target.value)}
+                onChange={(e) => handleTextareaInput(e, 'purpose')}
                 placeholder="수술 목적을 입력하세요"
               />
             </div>
@@ -444,9 +478,10 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                 5. 발생 가능한 환자별/수술별/부위별
               </label>
               <textarea
-                className="w-full min-h-[160px] p-3 bg-white border border-slate-200 rounded-md resize-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
+                data-field="complications"
+                className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-y focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues.complications}
-                onChange={(e) => handleTextareaChange('complications', e.target.value)}
+                onChange={(e) => handleTextareaInput(e, 'complications')}
                 placeholder="수술 관련 합병증을 입력하세요"
               />
             </div>
@@ -456,9 +491,10 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                 6. 환병 발생시 조치사항
               </label>
               <textarea
-                className="w-full min-h-[160px] p-3 bg-white border border-slate-200 rounded-md resize-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
+                data-field="postop_course"
+                className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-y focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues.postop_course}
-                onChange={(e) => handleTextareaChange('postop_course', e.target.value)}
+                onChange={(e) => handleTextareaInput(e, 'postop_course')}
                 placeholder="수술 후 경과를 입력하세요"
               />
             </div>
@@ -469,9 +505,10 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                 <button className="w-5 h-5 bg-slate-500 text-white rounded-full text-xs">S</button>
               </label>
               <textarea
-                className="w-full min-h-[160px] p-3 bg-white border border-slate-200 rounded-md resize-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
+                data-field="others"
+                className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-y focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues.others}
-                onChange={(e) => handleTextareaChange('others', e.target.value)}
+                onChange={(e) => handleTextareaInput(e, 'others')}
                 placeholder="기타 사항을 입력하세요"
               />
             </div>
