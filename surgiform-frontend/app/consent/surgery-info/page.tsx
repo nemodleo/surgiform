@@ -32,7 +32,7 @@ export default function SurgeryInfoRoute() {
     }
   }, [router])
   
-  const handleComplete = (data: { consents?: unknown[]; references?: unknown }) => {
+  const handleComplete = (data: { consents?: unknown; references?: unknown }) => {
     // Store consent data
     sessionStorage.setItem('consentData', JSON.stringify(data))
     router.push('/consent/confirmation')
@@ -52,7 +52,7 @@ export default function SurgeryInfoRoute() {
       onBack={handleBack}
       formData={formData}
       initialData={consentData ? {
-        consents: consentData.consents as ConsentItem[] | undefined,
+        consents: consentData.consents as unknown,
         references: consentData.references
       } : undefined}
     />

@@ -33,7 +33,21 @@ interface ConsentItem {
 }
 
 interface ConsentData {
-  consents?: ConsentItem[]
+  consents?: {
+    prognosis_without_surgery?: string
+    alternative_treatments?: string
+    surgery_purpose_necessity_effect?: string
+    surgery_method_content?: {
+      overall_description?: string
+      estimated_duration?: string
+      method_change_or_addition?: string
+      transfusion_possibility?: string
+      surgeon_change_possibility?: string
+    }
+    possible_complications_sequelae?: string
+    emergency_measures?: string
+    mortality_risk?: string
+  }
   references?: unknown
 }
 
@@ -150,32 +164,19 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       })
       
       // Populate textareas with generated content based on new API structure
-      if (responseData?.consents && Array.isArray(responseData.consents)) {
+      if (responseData?.consents) {
         const newValues: Record<string, string> = {}
-        
-        // Map the consents array items by category
-        responseData.consents.forEach((consent: ConsentItem) => {
-          if (consent.category === "예후" && consent.item_title === "수술하지 않을 경우 예후") {
-            newValues.general_info = consent.description || ""
-          } else if (consent.category === "대체치료" && consent.item_title === "대체 가능한 치료") {
-            newValues.surgical_site = consent.description || ""
-          } else if (consent.category === "수술 목적" && consent.item_title === "수술의 목적, 필요성, 효과") {
-            newValues.purpose = consent.description || ""
-          } else if (consent.category === "수술 방법" && consent.item_title === "수술 방법 및 내용") {
-            newValues.surgical_method = consent.description || ""
-          } else if (consent.category === "합병증" && (consent.item_title === "발생 가능한 합병증 및 후유증" || consent.item_title === "수술 관련 합병증")) {
-            newValues.complications = consent.description || ""
-          } else if (consent.category === "응급조치" && consent.item_title === "응급상황 발생 시 조치사항") {
-            newValues.postop_course = consent.description || ""
-          } else if (consent.category === "수술 정보" && consent.item_title === "일반 정보") {
-            newValues.general_info = consent.description || ""
-          } else if (consent.category === "수술 부위" && consent.item_title === "수술 부위") {
-            newValues.surgical_site = consent.description || ""
-          } else if (consent.category === "기타" && consent.item_title === "기타 사항") {
-            newValues.others = consent.description || ""
-          }
-        })
-        
+        const consents = responseData.consents
+
+        // Map the new API object structure to textarea fields
+        newValues.general_info = consents.prognosis_without_surgery || ""
+        newValues.surgical_site = consents.alternative_treatments || ""
+        newValues.surgical_method = consents.surgery_method_content?.overall_description || ""
+        newValues.purpose = consents.surgery_purpose_necessity_effect || ""
+        newValues.complications = consents.possible_complications_sequelae || ""
+        newValues.postop_course = consents.emergency_measures || ""
+        newValues.others = consents.mortality_risk || ""
+
         setTextareaValues((prev: typeof textareaValues) => ({ ...prev, ...newValues }))
       }
       toast.success('수술 정보가 성공적으로 생성되었습니다')
