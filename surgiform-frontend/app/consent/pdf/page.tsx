@@ -3,11 +3,12 @@
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import PDFGenerationPage from "@/components/pages/PDFGenerationPage"
+import { transformConsentDataToArray, type ConsentObjectData } from "@/lib/consentDataTransformer"
 
 export default function PDFRoute() {
   const router = useRouter()
   const [formData, setFormData] = useState<Record<string, unknown>>({})
-  const [consentData, setConsentData] = useState<Record<string, unknown>>({})
+  const [consentData, setConsentData] = useState<ConsentObjectData>({})
   
   useEffect(() => {
     // Load data from sessionStorage
@@ -44,7 +45,7 @@ export default function PDFRoute() {
   return (
     <PDFGenerationPage
       formData={formData as never}
-      consentData={consentData as never}
+      consentData={transformConsentDataToArray(consentData) as never}
       onHome={handleHome}
       onBack={handleBack}
     />
