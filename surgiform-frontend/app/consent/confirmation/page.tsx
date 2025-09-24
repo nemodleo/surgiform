@@ -15,14 +15,30 @@ export default function ConfirmationRoute() {
     const savedFormData = sessionStorage.getItem('formData')
     const savedConsentData = sessionStorage.getItem('consentData')
 
+    console.log('📦 ConfirmationRoute - Raw savedFormData:', savedFormData)
+    console.log('📦 ConfirmationRoute - Raw savedConsentData:', savedConsentData)
+
     if (!savedFormData || !savedConsentData) {
       // Redirect to start if data is missing
+      console.log('❌ Missing data, redirecting to basic-info')
       router.push('/consent/basic-info')
       return
     }
 
-    setFormData(JSON.parse(savedFormData))
-    setConsentData(JSON.parse(savedConsentData))
+    const parsedFormData = JSON.parse(savedFormData)
+    const parsedConsentData = JSON.parse(savedConsentData)
+
+    console.log('📦 ConfirmationRoute - Parsed formData:', parsedFormData)
+    console.log('📦 ConfirmationRoute - Special conditions:', {
+      medical_history: parsedFormData.medical_history,
+      diabetes: parsedFormData.diabetes,
+      other_conditions: parsedFormData.other_conditions,
+      mortality_risk: parsedFormData.mortality_risk,
+      morbidity_risk: parsedFormData.morbidity_risk
+    })
+
+    setFormData(parsedFormData)
+    setConsentData(parsedConsentData)
   }, [router])
   
   const handleComplete = () => {

@@ -4,33 +4,44 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.surgi-form.
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 180000, // 3 minutes timeout for consent generation
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 export interface ConsentGenerateIn {
+  surgery_name: string;
+  registration_no: string;
   patient_name: string;
   age: number;
   gender: 'M' | 'F';
-  surgery_name: string;
   scheduled_date: string;
   diagnosis: string;
   surgical_site_mark: string;
-  patient_condition: string;
-  registration_no: string;
-  participants?: Array<{
+  participants: Array<{
     name: string;
     is_specialist: boolean;
     department: string;
   }>;
-  special_conditions?: {
-    possum_score?: {
-      physiological_score: number;
-      surgery_score: number;
-      mortality_risk: number;
-      morbidity_risk: number;
-    };
+  patient_condition: string;
+  special_conditions: {
+    past_history: boolean;
+    diabetes: boolean;
+    smoking: boolean;
+    hypertension: boolean;
+    allergy: boolean;
+    cardiovascular: boolean;
+    respiratory: boolean;
+    coagulation: boolean;
+    medications: boolean;
+    renal: boolean;
+    drug_abuse: boolean;
+    other: string | null;
+  };
+  possum_score?: {
+    mortality_risk: number;
+    morbidity_risk: number;
   };
 }
 
@@ -96,8 +107,31 @@ export const surgiformAPI = {
   healthCheck: () => api.get('/health'),
 
   // Consent generation
-  generateConsent: (data: ConsentGenerateIn) => 
+  generateConsent: (data: ConsentGenerateIn) =>
     api.post<ConsentGenerateOut>('/consent', data),
+
+  // Consent generation with progress tracking
+  generateConsentWithProgress: (
+    data: ConsentGenerateIn, 
+    onProgress?: (progress: number, message: string) => void
+  ) => {
+    return new Promise<ConsentGenerateOut>((resolve, reject) => {
+      // 진행률은 SurgeryInfoPage.tsx에서 관리하므로 여기서는 API 호출만
+      // 실제 API 호출
+      api.post<ConsentGenerateOut>('/consent', data)
+        .then(response => {
+          onProgress?.(100, "동의서 생성 완료!");
+          resolve(response.data);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  },
+
+  // Submit consent data to backend
+  submitConsentData: (data: ConsentGenerateIn) =>
+    api.post<{ success: boolean; message: string }>('/consent/submit', data),
 
   // Transform API
   transformContent: (data: { content: string; format?: string }) =>

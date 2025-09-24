@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import toast from "react-hot-toast"
-import { ChevronRight, Plus, Trash2, AlertCircle, Check, Loader2 } from "lucide-react"
+import { ChevronRight, Plus, Trash2, AlertCircle, Check, Loader2, Calculator } from "lucide-react"
+import PossumCalculator from "@/components/possum/PossumCalculator"
 
 interface MedicalTeamMember {
   name: string
@@ -18,6 +19,7 @@ interface FormData {
   patient_name: string
   patient_age: string
   patient_gender: string
+  surgery_name: string
   surgery_date: string
   diagnosis: string
   diagnosis_detail: string
@@ -38,6 +40,8 @@ interface FormData {
   blood_coagulation: boolean
   kidney_disease: boolean
   other_conditions: string
+  mortality_risk: number | string
+  morbidity_risk: number | string
 }
 
 interface BasicInfoPageProps {
@@ -51,6 +55,7 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
     patient_name: initialData?.patient_name || "",
     patient_age: initialData?.patient_age || "",
     patient_gender: initialData?.patient_gender || "",
+    surgery_name: initialData?.surgery_name || "",
     surgery_date: initialData?.surgery_date || "",
     diagnosis: initialData?.diagnosis || "",
     diagnosis_detail: initialData?.diagnosis_detail || "",
@@ -73,17 +78,30 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
     blood_coagulation: initialData?.blood_coagulation || false,
     kidney_disease: initialData?.kidney_disease || false,
     other_conditions: initialData?.other_conditions || "",
+    mortality_risk: initialData?.mortality_risk || "",
+    morbidity_risk: initialData?.morbidity_risk || "",
   })
 
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
   const [touched, setTouched] = useState<Partial<Record<keyof FormData, boolean>>>({})
   const [isValidating, setIsValidating] = useState<Partial<Record<keyof FormData, boolean>>>({})
+  const [isPossumOpen, setIsPossumOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [completedFields, setCompletedFields] = useState<Set<keyof FormData>>(new Set())
   const [isComposing, setIsComposing] = useState(false)
   
   // Refs for auto-focus on error
   const inputRefs = useRef<{ [key: string]: HTMLInputElement | HTMLSelectElement | null }>({})
+
+  // Track if form has already been submitted to prevent duplicate submissions
+  const hasSubmittedRef = useRef(false)
+
+  // Reset submission flag when component unmounts
+  useEffect(() => {
+    return () => {
+      hasSubmittedRef.current = false
+    }
+  }, [])
 
   // Auto-format registration number with hyphen (XXXX-XXXX format)
   const formatRegistrationNumber = (value: string) => {
@@ -254,9 +272,10 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (isSubmitting) return
-    
+
+    if (isSubmitting || hasSubmittedRef.current) return
+
+    hasSubmittedRef.current = true
     setIsSubmitting(true)
     
     // Validate all required fields
@@ -283,6 +302,7 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
     
     if (hasError) {
       toast.error("필수 정보를 올바르게 입력해주세요")
+      hasSubmittedRef.current = false
       setIsSubmitting(false)
       
       // Focus on first error field
@@ -302,6 +322,7 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
     // Check medical team
     if (formData.medical_team.length === 0) {
       toast.error("최소 1명의 의료진을 추가해주세요")
+      hasSubmittedRef.current = false
       setIsSubmitting(false)
       return
     }
@@ -312,13 +333,26 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
     
     if (invalidTeamMember) {
       toast.error("의료진 정보를 완성해주세요")
+      hasSubmittedRef.current = false
       setIsSubmitting(false)
       return
     }
     
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 800))
-    
+
+    console.log('🔄 BasicInfo form submission - Final formData:', formData)
+    console.log('🔄 Special conditions in formData:', {
+      medical_history: formData.medical_history,
+      diabetes: formData.diabetes,
+      smoking: formData.smoking,
+      hypertension: formData.hypertension,
+      allergy: formData.allergy,
+      other_conditions: formData.other_conditions,
+      mortality_risk: formData.mortality_risk,
+      morbidity_risk: formData.morbidity_risk
+    })
+
     onComplete(formData)
     toast.success("기본 정보가 저장되었습니다")
     setIsSubmitting(false)
@@ -336,6 +370,23 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
       ...formData,
       medical_team: formData.medical_team.filter((_, i) => i !== index)
     })
+  }
+
+  const handlePossumCalculate = (results: { mortality_risk: number; morbidity_risk: number }) => {
+    setFormData({
+      ...formData,
+      mortality_risk: (results.mortality_risk * 100).toFixed(2),
+      morbidity_risk: (results.morbidity_risk * 100).toFixed(2)
+    })
+    toast.success("POSSUM 점수가 계산되었습니다")
+  }
+
+  const openPossumCalculator = () => {
+    setIsPossumOpen(true)
+  }
+
+  const closePossumCalculator = () => {
+    setIsPossumOpen(false)
   }
 
   const updateMedicalTeamMember = (index: number, field: keyof MedicalTeamMember, value: string | boolean) => {
@@ -529,30 +580,31 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
                 )}
               </div>
 
-              <div>
-                <Label className={labelStyle}>수술부위표시</Label>
-                <div className="mt-1 space-y-2">
-                  <div className="flex items-center gap-3 h-10">
-                    {["Rt", "Lt", "Both", "해당없음"].map((site) => (
-                      <label key={site} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="surgery_site"
-                          value={site}
-                          checked={formData.surgery_site === site}
-                          onChange={(e) => handleFieldChange('surgery_site', e.target.value)}
-                          className="w-4 h-4"
-                        />
-                        <span className="text-sm">{site}</span>
-                      </label>
-                    ))}
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <Label className={labelStyle}>
+                    수술명
+                  </Label>
+                  <div className="relative mt-1">
+                    <Input
+                      value={formData.surgery_name}
+                      onChange={(e) => setFormData({...formData, surgery_name: e.target.value})}
+                      className="h-10 bg-white border border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none rounded-md"
+                      placeholder="예: 복강경하 담낭절제술"
+                    />
                   </div>
-                  <Input
-                    value={formData.surgery_site_detail}
-                    onChange={(e) => setFormData({...formData, surgery_site_detail: e.target.value})}
-                    className="h-10 bg-white border border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none rounded-md"
-                    placeholder="수술부위 상세 입력"
-                  />
+                </div>
+
+                <div className="flex-1">
+                  <Label className={labelStyle}>수술부위표시</Label>
+                  <div className="relative mt-1">
+                    <Input
+                      value={formData.surgery_site_detail}
+                      onChange={(e) => setFormData({...formData, surgery_site_detail: e.target.value})}
+                      className="h-10 bg-white border border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none rounded-md"
+                      placeholder="예: RUQ, 우상복부"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -586,7 +638,7 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
                   className="grid grid-cols-1 md:grid-cols-4 gap-3 p-4 bg-slate-50 rounded-lg border border-slate-100"
                 >
                   <div>
-                    <Label className="text-xs font-medium text-slate-600">집도의</Label>
+                    <Label className="text-xs font-medium text-slate-600">{index === 0 ? "집도의" : "보조의사"}</Label>
                     <Input
                       value={member.name}
                       onChange={(e) => updateMedicalTeamMember(index, "name", e.target.value)}
@@ -611,7 +663,7 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
                       value={member.department}
                       onChange={(e) => updateMedicalTeamMember(index, "department", e.target.value)}
                       className="h-9 mt-1 bg-white border border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none rounded-md"
-                      placeholder="예: 외과"
+                      placeholder="예: GS"
                     />
                   </div>
                   <div className="flex items-end">
@@ -677,7 +729,10 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
                         type="radio"
                         name={item.id}
                         checked={formData[item.id as keyof FormData] === true}
-                        onChange={() => setFormData({...formData, [item.id]: true})}
+                        onChange={() => {
+                          console.log(`Setting ${item.id} to true`)
+                          setFormData({...formData, [item.id]: true})
+                        }}
                         className="mr-1.5"
                       />
                       <span className="text-sm">유</span>
@@ -687,7 +742,10 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
                         type="radio"
                         name={item.id}
                         checked={formData[item.id as keyof FormData] === false}
-                        onChange={() => setFormData({...formData, [item.id]: false})}
+                        onChange={() => {
+                          console.log(`Setting ${item.id} to false`)
+                          setFormData({...formData, [item.id]: false})
+                        }}
                         className="mr-1.5"
                       />
                       <span className="text-sm">무</span>
@@ -704,6 +762,59 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
                 className="h-10 bg-white border border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none rounded-md"
                 placeholder="기타 특이사항을 입력하세요"
               />
+            </div>
+          </div>
+        </div>
+
+        {/* POSSUM 점수 */}
+        <div className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-base font-semibold text-slate-900">
+                POSSUM 점수
+              </h3>
+              <Button
+                type="button"
+                onClick={openPossumCalculator}
+                className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4 rounded-lg flex items-center gap-2"
+              >
+                <Calculator className="h-4 w-4" />
+                계산하기
+              </Button>
+            </div>
+
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className={labelStyle}>사망률 위험도 (%)</Label>
+                <div className="relative mt-1">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value={formData.mortality_risk}
+                    onChange={(e) => setFormData({...formData, mortality_risk: e.target.value})}
+                    className="h-10 bg-white border border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none rounded-md"
+                    placeholder=""
+                  />
+                </div>
+              </div>
+              <div>
+                <Label className={labelStyle}>합병증 위험도 (%)</Label>
+                <div className="relative mt-1">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value={formData.morbidity_risk}
+                    onChange={(e) => setFormData({...formData, morbidity_risk: e.target.value})}
+                    className="h-10 bg-white border border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none rounded-md"
+                    placeholder=""
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -732,6 +843,13 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
           </Button>
         </div>
       </form>
+
+      {/* POSSUM Calculator Modal */}
+      <PossumCalculator
+        isOpen={isPossumOpen}
+        onClose={closePossumCalculator}
+        onCalculate={handlePossumCalculate}
+      />
     </div>
   )
 }

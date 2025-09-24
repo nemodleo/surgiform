@@ -4,6 +4,12 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import SurgeryInfoPage from "@/components/pages/SurgeryInfoPage"
 
+interface Reference {
+  title: string
+  url: string
+  text: string
+}
+
 interface ConsentData {
   consents?: {
     prognosis_without_surgery?: string
@@ -20,7 +26,16 @@ interface ConsentData {
     emergency_measures?: string
     mortality_risk?: string
   }
-  references?: unknown
+  references?: {
+    [key: string]: Reference[] | undefined
+    prognosis_without_surgery?: Reference[]
+    alternative_treatments?: Reference[]
+    surgery_purpose_necessity_effect?: Reference[]
+    surgery_method_content?: Reference[]
+    possible_complications_sequelae?: Reference[]
+    emergency_measures?: Reference[]
+    mortality_risk?: Reference[]
+  }
 }
 
 export default function SurgeryInfoRoute() {
@@ -29,6 +44,9 @@ export default function SurgeryInfoRoute() {
   const [consentData, setConsentData] = useState<ConsentData | null>(null)
   
   useEffect(() => {
+    // Clear navigation flag from basic-info page
+    sessionStorage.removeItem('basicInfoNavigating')
+
     // Load form data from sessionStorage
     const savedFormData = sessionStorage.getItem('formData')
     if (savedFormData) {
@@ -37,7 +55,7 @@ export default function SurgeryInfoRoute() {
       // Redirect to basic info if no form data exists
       router.push('/consent/basic-info')
     }
-    
+
     // Load consent data if exists
     const savedConsentData = sessionStorage.getItem('consentData')
     if (savedConsentData) {

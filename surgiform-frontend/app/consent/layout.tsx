@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation"
 
 const STEP_LABELS = [
   "기본 정보",
-  "수술 정보", 
+  "수술 동의서", 
   "확인 및 서명",
   "PDF 생성"
 ]

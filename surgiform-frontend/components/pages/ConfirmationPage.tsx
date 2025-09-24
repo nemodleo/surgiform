@@ -2,8 +2,11 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { RotateCcw, Check, Plus, ChevronLeft, ChevronRight, X } from "lucide-react"
+import { RotateCcw, Check, Plus, ChevronLeft, ChevronRight, X, Loader2 } from "lucide-react"
 import SignatureCanvas from "react-signature-canvas"
+import { surgiformAPI } from "@/lib/api"
+import { createConsentSubmission } from "@/lib/consentDataFormatter"
+import toast from "react-hot-toast"
 
 interface ConsentItem {
   item_title: string
@@ -14,11 +17,38 @@ interface ConsentData {
   consents: ConsentItem[]
 }
 
-interface FormData {
+interface FormData extends Record<string, unknown> {
+  registration_number: string
   patient_name: string
   patient_age: string
   patient_gender: string
-  surgery_name?: string
+  surgery_name: string
+  surgery_date: string
+  diagnosis: string
+  diagnosis_detail: string
+  surgery_site: string
+  surgery_site_detail: string
+  medical_team: Array<{
+    name: string
+    is_specialist: boolean
+    department: string
+  }>
+  medical_history: boolean
+  smoking: boolean
+  allergy: boolean
+  airway_abnormal: boolean
+  respiratory_disease: boolean
+  medication: boolean
+  drug_abuse: boolean
+  diabetes: boolean
+  hypertension: boolean
+  hypotension: boolean
+  cardiovascular: boolean
+  blood_coagulation: boolean
+  kidney_disease: boolean
+  other_conditions: string
+  mortality_risk: number | string
+  morbidity_risk: number | string
   participants?: { name: string }[]
 }
 
@@ -36,6 +66,8 @@ interface CanvasData {
 }
 
 export default function ConfirmationPage({ onComplete, onBack, formData, consentData }: ConfirmationPageProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const submissionRef = useRef(false)
   const [signatures, setSignatures] = useState<Record<string, string>>(() => {
     // Try to restore signatures from sessionStorage on initial load
     if (typeof window !== 'undefined') {
@@ -330,34 +362,72 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     delete signatureRefs.current[canvasId]
   }
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
+    if (isSubmitting || submissionRef.current) {
+      console.log('Already submitting, ignoring duplicate call')
+      return
+    }
+
     console.log('handleComplete called')
     console.log('Current signatures:', Object.keys(signatures))
     console.log('Signatures patient exists:', !!signatures.patient)
     console.log('Signatures doctor exists:', !!signatures.doctor)
-    
-    // 서명 데이터와 캔버스 데이터를 모두 저장 (페이지에서는 사용, PDF에서는 제외)
-    const allSignatureData = {
-      ...signatures,
-      canvases: canvases.filter(c => c.imageData).map(c => ({
-        id: c.id,
-        title: c.title,
-        imageData: c.imageData
-      }))
+
+    setIsSubmitting(true)
+    submissionRef.current = true
+
+    try {
+      // Debug: Log original form data
+      console.log('Original formData before transformation:', formData)
+      console.log('formData.other_conditions:', formData.other_conditions)
+      console.log('formData.medical_history:', formData.medical_history)
+      console.log('formData.diabetes:', formData.diabetes)
+
+      // Prepare consent data for backend submission
+      const consentSubmissionData = createConsentSubmission(formData)
+      console.log('Submitting consent data to backend:', consentSubmissionData)
+      console.log('special_conditions.other:', consentSubmissionData.special_conditions.other)
+      console.log('special_conditions.past_history:', consentSubmissionData.special_conditions.past_history)
+
+      // Submit to backend
+      const response = await surgiformAPI.submitConsentData(consentSubmissionData)
+      console.log('Backend response:', response.data)
+
+      if (response.data.success) {
+        toast.success('동의서가 성공적으로 제출되었습니다')
+
+        // 서명 데이터와 캔버스 데이터를 모두 저장 (페이지에서는 사용, PDF에서는 제외)
+        const allSignatureData = {
+          ...signatures,
+          canvases: canvases.filter(c => c.imageData).map(c => ({
+            id: c.id,
+            title: c.title,
+            imageData: c.imageData
+          }))
+        }
+
+        console.log('Saving signature data:', Object.keys(allSignatureData))
+
+        // Save to sessionStorage for consent flow persistence
+        sessionStorage.setItem('signatureData', JSON.stringify(allSignatureData))
+        sessionStorage.setItem('confirmationCompleted', 'true')
+        sessionStorage.setItem('canvasDrawings', JSON.stringify(canvases.filter(c => c.imageData)))
+        // Also save to localStorage as backup
+        localStorage.setItem('signatureData', JSON.stringify(allSignatureData))
+        localStorage.setItem('canvasDrawings', JSON.stringify(canvases.filter(c => c.imageData)))
+
+        console.log('Data saved to storage')
+        onComplete()
+      } else {
+        toast.error(response.data.message || '동의서 제출에 실패했습니다')
+      }
+    } catch (error) {
+      console.error('Error submitting consent data:', error)
+      toast.error('동의서 제출 중 오류가 발생했습니다')
+    } finally {
+      setIsSubmitting(false)
+      submissionRef.current = false
     }
-    
-    console.log('Saving signature data:', Object.keys(allSignatureData))
-    
-    // Save to sessionStorage for consent flow persistence
-    sessionStorage.setItem('signatureData', JSON.stringify(allSignatureData))
-    sessionStorage.setItem('confirmationCompleted', 'true')
-    sessionStorage.setItem('canvasDrawings', JSON.stringify(canvases.filter(c => c.imageData)))
-    // Also save to localStorage as backup
-    localStorage.setItem('signatureData', JSON.stringify(allSignatureData))
-    localStorage.setItem('canvasDrawings', JSON.stringify(canvases.filter(c => c.imageData)))
-    
-    console.log('Data saved to storage')
-    onComplete()
   }
 
   const requiredSignatures = [
@@ -380,53 +450,197 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
           </p>
         </div>
         {/* 환자 정보 */}
-        <div className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors">
-          <div className="p-6">
+        <div>
             <h3 className="text-base font-semibold text-slate-900 mb-6">환자 정보</h3>
-            <div className="grid md:grid-cols-2 gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="text-slate-600">이름:</span>
-                <span className="font-medium text-slate-900">{formData.patient_name}</span>
+            <div className="space-y-6">
+              {/* 기본 정보 테이블 */}
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <tbody className="divide-y divide-slate-200">
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">등록번호</th>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.registration_number || ""}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">환자명</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">{formData.patient_name}</td>
+                    </tr>
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">수술명</th>
+                      <td className="px-4 py-3 text-sm text-slate-900" colSpan={3}>{formData.surgery_name || ""}</td>
+                    </tr>
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">나이/성별</th>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.patient_age}세 / {formData.patient_gender === "MALE" ? "남성" : "여성"}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">시행예정일</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">{formData.surgery_date || ""}</td>
+                    </tr>
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">진단명</th>
+                      <td className="px-4 py-3 text-sm text-slate-900" colSpan={3}>{formData.diagnosis || ""}</td>
+                    </tr>
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">수술부위표시</th>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.surgery_site_detail || ""}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">수술부위</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">{formData.surgery_site || ""}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-slate-600">나이:</span>
-                <span className="font-medium text-slate-900">{formData.patient_age}세</span>
+
+              {/* 참여 의료진 */}
+              <div>
+                <h4 className="text-sm font-semibold text-slate-900 mb-3">※ 참여 의료진</h4>
+                <div className="border border-slate-200 rounded-lg overflow-hidden">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-slate-50">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">집도의</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">전문의여부</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-slate-700">진료과목</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {(formData.medical_team || formData.participants || []).map((doctor: any, index: number) => (
+                        <tr key={index}>
+                          <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{doctor.name || ""}</td>
+                          <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{doctor.is_specialist ? "전문의" : "일반의"}</td>
+                          <td className="px-4 py-3 text-sm text-slate-900">{doctor.department || ""}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-slate-600">성별:</span>
-                <span className="font-medium text-slate-900">{formData.patient_gender === "MALE" ? "남성" : "여성"}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-slate-600">수술명:</span>
-                <span className="font-medium text-slate-900">{formData.surgery_name || "지정되지 않음"}</span>
+
+              {/* 환자 상태 및 특이사항 */}
+              <div>
+                <h4 className="text-sm font-semibold text-slate-900 mb-3">1. 환자 상태 및 특이사항</h4>
+                <div className="border border-slate-200 rounded-lg overflow-hidden">
+                  <table className="w-full">
+                    <tbody className="divide-y divide-slate-200">
+                      <tr>
+                        <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">과거병력</th>
+                        <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.medical_history ? "있음" : "없음"}</td>
+                        <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">당뇨병</th>
+                        <td className="px-4 py-3 text-sm text-slate-900">{formData.diabetes ? "있음" : "없음"}</td>
+                      </tr>
+                      <tr>
+                        <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">흡연유무</th>
+                        <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.smoking ? "흡연" : "비흡연"}</td>
+                        <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">고혈압</th>
+                        <td className="px-4 py-3 text-sm text-slate-900">{formData.hypertension ? "있음" : "없음"}</td>
+                      </tr>
+                      <tr>
+                        <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">알레르기</th>
+                        <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.allergy ? "있음" : "없음"}</td>
+                        <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">저혈압</th>
+                        <td className="px-4 py-3 text-sm text-slate-900">{formData.hypotension ? "있음" : "없음"}</td>
+                      </tr>
+                      <tr>
+                        <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">기도이상</th>
+                        <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.airway_abnormal ? "있음" : "없음"}</td>
+                        <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">심혈관질환</th>
+                        <td className="px-4 py-3 text-sm text-slate-900">{formData.cardiovascular ? "있음" : "없음"}</td>
+                      </tr>
+                      <tr>
+                        <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">호흡기질환</th>
+                        <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.respiratory_disease ? "있음" : "없음"}</td>
+                        <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">혈액응고 관련 질환</th>
+                        <td className="px-4 py-3 text-sm text-slate-900">{formData.blood_coagulation ? "있음" : "없음"}</td>
+                      </tr>
+                      <tr>
+                        <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">복용약물</th>
+                        <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.medication ? "있음" : "없음"}</td>
+                        <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">신장질환</th>
+                        <td className="px-4 py-3 text-sm text-slate-900">{formData.kidney_disease ? "있음" : "없음"}</td>
+                      </tr>
+                      <tr>
+                        <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">마약복용 혹은 약물사고</th>
+                        <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.drug_abuse ? "있음" : "없음"}</td>
+                        <td className="px-4 py-3 text-sm text-slate-900" colSpan={2}></td>
+                      </tr>
+                      <tr>
+                        <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">기타</th>
+                        <td className="px-4 py-3 text-sm text-slate-900" colSpan={3}>{formData.other_conditions || ""}</td>
+                      </tr>
+                    </tbody>
+                  </table>
               </div>
             </div>
           </div>
         </div>
 
         {/* 수술 동의 내용 */}
-        {consentData?.consents && (
-          <div className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors">
-            <div className="p-6">
-              <h3 className="text-base font-semibold text-slate-900 mb-6">수술 동의 내용</h3>
-              <div className="space-y-4">
-                {consentData.consents.map((consent: ConsentItem, index: number) => (
-                  <div key={index} className="p-4 bg-slate-50 rounded-lg">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium text-slate-900">{consent.item_title}</h4>
+        <div>
+              {/* <h3 className="text-base font-semibold text-slate-900 mb-6">수술 동의 내용</h3> */}
+              <div>
+            {/* 번호별 수술 정보 */}
+            {(() => {
+              try {
+                const saved = sessionStorage.getItem('surgeryInfoTextareas');
+                const surgeryData = saved ? JSON.parse(saved) : {};
+                
+                // consentData에서도 데이터를 가져와서 병합
+                const consentConsents = consentData?.consents || {};
+                
+                const allItems = [
+                  // 1. 환자 상태 및 특이사항은 상단 환자 정보 섹션에서 이미 표시되므로 생략
+                  { number: "2", title: "예정된 수술/시술/검사를 하지 않을 경우의 예후", key: "2", consentKey: "prognosis_without_surgery" },
+                  { number: "3", title: "예정된 수술 이외의 시행 가능한 다른 방법", key: "3", consentKey: "alternative_treatments" },
+                  { number: "4", title: "수술 목적/필요/효과", key: "4", consentKey: "surgery_purpose_necessity_effect" },
+                  { number: "5-1", title: "수술 과정 전반에 대한 설명", key: "5-1", consentKey: "surgery_method_content.overall_description" },
+                  { number: "5-2", title: "수술 추정 소요시간", key: "5-2", consentKey: "surgery_method_content.estimated_duration" },
+                  { number: "5-3", title: "수술 방법 변경 및 수술 추가 가능성", key: "5-3", consentKey: "surgery_method_content.method_change_or_addition" },
+                  { number: "5-4", title: "수혈 가능성", key: "5-4", consentKey: "surgery_method_content.transfusion_possibility" },
+                  { number: "5-5", title: "집도의 변경 가능성", key: "5-5", consentKey: "surgery_method_content.surgeon_change_possibility" },
+                  { number: "6", title: "발생 가능한 합병증/후유증/부작용", key: "6", consentKey: "possible_complications_sequelae" },
+                  { number: "7", title: "문제 발생시 조치사항", key: "7", consentKey: "emergency_measures" },
+                  { number: "8", title: "진단/수술 관련 사망 위험성", key: "8", consentKey: "mortality_risk" }
+                ];
+                
+                return allItems.map((item, index) => {
+                  // 여러 소스에서 데이터 가져오기 (우선순위: surgeryData 번호키 > consentData > surgeryData 기존키)
+                  let content = surgeryData[item.key] || "";
+                  
+                  // consentData에서 데이터 가져오기
+                  if (!content && item.consentKey) {
+                    if (item.consentKey.includes('.')) {
+                      // 중첩된 키 처리 (예: surgery_method_content.overall_description)
+                      const keys = item.consentKey.split('.');
+                      let value = consentConsents;
+                      for (const key of keys) {
+                        value = value?.[key as keyof typeof value];
+                        if (!value) break;
+                      }
+                      content = value || "";
+                    } else {
+                      content = (consentConsents as any)[item.consentKey] || "";
+                    }
+                  }
+                  
+                  // 모든 항목을 표시 (내용이 없어도 제목은 보여줌)
+                  
+                  return (
+                  <div key={index} className="mb-10">
+                    <div className="flex items-center justify-between mb-1">
+                      <h4 className="text-sm font-semibold text-slate-900">{item.number}. {item.title}</h4>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => addCanvas(consent.item_title)}
+                        onClick={() => addCanvas(`${item.number}. ${item.title}`)}
                         className="border-slate-200 hover:bg-slate-50"
                       >
                         <Plus className="h-4 w-4 mr-1" />
                         그림 추가
                       </Button>
                     </div>
-                    <p className="text-sm text-slate-600 whitespace-pre-wrap">{consent.description}</p>
+                    <div className="mb-3">
+                      <span className="text-sm text-slate-900 whitespace-pre-wrap">
+                        {content || "내용이 입력되지 않았습니다."}
+                      </span>
+                    </div>
                     
-                    {canvases.filter(c => c.title.includes(consent.item_title)).map(canvas => (
+                    {canvases.filter(c => c.title.includes(`${item.number}. ${item.title}`)).map(canvas => (
                       <div key={canvas.id} className="mt-3 p-3 bg-white rounded-md border border-slate-200">
                         <div className="flex items-center justify-between mb-2">
                           <p className="text-xs font-medium text-slate-700">{canvas.title}</p>
@@ -437,7 +651,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                               onClick={() => {
                                 if (signatureRefs.current[canvas.id]) {
                                   signatureRefs.current[canvas.id].clear()
-                                  // Clear the saved data
                                   setCanvases(prev => {
                                     const updated = prev.map(c => 
                                       c.id === canvas.id ? { ...c, imageData: undefined } : c
@@ -445,7 +658,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                                     sessionStorage.setItem('confirmationCanvases', JSON.stringify(updated))
                                     return updated
                                   })
-                                  // Mark as not restored so it can be restored again if needed
                                   restoredCanvases.current.delete(canvas.id)
                                 }
                               }}
@@ -466,7 +678,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                           </div>
                         </div>
                         
-                        {/* Drawing canvas with auto-save */}
                         <div className="border border-slate-200 rounded bg-white relative">
                           <SignatureCanvas
                             ref={(ref) => {
@@ -474,18 +685,16 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                                 console.log(`🎨 Setting ref for canvas ${canvas.id}`)
                                 signatureRefs.current[canvas.id] = ref
                                 
-                                // Check for pending restore data or current canvas data
                                 const imageData = pendingRestores.current[canvas.id] || canvas.imageData
                                 if (imageData && !restoredCanvases.current.has(canvas.id)) {
                                   console.log(`📦 Found image data for canvas ${canvas.id}, restoring...`)
-                                  // Use a longer delay to ensure canvas is fully ready
                                   setTimeout(() => restoreCanvas(canvas.id, imageData), 300)
                                 }
                               }
                             }}
                             canvasProps={{
                               className: "w-full",
-                              height: 250
+                                height: 500
                             }}
                             onEnd={() => {
                               console.log(`🎨 onEnd triggered for canvas ${canvas.id}`)
@@ -499,24 +708,31 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                       </div>
                     ))}
                   </div>
-                ))}
+                  );
+                }).filter(Boolean); // null 항목 제거
+              } catch (e) {
+                console.error('Error loading surgery info data:', e);
+                return null;
+              }
+            })()}
+
+            {/* API에서 생성된 동의 내용들은 1-8번 항목으로만 제한하므로 제거 */}
               </div>
             </div>
-          </div>
-        )}
 
         {/* 전자 서명 */}
-        <div className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors">
-          <div className="p-6">
-            <h3 className="text-base font-semibold text-slate-900 mb-6">전자 서명</h3>
-            <div className="space-y-4">
+        <div>
+            <h3 className="text-base font-semibold text-slate-900 mb-6">9. 전자 서명</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {requiredSignatures.map(sig => (
                 <div key={sig.key} className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-slate-700">{sig.label} - {sig.name}</label>
+                  <label className="text-sm font-medium text-slate-700">
+                    {sig.label} - {sig.name}
+                  </label>
                     <div className="flex gap-2">
                       <Button
-                        variant="outline"
+                      variant="ghost"
                         size="sm"
                         onClick={() => handleSignatureClear(sig.key)}
                         className="border-slate-200 hover:bg-slate-50"
@@ -538,7 +754,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                       }}
                       canvasProps={{
                         className: "w-full",
-                        height: 150
+                      height: 250
                       }}
                       onEnd={() => handleSignatureSave(sig.key)}
                     />
@@ -551,7 +767,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                   )}
                 </div>
               ))}
-            </div>
           </div>
         </div>
 
@@ -565,13 +780,22 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
             <ChevronLeft className="h-4 w-4" />
             이전 단계
           </Button>
-          <Button 
+          <Button
             onClick={handleComplete}
-            disabled={!allSignaturesComplete}
+            disabled={!allSignaturesComplete || isSubmitting}
             className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white px-6 py-3 h-auto font-medium rounded-lg transition-all flex items-center gap-2"
           >
-            다음 단계
-            <ChevronRight className="h-4 w-4" />
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                제출중...
+              </>
+            ) : (
+              <>
+                다음 단계
+                <ChevronRight className="h-4 w-4" />
+              </>
+            )}
           </Button>
         </div>
       </div>
