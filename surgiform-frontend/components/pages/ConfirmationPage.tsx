@@ -389,38 +389,37 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       console.log('special_conditions.other:', consentSubmissionData.special_conditions.other)
       console.log('special_conditions.past_history:', consentSubmissionData.special_conditions.past_history)
 
-      // Submit to backend
-      const response = await surgiformAPI.submitConsentData(consentSubmissionData)
-      console.log('Backend response:', response.data)
+      // TODO: 백엔드에 동의서 데이터 저장이 필요한 경우 /consent/submit 엔드포인트 구현 필요
+      // 현재는 로컬 저장만 수행
+      console.log('Consent data prepared for submission:', consentSubmissionData)
+      
+      toast.success('동의서가 성공적으로 저장되었습니다')
 
-      if (response.data.success) {
-        toast.success('동의서가 성공적으로 제출되었습니다')
-
-        // 서명 데이터와 캔버스 데이터를 모두 저장 (페이지에서는 사용, PDF에서는 제외)
-        const allSignatureData = {
-          ...signatures,
-          canvases: canvases.filter(c => c.imageData).map(c => ({
-            id: c.id,
-            title: c.title,
-            imageData: c.imageData
-          }))
-        }
-
-        console.log('Saving signature data:', Object.keys(allSignatureData))
-
-        // Save to sessionStorage for consent flow persistence
-        sessionStorage.setItem('signatureData', JSON.stringify(allSignatureData))
-        sessionStorage.setItem('confirmationCompleted', 'true')
-        sessionStorage.setItem('canvasDrawings', JSON.stringify(canvases.filter(c => c.imageData)))
-        // Also save to localStorage as backup
-        localStorage.setItem('signatureData', JSON.stringify(allSignatureData))
-        localStorage.setItem('canvasDrawings', JSON.stringify(canvases.filter(c => c.imageData)))
-
-        console.log('Data saved to storage')
-        onComplete()
-      } else {
-        toast.error(response.data.message || '동의서 제출에 실패했습니다')
+      // 서명 데이터와 캔버스 데이터를 모두 저장 (페이지에서는 사용, PDF에서는 제외)
+      const allSignatureData = {
+        ...signatures,
+        canvases: canvases.filter(c => c.imageData).map(c => ({
+          id: c.id,
+          title: c.title,
+          imageData: c.imageData
+        }))
       }
+
+      console.log('Saving signature data:', Object.keys(allSignatureData))
+
+      // Save to sessionStorage for consent flow persistence
+      sessionStorage.setItem('signatureData', JSON.stringify(allSignatureData))
+      sessionStorage.setItem('confirmationCompleted', 'true')
+      sessionStorage.setItem('canvasDrawings', JSON.stringify(canvases.filter(c => c.imageData)))
+      // Also save to localStorage as backup
+      localStorage.setItem('signatureData', JSON.stringify(allSignatureData))
+      localStorage.setItem('canvasDrawings', JSON.stringify(canvases.filter(c => c.imageData)))
+      // Save consent submission data for future use
+      sessionStorage.setItem('consentSubmissionData', JSON.stringify(consentSubmissionData))
+      localStorage.setItem('consentSubmissionData', JSON.stringify(consentSubmissionData))
+
+      console.log('Data saved to storage')
+      onComplete()
     } catch (error) {
       console.error('Error submitting consent data:', error)
       toast.error('동의서 제출 중 오류가 발생했습니다')

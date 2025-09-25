@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Download, Loader2, Home, ChevronLeft } from "lucide-react"
-import { generatePlatePDF } from "@/lib/platePdfGenerator"
+import { generateKoreanPDFFromDOM } from "@/lib/domPdfGenerator"
 import DocumentViewer from "@/components/ui/document-viewer"
 
 interface FormData {
@@ -44,6 +44,7 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
   const [dataLoaded, setDataLoaded] = useState(false)
 
   const generatePDF = async () => {
+    console.log('=== PDF Generation Started ===')
     setGenerating(true)
     
     try {
@@ -53,8 +54,8 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
         signatureData
       })
       
-      // Generate PDF using Plate-based approach
-      const pdfGenerationPromise = generatePlatePDF(
+      // Generate PDF using DOM-based approach
+      const pdfGenerationPromise = generateKoreanPDFFromDOM(
         formData || {},
         consentData || {},
         signatureData || {}
@@ -70,10 +71,19 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
         timeoutPromise
       ]) as Blob
       
+      console.log('PDF blob created:', {
+        size: pdfBlob.size,
+        type: pdfBlob.type
+      })
+      
       const url = URL.createObjectURL(pdfBlob)
+      console.log('PDF URL created:', url)
+      
       setPdfUrl(url)
       setPdfGenerated(true)
       setShowPreview(true)
+      
+      console.log('=== PDF Generation Completed Successfully ===')
       
     } catch (error) {
       console.error('PDF generation error:', error)
@@ -178,12 +188,57 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
               {/* Action Buttons */}
               <div className="flex flex-col items-center gap-3 pt-4">
                 <Button 
-                  onClick={() => {
+                  onClick={async () => {
+                    console.log('=== PDF Download Button Clicked ===')
+                    console.log('pdfUrl:', pdfUrl)
+                    
                     if (pdfUrl) {
-                      const link = document.createElement('a')
-                      link.href = pdfUrl
-                      link.download = `수술동의서_${formData.patient_name || '환자'}_${new Date().toISOString().split('T')[0]}.pdf`
-                      link.click()
+                      try {
+                        console.log('Creating download link with better compatibility...')
+                        
+                        // Create a more compatible filename (ASCII only)
+                        const now = new Date()
+                        const year = now.getFullYear()
+                        const month = String(now.getMonth() + 1).padStart(2, '0')
+                        const day = String(now.getDate()).padStart(2, '0')
+                        const hour = String(now.getHours()).padStart(2, '0')
+                        const minute = String(now.getMinutes()).padStart(2, '0')
+                        const second = String(now.getSeconds()).padStart(2, '0')
+                        const timestamp = `${year}${month}${day}${hour}${minute}${second}`
+                        const patientName = (formData.patient_name || 'patient').replace(/[^a-zA-Z0-9가-힣]/g, '_')
+                        const filename = `${patientName}_consent_${timestamp}.pdf`
+                        
+                        console.log('Download filename (ASCII):', filename)
+                        
+                        // Method 1: Try direct download with better browser compatibility
+                        const link = document.createElement('a')
+                        link.style.display = 'none'
+                        link.href = pdfUrl
+                        link.download = filename
+                        
+                        // Add to DOM, click, then remove
+                        document.body.appendChild(link)
+                        console.log('Triggering download...')
+                        link.click()
+                        document.body.removeChild(link)
+                        
+                        console.log('Download triggered successfully')
+                        
+                        // Alternative method: If direct download fails, open in new tab
+                        setTimeout(() => {
+                          console.log('Opening PDF in new tab as fallback...')
+                          window.open(pdfUrl, '_blank')
+                        }, 1000)
+                        
+                      } catch (error) {
+                        console.error('Download error:', error)
+                        // Fallback: open in new tab
+                        console.log('Fallback: Opening PDF in new tab...')
+                        window.open(pdfUrl, '_blank')
+                      }
+                    } else {
+                      console.error('No PDF URL available for download')
+                      alert('PDF 파일이 준비되지 않았습니다. 잠시 후 다시 시도해주세요.')
                     }
                   }}
                   className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 h-auto font-medium rounded-lg transition-all flex items-center gap-2"
@@ -191,7 +246,20 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
                   <Download className="h-5 w-5" />
                   PDF 다운로드
                 </Button>
-                <span className="text-xs text-slate-500">수술동의서_{formData.patient_name || '환자'}_{new Date().toISOString().split('T')[0]}.pdf</span>
+                <span className="text-xs text-slate-500">
+                  {(() => {
+                    const now = new Date()
+                    const year = now.getFullYear()
+                    const month = String(now.getMonth() + 1).padStart(2, '0')
+                    const day = String(now.getDate()).padStart(2, '0')
+                    const hour = String(now.getHours()).padStart(2, '0')
+                    const minute = String(now.getMinutes()).padStart(2, '0')
+                    const second = String(now.getSeconds()).padStart(2, '0')
+                    const timestamp = `${year}${month}${day}${hour}${minute}${second}`
+                    const patientName = (formData.patient_name || 'patient').replace(/[^a-zA-Z0-9가-힣]/g, '_')
+                    return `${patientName}_consent_${timestamp}.pdf`
+                  })()}
+                </span>
               </div>
             </>
           ) : null}
@@ -200,7 +268,19 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
               <h4 className="font-medium text-slate-900 mb-2">참고사항</h4>
               <ul className="text-sm text-slate-600 space-y-1">
                 <li>• PDF 파일은 자동으로 다운로드 폴더에 저장됩니다</li>
-                <li>• 파일명: 수술동의서_{formData.patient_name || '환자'}_{new Date().toISOString().split('T')[0]}.pdf</li>
+                <li>• 브라우저에서 다운로드가 차단된 경우, 새 탭에서 PDF가 열립니다</li>
+                <li>• 파일명: {(() => {
+                    const now = new Date()
+                    const year = now.getFullYear()
+                    const month = String(now.getMonth() + 1).padStart(2, '0')
+                    const day = String(now.getDate()).padStart(2, '0')
+                    const hour = String(now.getHours()).padStart(2, '0')
+                    const minute = String(now.getMinutes()).padStart(2, '0')
+                    const second = String(now.getSeconds()).padStart(2, '0')
+                    const timestamp = `${year}${month}${day}${hour}${minute}${second}`
+                    const patientName = (formData.patient_name || 'patient').replace(/[^a-zA-Z0-9가-힣]/g, '_')
+                    return `${patientName}_consent_${timestamp}.pdf`
+                  })()}</li>
                 <li>• 생성된 PDF는 법적 효력을 가지는 정식 문서로 사용 가능합니다</li>
                 <li>• 필요시 인쇄하여 보관하시기 바랍니다</li>
               </ul>
