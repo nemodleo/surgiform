@@ -1090,50 +1090,128 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   // Inline reference component for section titles
   const InlineReferences = ({ references }: { references?: Reference[] }) => {
     const [isHovered, setIsHovered] = useState(false)
+    const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null)
 
     // 배열인지 확인하고 빈 배열인 경우도 처리
     if (!references || !Array.isArray(references) || references.length === 0) return null
+
+    // URL 기준으로 중복 제거
+    const uniqueReferences = references.reduce((acc, ref) => {
+      const existingRef = acc.find(existing => existing.url === ref.url)
+      if (!existingRef) {
+        acc.push(ref)
+      }
+      return acc
+    }, [] as Reference[])
+
+    const handleMouseEnter = () => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout)
+        setHoverTimeout(null)
+      }
+      setIsHovered(true)
+    }
+
+    const handleMouseLeave = () => {
+      const timeout = setTimeout(() => {
+        setIsHovered(false)
+      }, 100) // 100ms 지연
+      setHoverTimeout(timeout)
+    }
 
     return (
       <div className="relative inline-flex items-center gap-1 ml-2">
         {/* 출처 태그 */}
         <div 
-          className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium cursor-pointer hover:bg-blue-100 transition-colors"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
+          className="inline-flex items-center gap-1 px-2 py-1 bg-slate-50 text-slate-600 rounded-full text-xs font-medium cursor-pointer hover:bg-blue-600 hover:text-white transition-colors group"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         >
-          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-          <span>출처</span>
-          <span className="text-blue-600">{references.length}</span>
+          <span>
+            {(() => {
+              if (uniqueReferences.length === 0) return '출처'
+              const firstDomain = new URL(uniqueReferences[0].url).hostname
+              const cleanDomain = firstDomain
+                .replace(/^www\./, '')
+                .replace(/^https?:\/\//, '')
+                .replace(/\.com$/, '')
+              return (
+                <>
+                  {cleanDomain}
+                  <span className="text-slate-400 group-hover:text-blue-200 transition-colors">
+                    {' '}+{uniqueReferences.length - 1}
+            </span>
+                </>
+              )
+            })()}
+          </span>
         </div>
 
-        {/* 호버시 출처 목록 팝업 */}
+        {/* 호버시 출처 목록 팝업 - 퍼플렉시티 스타일 */}
         {isHovered && (
-          <div className="absolute top-8 left-0 bg-white border border-slate-200 rounded-lg shadow-xl p-4 min-w-[320px] z-50">
-            <div className="text-sm font-semibold text-slate-900 mb-3">출처 · {references.length}</div>
-            <div className="space-y-3">
-              {references.map((ref, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-blue-500 text-white rounded-full text-center leading-6 text-xs font-medium flex-shrink-0 flex items-center justify-center">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm text-slate-900 font-medium line-clamp-2 mb-1">{ref.title}</div>
-                    <div className="text-xs text-slate-500 truncate">{ref.url}</div>
-                    {ref.text && (
-                      <div className="text-xs text-slate-600 mt-1 line-clamp-2">{ref.text}</div>
-                    )}
-                  </div>
+          <div 
+            className="absolute top-8 left-0 bg-white border border-slate-200 rounded-lg shadow-xl w-[360px] max-w-[90vw] z-50"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            style={{
+              left: '0',
+              right: 'auto',
+              transform: 'none'
+            }}
+          >
+            {/* 상단 헤더 */}
+            <div className="px-4 py-3">
+              <div className="text-sm font-medium text-slate-700">
+                출처 · {uniqueReferences.length}
+              </div>
+            </div>
+            
+            {/* 출처 리스트 - Flat List (퍼플렉시티 스타일) */}
+            <div className="px-4 pb-4">
+              <div className="space-y-1">
+              {uniqueReferences.map((ref, index) => {
+                const fullDomain = new URL(ref.url).hostname
+                const faviconUrl = `https://www.google.com/s2/favicons?domain=${fullDomain}&sz=14`
+                
+                return (
                   <a
+                    key={index}
                     href={ref.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-500 hover:text-blue-700 transition-colors"
+                    className="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-50 rounded transition-colors group"
                   >
-                    <ExternalLink className="w-4 h-4" />
+                    {/* 파비콘 - 14px 크기 */}
+                    <div className="w-3.5 h-3.5 flex-shrink-0">
+                      <img 
+                        src={faviconUrl} 
+                        alt={fullDomain}
+                        className="w-3.5 h-3.5 rounded-sm"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement
+                          target.style.display = 'none'
+                        }}
+                      />
+                    </div>
+                    
+                    {/* 제목만 표시 */}
+                    <div className="flex-1 min-w-0">
+                      <span 
+                        className="text-sm font-medium text-slate-900 group-hover:text-blue-600 transition-colors"
+                        style={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          display: 'block'
+                        }}
+                      >
+                        {ref.title}
+                      </span>
+                    </div>
                   </a>
-                </div>
-              ))}
+                )
+              })}
+              </div>
             </div>
           </div>
         )}
