@@ -22,6 +22,7 @@
     "@radix-ui/react-toast": "^1.2.15",
     "@react-pdf/renderer": "^4.3.0",
     "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/line-clamp": "^0.4.4",
     "@tailwindcss/typography": "^0.5.16",
     "@types/react-signature-canvas": "^1.0.7",
     "@udecode/plate": "^48.0.5",
