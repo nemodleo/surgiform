@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Download, Loader2, Home, ChevronLeft } from "lucide-react"
 import { generateKoreanPDFFromDOM } from "@/lib/domPdfGenerator"
-import DocumentViewer from "@/components/ui/document-viewer"
 
 interface FormData {
   patient_name?: string
@@ -170,18 +169,29 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
             </div>
           ) : pdfGenerated && pdfUrl ? (
             <>
-              {/* Document Preview */}
+              {/* PDF Preview */}
               <div className="bg-slate-100 p-4 rounded-lg">
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-900">문서 미리보기</h3>
+                  <h3 className="text-sm font-semibold text-slate-900">PDF 미리보기</h3>
                   <span className="text-xs text-slate-600">PDF 생성 완료</span>
                 </div>
-                <div className="max-h-[600px] overflow-y-auto">
-                  <DocumentViewer 
-                    formData={formData}
-                    consentData={consentData}
-                    signatureData={signatureData || {}}
+                <div className="border border-slate-200 rounded-lg overflow-hidden bg-white">
+                  <iframe
+                    src={`${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1`}
+                    width="100%"
+                    height="600"
+                    style={{
+                      border: 'none',
+                      display: 'block'
+                    }}
+                    title="PDF 미리보기"
+                    onError={() => {
+                      console.error('PDF iframe 로딩 실패')
+                    }}
                   />
+                  <div className="p-2 text-xs text-slate-500 bg-slate-50 border-t border-slate-200">
+                    PDF 미리보기가 표시되지 않으면 직접 다운로드 버튼을 클릭하세요.
+                  </div>
                 </div>
               </div>
               
