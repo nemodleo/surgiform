@@ -1095,8 +1095,28 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
     // 배열인지 확인하고 빈 배열인 경우도 처리
     if (!references || !Array.isArray(references) || references.length === 0) return null
 
-    // URL 기준으로 중복 제거
-    const uniqueReferences = references.reduce((acc, ref) => {
+    // 전체 URL별 개수 계산
+    const urlCounts = references.reduce((acc, ref) => {
+      acc[ref.url] = (acc[ref.url] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+
+    // URL별 개수 순으로 정렬 (많은 순)
+    const sortedReferences = references.sort((a, b) => {
+      const countA = urlCounts[a.url]
+      const countB = urlCounts[b.url]
+      
+      // 먼저 개수로 정렬 (많은 순)
+      if (countB !== countA) {
+        return countB - countA
+      }
+      
+      // 개수가 같으면 URL로 정렬
+      return a.url.localeCompare(b.url)
+    })
+
+    // 정렬 후 URL 기준으로 중복 제거 (많은 개수를 가진 것만 유지)
+    const uniqueReferences = sortedReferences.reduce((acc, ref) => {
       const existingRef = acc.find(existing => existing.url === ref.url)
       if (!existingRef) {
         acc.push(ref)
