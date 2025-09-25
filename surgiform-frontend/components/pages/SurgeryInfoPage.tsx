@@ -704,8 +704,12 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       }
     }
 
-    // Adjust all textareas
-    Object.keys(textareaValues).forEach(adjustTextareaHeight)
+    // Adjust all textareas including 5-1 to 5-4
+    const fieldsToAdjust = [
+      ...Object.keys(textareaValues),
+      'overall_description', 'estimated_duration', 'method_change_or_addition', 'transfusion_possibility', 'surgeon_change_possibility'
+    ]
+    fieldsToAdjust.forEach(adjustTextareaHeight)
   }, [textareaValues])
 
   // Expose save function to window for progress bar navigation
@@ -1572,6 +1576,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                 <InlineReferences references={consentData?.references?.surgery_method_content?.overall_description} />
               </label>
               <textarea
+                data-field="overall_description"
                 className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-y focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues["5-1"] || textareaValues.overall_description}
                 onChange={(e) => {
@@ -1594,6 +1599,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                 <InlineReferences references={consentData?.references?.surgery_method_content?.estimated_duration} />
               </label>
               <textarea
+                data-field="estimated_duration"
                 className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-y focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues["5-2"] || textareaValues.estimated_duration}
                 onChange={(e) => {
@@ -1616,6 +1622,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                 <InlineReferences references={consentData?.references?.surgery_method_content?.method_change_or_addition} />
               </label>
               <textarea
+                data-field="method_change_or_addition"
                 className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-y focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues["5-3"] || textareaValues.method_change_or_addition}
                 onChange={(e) => {
@@ -1638,6 +1645,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                 <InlineReferences references={consentData?.references?.surgery_method_content?.transfusion_possibility} />
               </label>
               <textarea
+                data-field="transfusion_possibility"
                 className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-y focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues["5-4"] || textareaValues.transfusion_possibility}
                 onChange={(e) => {
@@ -1660,6 +1668,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                 <InlineReferences references={consentData?.references?.surgery_method_content?.surgeon_change_possibility} />
               </label>
               <textarea
+                data-field="surgeon_change_possibility"
                 className="w-full min-h-[80px] p-3 bg-white border border-slate-200 rounded-md resize-y focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none transition-all"
                 value={textareaValues["5-5"] || textareaValues.surgeon_change_possibility}
                 onChange={(e) => {
