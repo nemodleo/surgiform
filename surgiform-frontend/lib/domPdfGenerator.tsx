@@ -116,7 +116,7 @@ export const generateKoreanPDFFromDOM = async (
       <tbody>
         <tr><th>등록번호</th><td>${formData.registration_number || ""}</td><th>환자명</th><td>${formData.patient_name || ""}</td></tr>
         <tr><th>수술명</th><td colspan="3">${formData.surgery_name || ""}</td></tr>
-        <tr><th>나이/성별</th><td>${formData.patient_age || ""}세 / ${formData.patient_gender === 'MALE' ? '남성' : formData.patient_gender === 'FEMALE' ? '여성' : ''}</td><th>시행예정일</th><td>${formData.surgery_date || ""}</td></tr>
+        <tr><th>나이/성별</th><td>${formData.patient_age || ""}세 / ${formData.patient_gender === "MALE" ? "남성" : "여성"}</td><th>시행예정일</th><td>${formData.surgery_date || ""}</td></tr>
         <tr><th>진단명</th><td colspan="3">${formData.diagnosis || ""}</td></tr>
         <tr><th>수술부위표시</th><td>${formData.surgery_site_detail || ""}</td><th>수술부위</th><td>${formData.surgery_site || ""}</td></tr>
       </tbody>
