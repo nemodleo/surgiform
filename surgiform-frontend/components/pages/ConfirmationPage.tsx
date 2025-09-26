@@ -445,7 +445,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
             수술 동의서 확인
           </h2>
           <p className="text-sm text-slate-600">
-            수술 동의서 내용을 최종 확인해주세요. 서명은 선택사항입니다.
+            수술 동의서 내용을 최종 확인하고 서명해주세요.
           </p>
         </div>
         {/* 수술 동의서 내용 */}
