@@ -595,6 +595,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                   { number: "2", title: "예정된 수술/시술/검사를 하지 않을 경우의 예후", key: "2", consentKey: "prognosis_without_surgery" },
                   { number: "3", title: "예정된 수술 이외의 시행 가능한 다른 방법", key: "3", consentKey: "alternative_treatments" },
                   { number: "4", title: "수술 목적/필요/효과", key: "4", consentKey: "surgery_purpose_necessity_effect" },
+                  { number: "5", title: "수술 방법 및 내용", key: "5", consentKey: "surgery_method_content" },
                   { number: "5-1", title: "수술 과정 전반에 대한 설명", key: "5-1", consentKey: "surgery_method_content.overall_description" },
                   { number: "5-2", title: "수술 추정 소요시간", key: "5-2", consentKey: "surgery_method_content.estimated_duration" },
                   { number: "5-3", title: "수술 방법 변경 및 수술 추가 가능성", key: "5-3", consentKey: "surgery_method_content.method_change_or_addition" },
@@ -641,11 +642,13 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                         그림 추가
                       </Button>
                     </div>
-                    <div className="mb-3">
-                      <span className="text-sm text-slate-900 whitespace-pre-wrap">
-                        {content || "내용이 입력되지 않았습니다."}
-                      </span>
-                    </div>
+                    {item.number !== "5" && (
+                      <div className="mb-3">
+                        <span className="text-sm text-slate-900 whitespace-pre-wrap">
+                          {content || "내용이 입력되지 않았습니다."}
+                        </span>
+                      </div>
+                    )}
                     
                     {canvases.filter(c => c.title.includes(`${item.number}. ${item.title}`)).map(canvas => (
                       <div key={canvas.id} className="mt-3 p-3 bg-white rounded-md border border-slate-200">

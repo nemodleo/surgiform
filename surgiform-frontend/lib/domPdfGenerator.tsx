@@ -105,7 +105,7 @@ export const generateKoreanPDFFromDOM = async (
     
     <h1>수술 동의서</h1>
     
-    <h3>환자 정보</h3>
+    <h4>환자 정보</h4>
     <table class="info-table">
       <colgroup>
         <col style="width: 20%;">
@@ -162,6 +162,7 @@ export const generateKoreanPDFFromDOM = async (
         { number: "2", title: "예정된 수술/시술/검사를 하지 않을 경우의 예후", key: "2" },
         { number: "3", title: "예정된 수술 이외의 시행 가능한 다른 방법", key: "3" },
         { number: "4", title: "수술 목적/필요/효과", key: "4" },
+        { number: "5", title: "수술 방법 및 내용", key: "5" },
         { number: "5-1", title: "수술 과정 전반에 대한 설명", key: "5-1" },
         { number: "5-2", title: "수술 추정 소요시간", key: "5-2" },
         { number: "5-3", title: "수술 방법 변경 및 수술 추가 가능성", key: "5-3" },
@@ -172,7 +173,7 @@ export const generateKoreanPDFFromDOM = async (
         { number: "8", title: "진단/수술 관련 사망 위험성", key: "8" }
       ];
       return allItems.map(item => {
-        const content = surgeryData[item.key] || '내용이 입력되지 않았습니다.';
+        const content = item.number === "5" ? "" : (surgeryData[item.key] || '내용이 입력되지 않았습니다.');
         const itemCanvases = canvasDrawings.filter((canvas: any) => 
           canvas.title && canvas.title.includes(`${item.number}. ${item.title}`)
         );
@@ -202,7 +203,7 @@ export const generateKoreanPDFFromDOM = async (
           }).join('');
         }
         
-        return `<div class="consent-item"><div class="consent-title">${item.number}. ${item.title}</div><div class="consent-desc">${content}</div>${canvasHtml}</div>`;
+        return `<div class="consent-item"><div class="consent-title">${item.number}. ${item.title}</div>${item.number !== "5" ? `<div class="consent-desc">${content}</div>` : ''}${canvasHtml}</div>`;
       }).join('');
     })()}
     
