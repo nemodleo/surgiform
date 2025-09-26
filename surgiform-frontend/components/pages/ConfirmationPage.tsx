@@ -458,7 +458,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
             
             {/* 환자 정보 */}
             <div>
-                <h3 className="text-base font-semibold text-slate-900 mb-6">환자 정보</h3>
+                <h4 className="text-base font-semibold text-slate-900 mb-6">환자 정보</h4>
             <div className="space-y-6">
               {/* 기본 정보 테이블 */}
               <div className="border border-slate-200 rounded-lg overflow-hidden">
@@ -496,12 +496,12 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
 
               {/* 참여 의료진 */}
               <div>
-                <h4 className="text-sm font-semibold text-slate-900 mb-3">※ 참여 의료진</h4>
+                <h4 className="text-sm font-semibold text-slate-900 mb-3">참여 의료진</h4>
                 <div className="border border-slate-200 rounded-lg overflow-hidden">
                   <table className="w-full">
                     <thead>
                       <tr className="bg-slate-50">
-                        <th className="px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">집도의</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">성명</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">전문의여부</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-slate-700">진료과목</th>
                       </tr>
@@ -509,7 +509,10 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                     <tbody className="divide-y divide-slate-200">
                       {(formData.medical_team || formData.participants || []).map((doctor: any, index: number) => (
                         <tr key={index}>
-                          <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{doctor.name || ""}</td>
+                          <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">
+                            {doctor.name || ""}
+                            {doctor.is_specialist ? " (집도의)" : ""}
+                          </td>
                           <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{doctor.is_specialist ? "전문의" : "일반의"}</td>
                           <td className="px-4 py-3 text-sm text-slate-900">{doctor.department || ""}</td>
                         </tr>

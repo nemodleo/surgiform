@@ -122,17 +122,17 @@ export const generateKoreanPDFFromDOM = async (
       </tbody>
     </table>
     
-    <h4>※ 참여 의료진</h4>
+    <h4>참여 의료진</h4>
     <table class="info-table">
       <colgroup>
         <col style="width: 40%;">
         <col style="width: 30%;">
         <col style="width: 30%;">
       </colgroup>
-      <thead><tr><th>집도의</th><th>전문의여부</th><th>진료과목</th></tr></thead>
+      <thead><tr><th>성명</th><th>전문의여부</th><th>진료과목</th></tr></thead>
       <tbody>
         ${((formData.medical_team || formData.participants || []) as any[]).map((doctor: any) => `
-          <tr><td>${doctor.name || ""}</td><td>${doctor.is_specialist ? '전문의' : '일반의'}</td><td>${doctor.department || ""}</td></tr>
+          <tr><td>${doctor.name || ""}${doctor.is_specialist ? ' (집도의)' : ''}</td><td>${doctor.is_specialist ? '전문의' : '일반의'}</td><td>${doctor.department || ""}</td></tr>
       `).join('')}
       </tbody>
     </table>
