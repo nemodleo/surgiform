@@ -279,12 +279,14 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
         })
       }
       
-      setConsentData(prev => ({
-        ...prev,
-        references: transformedReferences
-      }))
+      if (transformedReferences) {
+        setConsentData((prev: any) => ({
+          ...prev,
+          references: transformedReferences
+        }))
+      }
       
-      console.log('스냅샷에서 references 로드됨:', Object.keys(transformedReferences))
+      console.log('스냅샷에서 references 로드됨:', transformedReferences ? Object.keys(transformedReferences) : [])
     }
     
     console.log('스냅샷으로부터 textarea 초기화됨:', newValues)
@@ -295,7 +297,14 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
     generateConsent: generateConsentWithProgress, 
     isGenerating, 
     progress, 
-    progressMessage 
+    progressMessage,
+    showChat,
+    setShowChat,
+    chatMessages,
+    setChatMessages,
+    conversationId,
+    setConversationId,
+    handleSendMessage
   } = useConsentGeneration({
     onSuccess: (result) => {
       console.log('동의서 생성 성공:', result);
@@ -621,6 +630,8 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   }, [isGenerating, virtualProgress])
   
   const [consentData, setConsentData] = useState<ConsentData | null>(initialData || null)
+
+
   const [textareaValues, setTextareaValues] = useState(() => {
     // Try to restore saved values from sessionStorage
     const saved = sessionStorage.getItem('surgeryInfoTextareas')
@@ -659,10 +670,6 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       others: ""
     }
   })
-  
-  const [showChat, setShowChat] = useState(false)
-  const [conversationId, setConversationId] = useState<string | undefined>()
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
 
   // Track if API call is in progress to prevent duplicates
   const isGeneratingRef = useRef(false)
@@ -732,9 +739,11 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   const generateConsent = useCallback(async () => {
     // Prevent duplicate API calls
     if (isGeneratingRef.current || isGenerating) {
+      console.log('중복 API 호출 방지됨:', { isGeneratingRef: isGeneratingRef.current, isGenerating })
       return
     }
 
+    console.log('동의서 생성 시작')
     isGeneratingRef.current = true
     setLoading(true)
     setError(null)
@@ -819,9 +828,15 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   const regenerateConsent = useCallback(async () => {
     // Prevent duplicate API calls
     if (isGeneratingRef.current || isGenerating || isRegeneratingInProgress) {
+      console.log('AI 재생성 중복 호출 방지됨:', { 
+        isGeneratingRef: isGeneratingRef.current, 
+        isGenerating, 
+        isRegeneratingInProgress 
+      })
       return
     }
 
+    console.log('AI 재생성 시작')
     // AI 재생성 상태 설정
     setIsRegenerating(true)
 
@@ -923,12 +938,14 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
         
         // references는 initializeTextareasFromSnapshot에서 처리됨
       } else {
-        // 스냅샷이 없으면 API 호출
+        // 스냅샷이 없으면 API 호출 (중복 방지를 위해 조건 추가)
         console.log('스냅샷 없음, API 호출 중...')
-      generateConsent()
+        if (!isGeneratingRef.current && !isGenerating) {
+          generateConsent()
+        }
+      }
     }
-    }
-  }, [formData.patient_name, loadApiSnapshot, initializeTextareasFromSnapshot, generateConsent])
+  }, [formData.patient_name, loadApiSnapshot, initializeTextareasFromSnapshot, generateConsent, isGenerating])
 
   // 폼 데이터 변경 시 스냅샷 무효화
   useEffect(() => {
@@ -1258,85 +1275,6 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
     handleTextareaChange(field, textarea.value)
   }
 
-  const handleSendChatMessage = async (message: string, history: ChatMessage[]) => {
-    try {
-      // Unused variable - commented out to fix build error
-      // const currentConsents = [
-      //   { category: "수술 정보", item_title: "일반 정보", description: textareaValues.general_info },
-      //   { category: "수술 부위", item_title: "수술 부위", description: textareaValues.surgical_site },
-      //   { category: "수술 방법", item_title: "수술 방법", description: textareaValues.surgical_method },
-      //   { category: "수술 목적", item_title: "수술 목적", description: textareaValues.purpose },
-      //   { category: "합병증", item_title: "수술 관련 합병증", description: textareaValues.complications },
-      //   { category: "수술 후 경과", item_title: "수술 후 경과", description: textareaValues.postop_course },
-      //   { category: "기타", item_title: "기타 사항", description: textareaValues.others }
-      // ]
-
-      const chatRequest: ChatRequest = {
-        message,
-        conversation_id: conversationId,
-        history,
-        // consents와 references 필드 제거 - API 형식 불일치
-        system_prompt: `당신의 이름은 '이음'입니다. 의료진과 환자를 신뢰와 책임으로 이어주는 AI 도우미입니다.
-        당신은 수술 동의서 작성을 도와주는 의료 AI 어시스턴트입니다. 
-        환자 정보: ${formData.patient_name}, ${formData.patient_age}세, ${formData.patient_gender}
-        수술명: ${formData.surgery_name}
-        증상: ${formData.symptoms}
-        수술 목적: ${formData.surgery_objective}
-        
-        현재 작성 중인 수술 동의서 내용:
-        - 일반 정보: ${textareaValues.general_info}
-        - 수술 부위: ${textareaValues.surgical_site}
-        - 수술 방법: ${textareaValues.surgical_method}
-        - 수술 목적: ${textareaValues.purpose}
-        - 합병증: ${textareaValues.complications}
-        - 수술 후 경과: ${textareaValues.postop_course}
-        - 기타: ${textareaValues.others}
-        
-        사용자의 질문에 정확하고 친절하게 답변하며, 필요시 수술 정보를 수정하는 데 도움을 주세요.`
-      }
-
-      const response = await surgiformAPI.sendChatMessage(chatRequest)
-      
-      // Update conversation ID if new
-      if (!conversationId && response.data.conversation_id) {
-        setConversationId(response.data.conversation_id)
-      }
-      
-      // Update messages state
-      setChatMessages(response.data.history || [...history, { role: "user", content: message }, { role: "assistant", content: response.data.message, timestamp: new Date() }])
-
-      // Update consents if modified
-      if (response.data.is_content_modified && response.data.updated_consents) {
-        const updatedConsents = response.data.updated_consents
-        const newValues: Record<string, string> = {}
-        
-        updatedConsents.forEach((consent) => {
-          if (consent.category === "수술 정보") {
-            newValues.general_info = consent.description || ""
-          } else if (consent.category === "수술 부위") {
-            newValues.surgical_site = consent.description || ""
-          } else if (consent.category === "수술 방법") {
-            newValues.surgical_method = consent.description || ""
-          } else if (consent.category === "수술 목적") {
-            newValues.purpose = consent.description || ""
-          } else if (consent.category === "합병증") {
-            newValues.complications = consent.description || ""
-          } else if (consent.category === "수술 후 경과") {
-            newValues.postop_course = consent.description || ""
-          } else if (consent.category === "기타") {
-            newValues.others = consent.description || ""
-          }
-        })
-        
-        setTextareaValues((prev: typeof textareaValues) => ({ ...prev, ...newValues }))
-        toast.success('수술 정보가 AI의 제안에 따라 업데이트되었습니다')
-      }
-
-      return response.data
-    } catch (error) {
-      throw error
-    }
-  }
 
   const handleComplete = () => {
     const dataToSubmit = saveCurrentData()
@@ -1477,12 +1415,14 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
     <div className="max-w-4xl mx-auto">
       <div className="space-y-8">
         <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
+            <div>
           <h2 className="text-lg font-semibold text-slate-900 mb-2">
             Reference Textbook을 기반으로 작성된 수술 관련 정보입니다.
           </h2>
           <p className="text-sm text-slate-600">
             확인 후 수정사항이 있으면 반영한 후 확정해주세요.
           </p>
+            </div>
         </div>
 
 
@@ -1497,7 +1437,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 2. 예정된 수술/시술/검사를 하지 않을 경우의 예후
-                <InlineReferences references={consentData?.references?.prognosis_without_surgery} />
+                <InlineReferences references={(consentData?.references as any)?.prognosis_without_surgery} />
               </label>
               <textarea
                 data-field="general_info"
@@ -1520,7 +1460,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 3. 예정된 수술 이외의 시행 가능한 다른 방법
-                <InlineReferences references={consentData?.references?.alternative_treatments} />
+                <InlineReferences references={(consentData?.references as any)?.alternative_treatments} />
               </label>
               <textarea
                 data-field="surgical_site"
@@ -1543,7 +1483,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 4. 수술 목적/필요/효과
-                <InlineReferences references={consentData?.references?.surgery_purpose_necessity_effect} />
+                <InlineReferences references={(consentData?.references as any)?.surgery_purpose_necessity_effect} />
               </label>
               <textarea
                 data-field="surgical_method"
@@ -1573,7 +1513,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 5-1. 수술 과정 전반에 대한 설명
-                <InlineReferences references={consentData?.references?.surgery_method_content?.overall_description} />
+                <InlineReferences references={(consentData?.references as any)?.surgery_method_content?.overall_description} />
               </label>
               <textarea
                 data-field="overall_description"
@@ -1596,7 +1536,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 5-2. 수술 추정 소요시간
-                <InlineReferences references={consentData?.references?.surgery_method_content?.estimated_duration} />
+                <InlineReferences references={(consentData?.references as any)?.surgery_method_content?.estimated_duration} />
               </label>
               <textarea
                 data-field="estimated_duration"
@@ -1619,7 +1559,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 5-3. 수술 방법 변경 및 수술 추가 가능성
-                <InlineReferences references={consentData?.references?.surgery_method_content?.method_change_or_addition} />
+                <InlineReferences references={(consentData?.references as any)?.surgery_method_content?.method_change_or_addition} />
               </label>
               <textarea
                 data-field="method_change_or_addition"
@@ -1642,7 +1582,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 5-4. 수혈 가능성
-                <InlineReferences references={consentData?.references?.surgery_method_content?.transfusion_possibility} />
+                <InlineReferences references={(consentData?.references as any)?.surgery_method_content?.transfusion_possibility} />
               </label>
               <textarea
                 data-field="transfusion_possibility"
@@ -1660,12 +1600,12 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                   handleTextareaChange("5-4", value);
                 }}
               />
-            </div>
+        </div>
 
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 5-5. 집도의 변경 가능성
-                <InlineReferences references={consentData?.references?.surgery_method_content?.surgeon_change_possibility} />
+                <InlineReferences references={(consentData?.references as any)?.surgery_method_content?.surgeon_change_possibility} />
               </label>
               <textarea
                 data-field="surgeon_change_possibility"
@@ -1688,7 +1628,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 6. 발생 가능한 합병증/후유증/부작용
-                <InlineReferences references={consentData?.references?.possible_complications_sequelae} />
+                <InlineReferences references={(consentData?.references as any)?.possible_complications_sequelae} />
               </label>
               <textarea
                 data-field="complications"
@@ -1711,7 +1651,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 7. 문제 발생시 조치사항
-                <InlineReferences references={consentData?.references?.emergency_measures} />
+                <InlineReferences references={(consentData?.references as any)?.emergency_measures} />
               </label>
               <textarea
                 data-field="postop_course"
@@ -1734,7 +1674,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 8. 진단/수술 관련 사망 위험성
-                <InlineReferences references={consentData?.references?.mortality_risk} />
+                <InlineReferences references={(consentData?.references as any)?.mortality_risk} />
               </label>
               <textarea
                 data-field="others"
@@ -1753,6 +1693,40 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                 }}
               />
             </div>
+            </div>
+        </div>
+
+          
+      </div>
+
+      {/* Navigation buttons */}
+      <div className="flex justify-between mt-8">
+        <Button
+          variant="outline"
+          onClick={onBack || (() => window.history.back())}
+          className="border-slate-200 hover:bg-slate-50 px-6 py-3 h-auto font-medium rounded-lg transition-all flex items-center gap-2"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          이전 단계
+        </Button>
+        
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={regenerateConsent}
+            disabled={isGenerating || isRegeneratingInProgress}
+            className="border-blue-200 hover:bg-blue-50 text-blue-700 px-6 py-3 h-auto font-medium rounded-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RefreshCw className={`h-4 w-4 ${(isGenerating || isRegeneratingInProgress) ? 'animate-spin' : ''}`} />
+            AI 재생성
+        </Button>
+        <Button
+          onClick={handleComplete}
+          className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 h-auto font-medium rounded-lg transition-all flex items-center gap-2"
+        >
+          다음 단계
+          <ChevronRight className="h-4 w-4" />
+        </Button>
           </div>
         </div>
 
@@ -1769,7 +1743,10 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                   setChatMessages(messages) // Save messages before hiding
                   setShowChat(false)
                 }} // Save and hide, keep conversation
-                onSendMessage={handleSendChatMessage}
+            onSendMessage={(message, history) => handleSendMessage(message, history, {
+              ...consentData,
+              formData: formData
+            })}
                 conversationId={conversationId}
                 initialMessages={chatMessages} // Pass saved messages
                 title="이음"
@@ -1869,38 +1846,6 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
               </div>
             </div>
           )}
-      </div>
-
-      {/* Navigation buttons */}
-      <div className="flex justify-between mt-8">
-        <Button
-          variant="outline"
-          onClick={onBack || (() => window.history.back())}
-          className="border-slate-200 hover:bg-slate-50 px-6 py-3 h-auto font-medium rounded-lg transition-all flex items-center gap-2"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          이전 단계
-        </Button>
-        
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={regenerateConsent}
-            disabled={isGenerating || isRegeneratingInProgress}
-            className="border-blue-200 hover:bg-blue-50 text-blue-700 px-6 py-3 h-auto font-medium rounded-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <RefreshCw className={`h-4 w-4 ${(isGenerating || isRegeneratingInProgress) ? 'animate-spin' : ''}`} />
-            AI 재생성
-        </Button>
-        <Button
-          onClick={handleComplete}
-          className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 h-auto font-medium rounded-lg transition-all flex items-center gap-2"
-        >
-          다음 단계
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
-      </div>
 
     </div>
   )

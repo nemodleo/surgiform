@@ -10,6 +10,51 @@ export const api = axios.create({
   },
 });
 
+// Request interceptor for debugging
+api.interceptors.request.use(
+  (config) => {
+    console.log(`API 요청: ${config.method?.toUpperCase()} ${config.url}`);
+    return config;
+  },
+  (error) => {
+    console.error('API 요청 오류:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor for error handling
+api.interceptors.response.use(
+  (response) => {
+    console.log(`API 응답: ${response.status} ${response.config.url}`);
+    return response;
+  },
+  (error) => {
+    console.error('API 응답 오류:', error);
+    
+    if (error.response) {
+      // 서버가 응답했지만 오류 상태 코드
+      console.error('응답 상태:', error.response.status);
+      console.error('응답 데이터:', error.response.data);
+      console.error('응답 데이터 상세:', JSON.stringify(error.response.data, null, 2));
+      console.error('응답 헤더:', error.response.headers);
+    } else if (error.request) {
+      // 요청이 전송되었지만 응답을 받지 못함
+      console.error('요청 전송됨, 응답 없음:', error.request);
+    } else {
+      // 요청 설정 중 오류
+      console.error('요청 설정 오류:', error.message);
+    }
+    
+    if (error.code === 'ERR_NETWORK') {
+      console.error('네트워크 오류: 서버에 연결할 수 없습니다.');
+    } else if (error.code === 'ERR_CONNECTION_TIMED_OUT') {
+      console.error('연결 시간 초과: 서버 응답이 너무 느립니다.');
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
 export interface ConsentGenerateIn {
   surgery_name: string;
   registration_no: string;
@@ -89,8 +134,8 @@ export interface ChatRequest {
   conversation_id?: string;
   history?: ChatMessage[];
   system_prompt?: string;
-  consents?: ConsentItem[];
-  references?: ReferenceItem[];
+  consents?: any;
+  references?: any;
 }
 
 export interface ChatResponse {

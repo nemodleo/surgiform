@@ -270,7 +270,8 @@ export function ChatUI({
       timestamp: new Date()
     }
 
-    setMessages(prev => [...prev, userMessage])
+    const newMessages = [...messages, userMessage]
+    setMessages(newMessages)
     setInputMessage("")
     // Reset textarea height
     if (inputRef.current) {
@@ -279,16 +280,19 @@ export function ChatUI({
     setIsLoading(true)
 
     try {
-      const response = await onSendMessage(userMessage.content, [...messages, userMessage])
+      const response = await onSendMessage(userMessage.content, newMessages)
       
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: response.message,
-        timestamp: new Date()
+      // 서버에서 받은 history를 사용하되, 만약 없다면 현재 메시지에 응답 추가
+      if (response.history && response.history.length > 0) {
+        setMessages(response.history)
+      } else {
+        const assistantMessage: Message = {
+          role: "assistant",
+          content: response.message,
+          timestamp: new Date()
+        }
+        setMessages([...newMessages, assistantMessage])
       }
-
-      const updatedMessages = response.history || [...messages, userMessage, assistantMessage]
-      setMessages(updatedMessages)
       setConversationId(response.conversation_id)
       
     } catch (error) {

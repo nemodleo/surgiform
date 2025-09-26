@@ -1,5 +1,4 @@
-import html2canvas from 'html2canvas'
-import jsPDF from 'jspdf'
+// PDF 생성 라이브러리는 함수 내에서 동적 import로 로드
 
 interface FormData {
   registration_number?: string
@@ -41,6 +40,13 @@ export const generateKoreanPDFFromDOM = async (
   console.log('SignatureData:', signatureData)
   console.log('Patient signature exists:', !!signatureData?.patient)
   console.log('Doctor signature exists:', !!signatureData?.doctor)
+  
+  // 동적 import로 라이브러리 로드
+  const html2canvasModule = await import('html2canvas')
+  const jsPDFModule = await import('jspdf')
+  
+  const html2canvas = html2canvasModule.default
+  const jsPDF = jsPDFModule.default
   
   // Load saved data from sessionStorage to include all consent content
   const savedSurgeryData = sessionStorage.getItem('surgeryInfoTextareas')

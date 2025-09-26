@@ -100,6 +100,10 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
   }
 
   useEffect(() => {
+    console.log('PDFGenerationPage - Starting data loading...')
+    console.log('formData:', formData)
+    console.log('consentData:', consentData)
+    
     // Try sessionStorage first (for consent flow), then localStorage
     const savedSignatures = sessionStorage.getItem('signatureData') || localStorage.getItem('signatureData')
     const canvasDrawings = sessionStorage.getItem('canvasDrawings') || localStorage.getItem('canvasDrawings')
@@ -113,36 +117,45 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
     let finalSignatureData: SignatureData = {}
     
     if (savedSignatures) {
-      const sigData = JSON.parse(savedSignatures)
-      console.log('Parsed signature data:', sigData)
-      finalSignatureData = { ...sigData }
+      try {
+        const sigData = JSON.parse(savedSignatures)
+        console.log('Parsed signature data:', sigData)
+        finalSignatureData = { ...sigData }
+      } catch (error) {
+        console.error('Error parsing signature data:', error)
+      }
     }
     
     // Include canvas drawings in signature data
     if (canvasDrawings) {
-      const drawings = JSON.parse(canvasDrawings)
-      console.log('Parsed canvas drawings:', drawings)
-      // If canvases not already in signatureData, add them
-      if (!finalSignatureData.canvases) {
-        finalSignatureData.canvases = drawings
+      try {
+        const drawings = JSON.parse(canvasDrawings)
+        console.log('Parsed canvas drawings:', drawings)
+        // If canvases not already in signatureData, add them
+        if (!finalSignatureData.canvases) {
+          finalSignatureData.canvases = drawings
+        }
+      } catch (error) {
+        console.error('Error parsing canvas drawings:', error)
       }
     }
     
     console.log('Final signature data to use:', finalSignatureData)
     setSignatureData(finalSignatureData)
     setDataLoaded(true)
-  }, [])
+  }, [formData, consentData])
 
   useEffect(() => {
-    // Generate PDF only once when data is loaded
-    if (dataLoaded && !pdfGenerated && !generating) {
+    // Generate PDF only once when data is loaded and formData is available
+    if (dataLoaded && formData.patient_name && !pdfGenerated && !generating) {
       console.log('Data loaded, generating PDF with signature data:', signatureData)
+      console.log('formData available:', !!formData.patient_name)
       const timer = setTimeout(() => {
         generatePDF()
       }, 500)
       return () => clearTimeout(timer)
     }
-  }, [dataLoaded, signatureData]) // Watch for data loading
+  }, [dataLoaded, formData, signatureData]) // Watch for data loading
 
   return (
     <div className="max-w-4xl mx-auto">

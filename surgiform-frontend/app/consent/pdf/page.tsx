@@ -2,8 +2,35 @@
 
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import PDFGenerationPage from "@/components/pages/PDFGenerationPage"
+import dynamic from "next/dynamic"
 import { transformConsentDataToArray, type ConsentObjectData } from "@/lib/consentDataTransformer"
+
+// PDF 페이지를 동적으로 로드하여 ChunkLoadError 방지
+const PDFGenerationPage = dynamic(() => import("@/components/pages/PDFGenerationPage"), {
+  ssr: false,
+  loading: () => (
+    <div className="max-w-4xl mx-auto">
+      <div className="space-y-8">
+        <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
+          <h2 className="text-lg font-semibold text-slate-900 mb-2">
+            수술 동의서 PDF 생성
+          </h2>
+          <p className="text-sm text-slate-600">
+            PDF 생성 페이지를 로딩 중입니다...
+          </p>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="text-center py-8">
+            <div className="inline-flex items-center gap-2">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600"></div>
+              <span className="text-slate-700">로딩 중...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+})
 
 export default function PDFRoute() {
   const router = useRouter()
@@ -13,16 +40,36 @@ export default function PDFRoute() {
   useEffect(() => {
     // Load data from sessionStorage
     const savedFormData = sessionStorage.getItem('formData')
-    const savedConsentData = sessionStorage.getItem('consentData')
+    const savedConsentSubmissionData = sessionStorage.getItem('consentSubmissionData')
     
-    if (!savedFormData || !savedConsentData) {
-      // Redirect to start if data is missing
+    console.log('PDF Page - Loading data from storage:')
+    console.log('savedFormData exists:', !!savedFormData)
+    console.log('savedConsentSubmissionData exists:', !!savedConsentSubmissionData)
+    
+    if (!savedFormData) {
+      console.log('No formData found, redirecting to basic-info')
       router.push('/consent/basic-info')
       return
     }
     
-    setFormData(JSON.parse(savedFormData))
-    setConsentData(JSON.parse(savedConsentData))
+    try {
+      const parsedFormData = JSON.parse(savedFormData)
+      setFormData(parsedFormData)
+      
+      // consentData가 없으면 빈 객체로 설정 (PDF 생성에는 formData만 필요)
+      if (savedConsentSubmissionData) {
+        const parsedConsentData = JSON.parse(savedConsentSubmissionData)
+        setConsentData(parsedConsentData)
+      } else {
+        console.log('No consentSubmissionData found, using empty object')
+        setConsentData({})
+      }
+      
+      console.log('PDF Page - Data loaded successfully')
+    } catch (error) {
+      console.error('Error parsing stored data:', error)
+      router.push('/consent/basic-info')
+    }
   }, [router])
   
   const handleHome = () => {
@@ -39,7 +86,28 @@ export default function PDFRoute() {
   }
   
   if (!formData.patient_name) {
-    return null // Wait for data to load
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="space-y-8">
+          <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
+            <h2 className="text-lg font-semibold text-slate-900 mb-2">
+              수술 동의서 PDF 생성
+            </h2>
+            <p className="text-sm text-slate-600">
+              데이터를 로딩 중입니다...
+            </p>
+          </div>
+          <div className="bg-white rounded-xl border border-slate-200 p-6">
+            <div className="text-center py-8">
+              <div className="inline-flex items-center gap-2">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600"></div>
+                <span className="text-slate-700">데이터 로딩 중...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
   
   return (

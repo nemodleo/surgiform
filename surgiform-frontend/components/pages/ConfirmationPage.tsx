@@ -448,9 +448,12 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
             수술 동의서 내용을 최종 확인하고 서명해주세요
           </p>
         </div>
-        {/* 환자 정보 */}
-        <div>
-            <h3 className="text-base font-semibold text-slate-900 mb-6">환자 정보</h3>
+        {/* 수술 동의서 내용 */}
+        <div className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors">
+          <div className="p-6 space-y-6">
+            {/* 환자 정보 */}
+            <div>
+                <h3 className="text-base font-semibold text-slate-900 mb-6">환자 정보</h3>
             <div className="space-y-6">
               {/* 기본 정보 테이블 */}
               <div className="border border-slate-200 rounded-lg overflow-hidden">
@@ -569,10 +572,10 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
           </div>
         </div>
 
-        {/* 수술 동의 내용 */}
-        <div>
-              {/* <h3 className="text-base font-semibold text-slate-900 mb-6">수술 동의 내용</h3> */}
-              <div>
+            {/* 수술 동의 내용 */}
+            <div>
+                  {/* <h3 className="text-base font-semibold text-slate-900 mb-6">수술 동의 내용</h3> */}
+                  <div>
             {/* 번호별 수술 정보 */}
             {(() => {
               try {
@@ -716,12 +719,12 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
             })()}
 
             {/* API에서 생성된 동의 내용들은 1-8번 항목으로만 제한하므로 제거 */}
-              </div>
-            </div>
+                  </div>
+                </div>
 
-        {/* 전자 서명 */}
-        <div>
-            <h3 className="text-base font-semibold text-slate-900 mb-6">9. 전자 서명</h3>
+            {/* 전자 서명 */}
+            <div>
+                <h3 className="text-base font-semibold text-slate-900 mb-6">9. 전자 서명</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {requiredSignatures.map(sig => (
                 <div key={sig.key} className="space-y-2">
@@ -766,6 +769,8 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                   )}
                 </div>
               ))}
+            </div>
+          </div>
           </div>
         </div>
 
