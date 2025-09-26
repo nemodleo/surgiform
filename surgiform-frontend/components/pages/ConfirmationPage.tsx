@@ -398,7 +398,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       // 서명 데이터와 캔버스 데이터를 모두 저장 (페이지에서는 사용, PDF에서는 제외)
       const allSignatureData = {
         ...signatures,
-        canvases: canvases.filter(c => c.imageData).map(c => ({
+        canvases: canvases.map(c => ({
           id: c.id,
           title: c.title,
           imageData: c.imageData
@@ -410,10 +410,10 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       // Save to sessionStorage for consent flow persistence
       sessionStorage.setItem('signatureData', JSON.stringify(allSignatureData))
       sessionStorage.setItem('confirmationCompleted', 'true')
-      sessionStorage.setItem('canvasDrawings', JSON.stringify(canvases.filter(c => c.imageData)))
+      sessionStorage.setItem('canvasDrawings', JSON.stringify(canvases))
       // Also save to localStorage as backup
       localStorage.setItem('signatureData', JSON.stringify(allSignatureData))
-      localStorage.setItem('canvasDrawings', JSON.stringify(canvases.filter(c => c.imageData)))
+      localStorage.setItem('canvasDrawings', JSON.stringify(canvases))
       // Save consent submission data for future use
       sessionStorage.setItem('consentSubmissionData', JSON.stringify(consentSubmissionData))
       localStorage.setItem('consentSubmissionData', JSON.stringify(consentSubmissionData))
@@ -701,7 +701,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                             }}
                             canvasProps={{
                               className: "w-full",
-                                height: 500
+                              height: 500
                             }}
                             onEnd={() => {
                               console.log(`🎨 onEnd triggered for canvas ${canvas.id}`)

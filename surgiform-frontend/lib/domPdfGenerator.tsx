@@ -174,17 +174,32 @@ export const generateKoreanPDFFromDOM = async (
       return allItems.map(item => {
         const content = surgeryData[item.key] || '내용이 입력되지 않았습니다.';
         const itemCanvases = canvasDrawings.filter((canvas: any) => 
-          canvas.title && canvas.title.includes(`${item.number}. ${item.title}`) && canvas.imageData
+          canvas.title && canvas.title.includes(`${item.number}. ${item.title}`)
         );
         
         let canvasHtml = '';
         if (itemCanvases.length > 0) {
-          canvasHtml = itemCanvases.map((canvas: any) => `
-            <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
-              <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${canvas.title}</div>
-              <img src="${canvas.imageData}" alt="Canvas drawing" style="max-width: 100%; height: auto; border: 1px solid #e2e8f0; border-radius: 4px;" />
-            </div>
-          `).join('');
+          canvasHtml = itemCanvases.map((canvas: any) => {
+            if (canvas.imageData) {
+              return `
+                <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                  <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${canvas.title}</div>
+                  <img src="${canvas.imageData}" alt="Canvas drawing" style="max-width: 100%; height: auto; border: 1px solid #e2e8f0; border-radius: 4px;" />
+                </div>
+              `;
+            } else {
+              return `
+                <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                  <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${canvas.title}</div>
+                  <div style="border: 1px solid #e2e8f0; border-radius: 4px; height: 200px; background-color: white; position: relative;">
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #cbd5e1; font-size: 12px;">
+                      <!-- 설명 그림 영역 (비어있음) -->
+                    </div>
+                  </div>
+                </div>
+              `;
+            }
+          }).join('');
         }
         
         return `<div class="consent-item"><div class="consent-title">${item.number}. ${item.title}</div><div class="consent-desc">${content}</div>${canvasHtml}</div>`;
@@ -234,7 +249,7 @@ export const generateKoreanPDFFromDOM = async (
         <div class="signature-label">환자: ${formData.patient_name || '환자'}</div>
         ${signatureData?.patient ? 
           `<img src="${signatureData.patient}" alt="Patient signature" style="border: 1px solid #cbd5e1; border-radius: 4px; max-width: 200px; height: 80px; background: white; padding: 8px;" />` : 
-          `<div class="signature-placeholder">서명 없음</div>`
+          `<div class="signature-placeholder">서명란</div>`
         }
       </div>
       
@@ -242,7 +257,7 @@ export const generateKoreanPDFFromDOM = async (
         <div class="signature-label">의사: ${((formData.medical_team || formData.participants || []) as any[])[0]?.name || '의사'}</div>
         ${signatureData?.doctor ? 
           `<img src="${signatureData.doctor}" alt="Doctor signature" style="border: 1px solid #cbd5e1; border-radius: 4px; max-width: 200px; height: 80px; background: white; padding: 8px;" />` : 
-          `<div class="signature-placeholder">서명 없음</div>`
+          `<div class="signature-placeholder">서명란</div>`
         }
       </div>
       
