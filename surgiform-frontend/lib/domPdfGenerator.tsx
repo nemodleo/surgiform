@@ -192,7 +192,43 @@ export const generateKoreanPDFFromDOM = async (
     })()}
     
     <div class="signature-section">
-      <h3>전자 서명</h3>
+      <h3>수술 동의서 확인</h3>
+      
+      <div style="margin-bottom: 20px;">
+        <p style="margin-bottom: 12px; color: #374151; font-size: 14px;">아래 내용을 읽고 동의해 주세요.</p>
+        <div style="border: 1px solid #e2e8f0; border-radius: 8px; background-color: #f8fafc; padding: 16px;">
+          <ol style="margin: 0; padding-left: 0; list-style: none; color: #374151; font-size: 14px; line-height: 1.6;">
+            <li style="margin-bottom: 8px; display: flex; align-items: flex-start;">
+              <span style="display: inline-block; width: 20px; height: 20px; background-color: #475569; color: white; border-radius: 50%; text-align: center; line-height: 20px; font-size: 12px; font-weight: 600; margin-right: 12px; margin-top: 2px; flex-shrink: 0;">1</span>
+              <span>나는 수술/시술/검사의 목적, 효과, 과정, 예상되는 위험에 대해 설명을 들었습니다.</span>
+            </li>
+            <li style="margin-bottom: 8px; display: flex; align-items: flex-start;">
+              <span style="display: inline-block; width: 20px; height: 20px; background-color: #475569; color: white; border-radius: 50%; text-align: center; line-height: 20px; font-size: 12px; font-weight: 600; margin-right: 12px; margin-top: 2px; flex-shrink: 0;">2</span>
+              <span>궁금한 점을 의료진에게 질문할 수 있었고, 충분히 생각할 시간을 가졌습니다.</span>
+            </li>
+            <li style="margin-bottom: 8px; display: flex; align-items: flex-start;">
+              <span style="display: inline-block; width: 20px; height: 20px; background-color: #475569; color: white; border-radius: 50%; text-align: center; line-height: 20px; font-size: 12px; font-weight: 600; margin-right: 12px; margin-top: 2px; flex-shrink: 0;">3</span>
+              <span>예상치 못한 합병증이나 사고가 생길 수 있음을 이해합니다.</span>
+            </li>
+            <li style="margin-bottom: 8px; display: flex; align-items: flex-start;">
+              <span style="display: inline-block; width: 20px; height: 20px; background-color: #475569; color: white; border-radius: 50%; text-align: center; line-height: 20px; font-size: 12px; font-weight: 600; margin-right: 12px; margin-top: 2px; flex-shrink: 0;">4</span>
+              <span>수술/시술/검사에 협조하고, 내 상태를 정확히 알릴 것을 약속합니다.</span>
+            </li>
+            <li style="margin-bottom: 8px; display: flex; align-items: flex-start;">
+              <span style="display: inline-block; width: 20px; height: 20px; background-color: #475569; color: white; border-radius: 50%; text-align: center; line-height: 20px; font-size: 12px; font-weight: 600; margin-right: 12px; margin-top: 2px; flex-shrink: 0;">5</span>
+              <span>수술 방법이나 범위가 바뀔 수 있다는 설명을 들었습니다.</span>
+            </li>
+            <li style="margin-bottom: 8px; display: flex; align-items: flex-start;">
+              <span style="display: inline-block; width: 20px; height: 20px; background-color: #475569; color: white; border-radius: 50%; text-align: center; line-height: 20px; font-size: 12px; font-weight: 600; margin-right: 12px; margin-top: 2px; flex-shrink: 0;">6</span>
+              <span>담당의사가 바뀔 수 있다는 설명을 들었습니다.</span>
+            </li>
+            <li style="margin-bottom: 8px; display: flex; align-items: flex-start;">
+              <span style="display: inline-block; width: 20px; height: 20px; background-color: #475569; color: white; border-radius: 50%; text-align: center; line-height: 20px; font-size: 12px; font-weight: 600; margin-right: 12px; margin-top: 2px; flex-shrink: 0;">7</span>
+              <span>일정이 바뀔 수 있음을 이해합니다.</span>
+            </li>
+          </ol>
+        </div>
+      </div>
       
       <div class="signature-item">
         <div class="signature-label">환자: ${formData.patient_name || '환자'}</div>

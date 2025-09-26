@@ -451,6 +451,11 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         {/* 수술 동의서 내용 */}
         <div className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors">
           <div className="p-6 space-y-6">
+            {/* 수술 동의서 제목 */}
+            <div className="text-center">
+              <h1 className="text-2xl font-semibold text-slate-900 mb-8">수술 동의서</h1>
+            </div>
+            
             {/* 환자 정보 */}
             <div>
                 <h3 className="text-base font-semibold text-slate-900 mb-6">환자 정보</h3>
@@ -722,9 +727,46 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                   </div>
                 </div>
 
-            {/* 전자 서명 */}
-            <div>
-                <h3 className="text-base font-semibold text-slate-900 mb-6">9. 전자 서명</h3>
+            {/* 수술 동의서 확인 */}
+            <div className="mt-8 pt-8 border-t-2 border-slate-200">
+                <h3 className="text-base font-semibold text-slate-900 mb-6">수술 동의서 확인</h3>
+                
+                {/* 동의 내용 */}
+                <div className="mb-6">
+                  <p className="text-sm text-slate-700 mb-4">아래 내용을 읽고 동의해 주세요.</p>
+                  <div className="border border-slate-200 rounded-lg bg-slate-50 p-4">
+                    <ol className="space-y-2 text-sm text-slate-700">
+                      <li className="flex items-start">
+                        <span className="inline-block w-6 h-6 bg-slate-600 text-white rounded-full text-xs flex items-center justify-center font-semibold mr-3 mt-0.5 flex-shrink-0">1</span>
+                        <span>나는 수술/시술/검사의 목적, 효과, 과정, 예상되는 위험에 대해 설명을 들었습니다.</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="inline-block w-6 h-6 bg-slate-600 text-white rounded-full text-xs flex items-center justify-center font-semibold mr-3 mt-0.5 flex-shrink-0">2</span>
+                        <span>궁금한 점을 의료진에게 질문할 수 있었고, 충분히 생각할 시간을 가졌습니다.</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="inline-block w-6 h-6 bg-slate-600 text-white rounded-full text-xs flex items-center justify-center font-semibold mr-3 mt-0.5 flex-shrink-0">3</span>
+                        <span>예상치 못한 합병증이나 사고가 생길 수 있음을 이해합니다.</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="inline-block w-6 h-6 bg-slate-600 text-white rounded-full text-xs flex items-center justify-center font-semibold mr-3 mt-0.5 flex-shrink-0">4</span>
+                        <span>수술/시술/검사에 협조하고, 내 상태를 정확히 알릴 것을 약속합니다.</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="inline-block w-6 h-6 bg-slate-600 text-white rounded-full text-xs flex items-center justify-center font-semibold mr-3 mt-0.5 flex-shrink-0">5</span>
+                        <span>수술 방법이나 범위가 바뀔 수 있다는 설명을 들었습니다.</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="inline-block w-6 h-6 bg-slate-600 text-white rounded-full text-xs flex items-center justify-center font-semibold mr-3 mt-0.5 flex-shrink-0">6</span>
+                        <span>담당의사가 바뀔 수 있다는 설명을 들었습니다.</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="inline-block w-6 h-6 bg-slate-600 text-white rounded-full text-xs flex items-center justify-center font-semibold mr-3 mt-0.5 flex-shrink-0">7</span>
+                        <span>일정이 바뀔 수 있음을 이해합니다.</span>
+                      </li>
+                    </ol>
+                  </div>
+                </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {requiredSignatures.map(sig => (
                 <div key={sig.key} className="space-y-2">
