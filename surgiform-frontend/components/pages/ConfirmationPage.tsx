@@ -442,10 +442,10 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         {/* Header */}
         <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
           <h2 className="text-lg font-semibold text-slate-900 mb-2">
-            수술 동의서 확인 및 서명
+            수술 동의서 확인
           </h2>
           <p className="text-sm text-slate-600">
-            수술 동의서 내용을 최종 확인하고 서명해주세요
+            수술 동의서 내용을 최종 확인해주세요. 서명은 선택사항입니다.
           </p>
         </div>
         {/* 수술 동의서 내용 */}
@@ -730,7 +730,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
             {/* 수술 동의서 확인 */}
             <div className="mt-8 pt-8 border-t-2 border-slate-200">
                 <h3 className="text-base font-semibold text-slate-900 mb-6">수술 동의서 확인</h3>
-                
+
                 {/* 동의 내용 */}
                 <div className="mb-6">
                   <p className="text-sm text-slate-700 mb-4">아래 내용을 읽고 동의해 주세요.</p>
@@ -828,7 +828,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
           </Button>
           <Button
             onClick={handleComplete}
-            disabled={!allSignaturesComplete || isSubmitting}
+            disabled={isSubmitting}
             className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white px-6 py-3 h-auto font-medium rounded-lg transition-all flex items-center gap-2"
           >
             {isSubmitting ? (
