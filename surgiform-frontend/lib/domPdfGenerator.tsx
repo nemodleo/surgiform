@@ -198,7 +198,7 @@ export const generateKoreanPDFFromDOM = async (
                   <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${canvas.title}</div>
                   <div style="border: 1px solid #e2e8f0; border-radius: 4px; height: 200px; background-color: white; position: relative;">
                     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #cbd5e1; font-size: 12px;">
-                      <!-- 설명 그림 영역 (비어있음) -->
+                      <!-- 그림 설명 영역 (비어있음) -->
                     </div>
                   </div>
                 </div>

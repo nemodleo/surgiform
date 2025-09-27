@@ -254,7 +254,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       newValues.others = consents.mortality_risk
     }
     
-    setTextareaValues(prev => ({ ...prev, ...newValues }))
+    setTextareaValues((prev: Record<string, string>) => ({ ...prev, ...newValues }))
     
     // references도 함께 설정
     if (references) {
