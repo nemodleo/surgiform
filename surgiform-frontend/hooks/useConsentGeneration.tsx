@@ -180,14 +180,7 @@ export const useConsentGeneration = ({ onSuccess, onError }: UseConsentGeneratio
 
       setConversationId(chatResponse.conversation_id);
       
-      // 서버에서 받은 history를 우선 사용, 없다면 현재 history에 응답 추가
-      if (chatResponse.history && chatResponse.history.length > 0) {
-        setChatMessages(chatResponse.history);
-      } else {
-        const assistantMessage = { role: "assistant" as const, content: chatResponse.message, timestamp: new Date() };
-        setChatMessages([...history, assistantMessage]);
-      }
-
+      // 메시지 상태 관리는 chat.tsx에서 처리하므로 여기서는 하지 않음
       return chatResponse;
     } catch (error) {
       console.error('채팅 오류:', error);

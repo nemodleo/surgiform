@@ -270,6 +270,7 @@ export function ChatUI({
       timestamp: new Date()
     }
 
+    // 사용자 메시지를 즉시 추가 (UX 개선)
     const newMessages = [...messages, userMessage]
     setMessages(newMessages)
     setInputMessage("")
@@ -282,17 +283,13 @@ export function ChatUI({
     try {
       const response = await onSendMessage(userMessage.content, newMessages)
       
-      // 서버에서 받은 history를 사용하되, 만약 없다면 현재 메시지에 응답 추가
-      if (response.history && response.history.length > 0) {
-        setMessages(response.history)
-      } else {
-        const assistantMessage: Message = {
-          role: "assistant",
-          content: response.message,
-          timestamp: new Date()
-        }
-        setMessages([...newMessages, assistantMessage])
+      // 서버 응답을 현재 메시지에 추가 (사용자 메시지는 이미 추가되어 있음)
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: response.message,
+        timestamp: new Date()
       }
+      setMessages([...newMessages, assistantMessage])
       setConversationId(response.conversation_id)
       
     } catch (error) {
