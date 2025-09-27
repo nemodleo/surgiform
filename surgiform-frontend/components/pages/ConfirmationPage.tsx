@@ -1572,31 +1572,35 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
               <div className="flex items-center justify-end py-2">
                 <div className="flex items-center gap-3">
                   <div 
-                    className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#ffffff' }}
                     title="추가"
                   >
-                    <Plus className="h-3 w-3 text-slate-600" />
+                    <Plus className="h-3 w-3" style={{ color: '#3c82f5' }} />
                   </div>
                   <div 
-                    className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center hover:bg-orange-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                     onClick={() => addCanvas("수술 동의서 제목")}
                     title="그림 추가"
                   >
-                    <ImageIcon className="h-3 w-3 text-orange-600" />
+                    <ImageIcon className="h-3 w-3 text-white" />
                   </div>
                   <div 
-                    className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center hover:bg-green-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                     onClick={() => addAudioRecording("수술 동의서 제목")}
                     title="음성 추가"
                   >
-                    <Mic className="h-3 w-3 text-green-600" />
+                    <Mic className="h-3 w-3 text-white" />
                   </div>
                   <div 
-                    className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center hover:bg-purple-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                     onClick={() => addTextNote("수술 동의서 제목")}
                     title="텍스트 추가"
                   >
-                    <FileText className="h-3 w-3 text-purple-600" />
+                    <FileText className="h-3 w-3 text-white" />
                   </div>
                 </div>
               </div>
@@ -1762,7 +1766,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => removeCanvas(mediaElement.id)}
+                            onClick={() => deleteCanvas(mediaElement.id)}
                             className="h-6 w-6 p-0 text-slate-400 hover:text-red-500"
                             title="삭제"
                           >
@@ -1888,31 +1892,35 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
               <div className="flex items-center justify-end py-2">
                 <div className="flex items-center gap-3">
                   <div 
-                    className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#ffffff' }}
                     title="추가"
                   >
-                    <Plus className="h-3 w-3 text-slate-600" />
+                    <Plus className="h-3 w-3" style={{ color: '#3c82f5' }} />
                   </div>
                   <div 
-                    className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center hover:bg-orange-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                     onClick={() => addCanvas("환자 정보")}
                     title="그림 추가"
                   >
-                    <ImageIcon className="h-3 w-3 text-orange-600" />
+                    <ImageIcon className="h-3 w-3 text-white" />
                   </div>
                   <div 
-                    className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center hover:bg-green-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                     onClick={() => addAudioRecording("환자 정보")}
                     title="음성 추가"
                   >
-                    <Mic className="h-3 w-3 text-green-600" />
+                    <Mic className="h-3 w-3 text-white" />
                   </div>
                   <div 
-                    className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center hover:bg-purple-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                     onClick={() => addTextNote("환자 정보")}
                     title="텍스트 추가"
                   >
-                    <FileText className="h-3 w-3 text-purple-600" />
+                    <FileText className="h-3 w-3 text-white" />
                   </div>
                 </div>
               </div>
@@ -2004,7 +2012,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => removeCanvas(mediaElement.id)}
+                            onClick={() => deleteCanvas(mediaElement.id)}
                             className="h-6 w-6 p-0 text-slate-400 hover:text-red-500"
                             title="삭제"
                           >
@@ -2130,31 +2138,35 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
               <div className="flex items-center justify-end py-2">
                 <div className="flex items-center gap-3">
                   <div 
-                    className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#ffffff' }}
                     title="추가"
                   >
-                    <Plus className="h-3 w-3 text-slate-600" />
+                    <Plus className="h-3 w-3" style={{ color: '#3c82f5' }} />
                   </div>
                   <div 
-                    className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center hover:bg-orange-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                     onClick={() => addCanvas("참여 의료진")}
                     title="그림 추가"
                   >
-                    <ImageIcon className="h-3 w-3 text-orange-600" />
+                    <ImageIcon className="h-3 w-3 text-white" />
                   </div>
                   <div 
-                    className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center hover:bg-green-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                     onClick={() => addAudioRecording("참여 의료진")}
                     title="음성 추가"
                   >
-                    <Mic className="h-3 w-3 text-green-600" />
+                    <Mic className="h-3 w-3 text-white" />
                   </div>
                   <div 
-                    className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center hover:bg-purple-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                     onClick={() => addTextNote("참여 의료진")}
                     title="텍스트 추가"
                   >
-                    <FileText className="h-3 w-3 text-purple-600" />
+                    <FileText className="h-3 w-3 text-white" />
                   </div>
                 </div>
               </div>
@@ -2275,7 +2287,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => removeCanvas(mediaElement.id)}
+                            onClick={() => deleteCanvas(mediaElement.id)}
                             className="h-6 w-6 p-0 text-slate-400 hover:text-red-500"
                             title="삭제"
                           >
@@ -2401,31 +2413,35 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
               <div className="flex items-center justify-end py-2">
                 <div className="flex items-center gap-3">
                   <div 
-                    className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#ffffff' }}
                     title="추가"
                   >
-                    <Plus className="h-3 w-3 text-slate-600" />
+                    <Plus className="h-3 w-3" style={{ color: '#3c82f5' }} />
                   </div>
                   <div 
-                    className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center hover:bg-orange-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                     onClick={() => addCanvas("1. 환자 상태 및 특이사항")}
                     title="그림 추가"
                   >
-                    <ImageIcon className="h-3 w-3 text-orange-600" />
+                    <ImageIcon className="h-3 w-3 text-white" />
                   </div>
                   <div 
-                    className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center hover:bg-green-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                     onClick={() => addAudioRecording("1. 환자 상태 및 특이사항")}
                     title="음성 추가"
                   >
-                    <Mic className="h-3 w-3 text-green-600" />
+                    <Mic className="h-3 w-3 text-white" />
                   </div>
                   <div 
-                    className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center hover:bg-purple-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                     onClick={() => addTextNote("1. 환자 상태 및 특이사항")}
                     title="텍스트 추가"
                   >
-                    <FileText className="h-3 w-3 text-purple-600" />
+                    <FileText className="h-3 w-3 text-white" />
                   </div>
                 </div>
               </div>
@@ -2790,31 +2806,35 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                     <div className="flex items-center justify-end py-2 mt-4">
                       <div className="flex items-center gap-3">
                         <div 
-                          className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                          className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                          style={{ backgroundColor: '#ffffff' }}
                           title="추가"
                         >
-                          <Plus className="h-3 w-3 text-slate-600" />
+                          <Plus className="h-3 w-3" style={{ color: '#3c82f5' }} />
                         </div>
                         <div 
-                          className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center hover:bg-orange-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                          className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                           onClick={() => addCanvas(`${item.number}. ${item.title}`)}
                           title="그림 추가"
                         >
-                          <ImageIcon className="h-3 w-3 text-orange-600" />
+                          <ImageIcon className="h-3 w-3 text-white" />
                         </div>
                         <div 
-                          className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center hover:bg-green-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                          className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                           onClick={() => addAudioRecording(`${item.number}. ${item.title}`)}
                           title="음성 추가"
                         >
-                          <Mic className="h-3 w-3 text-green-600" />
+                          <Mic className="h-3 w-3 text-white" />
                         </div>
                         <div 
-                          className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center hover:bg-purple-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                          className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                           onClick={() => addTextNote(`${item.number}. ${item.title}`)}
                           title="텍스트 추가"
                         >
-                          <FileText className="h-3 w-3 text-purple-600" />
+                          <FileText className="h-3 w-3 text-white" />
                         </div>
                       </div>
                     </div>
@@ -2896,7 +2916,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => removeCanvas(mediaElement.id)}
+                              onClick={() => deleteCanvas(mediaElement.id)}
                               className="h-6 w-6 p-0 text-slate-400 hover:text-red-500"
                               title="삭제"
                             >
@@ -3022,31 +3042,35 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                 <div className="flex items-center justify-end py-2 mb-6">
                   <div className="flex items-center gap-3">
                     <div 
-                      className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                      className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                      style={{ backgroundColor: '#ffffff' }}
                       title="추가"
                     >
-                      <Plus className="h-3 w-3 text-slate-600" />
+                      <Plus className="h-3 w-3" style={{ color: '#3c82f5' }} />
                     </div>
                     <div 
-                      className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center hover:bg-orange-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                      className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                       onClick={() => addCanvas("수술 동의서 확인")}
                       title="그림 추가"
                     >
-                      <ImageIcon className="h-3 w-3 text-orange-600" />
+                      <ImageIcon className="h-3 w-3 text-white" />
                     </div>
                     <div 
-                      className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center hover:bg-green-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                      className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                       onClick={() => addAudioRecording("수술 동의서 확인")}
                       title="음성 추가"
                     >
-                      <Mic className="h-3 w-3 text-green-600" />
+                      <Mic className="h-3 w-3 text-white" />
                     </div>
                     <div 
-                      className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center hover:bg-purple-200 hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                      className="w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer shadow-sm"
+                    style={{ backgroundColor: '#3c82f5' }}
                       onClick={() => addTextNote("수술 동의서 확인")}
                       title="텍스트 추가"
                     >
-                      <FileText className="h-3 w-3 text-purple-600" />
+                      <FileText className="h-3 w-3 text-white" />
                     </div>
                   </div>
                 </div>
