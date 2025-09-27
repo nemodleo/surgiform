@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Card } from "@/components/ui/card"
-import { X, Bot } from "lucide-react"
+import { X, Bot, Maximize2, Minimize2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Message {
@@ -66,10 +66,15 @@ export function ChatUI({
   const [isResizing, setIsResizing] = useState(false)
   const [resizeDirection, setResizeDirection] = useState<'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw' | null>(null)
   const [resizeOffset, setResizeOffset] = useState({ x: 0, y: 0 })
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const chatRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen)
   }
 
   useEffect(() => {
@@ -340,16 +345,16 @@ export function ChatUI({
         ref={chatRef}
         className="flex flex-col overflow-hidden relative"
         style={{
-          height: `${size.height}px`,
-          width: `${size.width}px`,
+          height: isFullscreen ? '100vh' : `${size.height}px`,
+          width: isFullscreen ? '100vw' : `${size.width}px`,
           backgroundColor: 'rgba(17, 24, 39, 0.6)',
           color: 'white',
-          borderRadius: '1rem',
+          borderRadius: isFullscreen ? '0' : '1rem',
           border: 'none',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          boxShadow: isFullscreen ? 'none' : '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           position: 'fixed' as const,
-          left: position ? `${position.x}px` : 'auto',
-          top: position ? `${position.y}px` : 'auto',
+          left: isFullscreen ? '0' : (position ? `${position.x}px` : 'auto'),
+          top: isFullscreen ? '0' : (position ? `${position.y}px` : 'auto'),
           zIndex: 50,
           cursor: isDragging ? 'grabbing' : 'default',
           display: position ? 'flex' : 'none' // Hide until position is set
@@ -357,22 +362,24 @@ export function ChatUI({
       >
         {/* Header */}
         <div
-          className="flex items-center justify-between px-4 py-3 cursor-grab active:cursor-grabbing select-none"
+          className={`flex items-center justify-between px-4 py-3 select-none ${isFullscreen ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}`}
           style={{ backgroundColor: 'rgba(17, 24, 39, 0.6)' }}
-          onMouseDown={handleMouseDown}
-          title="드래그하여 이동"
+          onMouseDown={isFullscreen ? undefined : handleMouseDown}
+          title={isFullscreen ? "" : "드래그하여 이동"}
         >
           <div className="flex items-center gap-3 pointer-events-none">
-            <button
-              className="text-gray-400 hover:text-white transition-colors pointer-events-auto"
-              title="드래그 핸들"
-            >
-              <svg className="w-2 h-4" viewBox="0 0 8 16" fill="currentColor">
-                <circle cx="4" cy="2" r="1.5" />
-                <circle cx="4" cy="8" r="1.5" />
-                <circle cx="4" cy="14" r="1.5" />
-              </svg>
-            </button>
+            {!isFullscreen && (
+              <button
+                className="text-gray-400 hover:text-white transition-colors pointer-events-auto"
+                title="드래그 핸들"
+              >
+                <svg className="w-2 h-4" viewBox="0 0 8 16" fill="currentColor">
+                  <circle cx="4" cy="2" r="1.5" />
+                  <circle cx="4" cy="8" r="1.5" />
+                  <circle cx="4" cy="14" r="1.5" />
+                </svg>
+              </button>
+            )}
             <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #c084fc, #a855f7, #f472b6)' }}>
               <Bot className="h-5 w-5 text-white" />
             </div>
@@ -381,22 +388,18 @@ export function ChatUI({
           <div className="flex items-center gap-3 pointer-events-none">
             <button
               className="text-gray-400 hover:text-white transition-colors pointer-events-auto"
-              onClick={() => onMinimize?.(messages)}
-              title="최소화 (대화 유지)"
+              onClick={toggleFullscreen}
+              title={isFullscreen ? "창 모드로 변경" : "전체 화면"}
             >
-              <svg className="w-5 h-1" viewBox="0 0 20 4" fill="currentColor">
-                <rect width="20" height="4" />
-              </svg>
+              {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
             </button>
             {onClose && (
               <button
                 onClick={() => {
-                  setMessages([introMessage]) // Reset to intro message when closing
-                  setConversationId(undefined)
-                  onClose()
+                  onMinimize?.(messages) // Same as minimize button
                 }}
                 className="text-gray-400 hover:text-white transition-colors pointer-events-auto"
-                title="닫기 (대화 삭제)"
+                title="최소화 (대화 유지)"
               >
                 <X className="h-6 w-6" />
               </button>
@@ -514,62 +517,66 @@ export function ChatUI({
           </div>
         </div>
 
-        {/* Resize handles */}
-        {/* Edge resize handles */}
-        <div
-          className="absolute top-0 left-0 w-full h-1 cursor-ns-resize hover:bg-blue-500/20 transition-colors"
-          onMouseDown={(e) => handleResizeStart(e, 'n')}
-          style={{ zIndex: 60 }}
-        />
-        <div
-          className="absolute bottom-0 left-0 w-full h-1 cursor-ns-resize hover:bg-blue-500/20 transition-colors"
-          onMouseDown={(e) => handleResizeStart(e, 's')}
-          style={{ zIndex: 60 }}
-        />
-        <div
-          className="absolute top-0 left-0 w-1 h-full cursor-ew-resize hover:bg-blue-500/20 transition-colors"
-          onMouseDown={(e) => handleResizeStart(e, 'w')}
-          style={{ zIndex: 60 }}
-        />
-        <div
-          className="absolute top-0 right-0 w-1 h-full cursor-ew-resize hover:bg-blue-500/20 transition-colors"
-          onMouseDown={(e) => handleResizeStart(e, 'e')}
-          style={{ zIndex: 60 }}
-        />
+        {/* Resize handles - only show when not in fullscreen */}
+        {!isFullscreen && (
+          <>
+            {/* Edge resize handles */}
+            <div
+              className="absolute top-0 left-0 w-full h-1 cursor-ns-resize hover:bg-blue-500/20 transition-colors"
+              onMouseDown={(e) => handleResizeStart(e, 'n')}
+              style={{ zIndex: 60 }}
+            />
+            <div
+              className="absolute bottom-0 left-0 w-full h-1 cursor-ns-resize hover:bg-blue-500/20 transition-colors"
+              onMouseDown={(e) => handleResizeStart(e, 's')}
+              style={{ zIndex: 60 }}
+            />
+            <div
+              className="absolute top-0 left-0 w-1 h-full cursor-ew-resize hover:bg-blue-500/20 transition-colors"
+              onMouseDown={(e) => handleResizeStart(e, 'w')}
+              style={{ zIndex: 60 }}
+            />
+            <div
+              className="absolute top-0 right-0 w-1 h-full cursor-ew-resize hover:bg-blue-500/20 transition-colors"
+              onMouseDown={(e) => handleResizeStart(e, 'e')}
+              style={{ zIndex: 60 }}
+            />
 
-        {/* Corner resize handles */}
-        <div
-          className="absolute top-0 left-0 w-3 h-3 cursor-nwse-resize hover:bg-blue-500/40 transition-colors"
-          onMouseDown={(e) => handleResizeStart(e, 'nw')}
-          style={{
-            zIndex: 60,
-            borderTopLeftRadius: '1rem'
+            {/* Corner resize handles */}
+            <div
+              className="absolute top-0 left-0 w-3 h-3 cursor-nwse-resize hover:bg-blue-500/40 transition-colors"
+              onMouseDown={(e) => handleResizeStart(e, 'nw')}
+              style={{
+                zIndex: 60,
+                borderTopLeftRadius: '1rem'
           }}
-        />
-        <div
-          className="absolute top-0 right-0 w-3 h-3 cursor-nesw-resize hover:bg-blue-500/40 transition-colors"
-          onMouseDown={(e) => handleResizeStart(e, 'ne')}
-          style={{
-            zIndex: 60,
-            borderTopRightRadius: '1rem'
-          }}
-        />
-        <div
-          className="absolute bottom-0 left-0 w-3 h-3 cursor-nesw-resize hover:bg-blue-500/40 transition-colors"
-          onMouseDown={(e) => handleResizeStart(e, 'sw')}
-          style={{
-            zIndex: 60,
-            borderBottomLeftRadius: '1rem'
-          }}
-        />
-        <div
-          className="absolute bottom-0 right-0 w-3 h-3 cursor-nwse-resize hover:bg-blue-500/40 transition-colors"
-          onMouseDown={(e) => handleResizeStart(e, 'se')}
-          style={{
-            zIndex: 60,
-            borderBottomRightRadius: '1rem'
-          }}
-        />
+            />
+            <div
+              className="absolute top-0 right-0 w-3 h-3 cursor-nesw-resize hover:bg-blue-500/40 transition-colors"
+              onMouseDown={(e) => handleResizeStart(e, 'ne')}
+              style={{
+                zIndex: 60,
+                borderTopRightRadius: '1rem'
+              }}
+            />
+            <div
+              className="absolute bottom-0 left-0 w-3 h-3 cursor-nesw-resize hover:bg-blue-500/40 transition-colors"
+              onMouseDown={(e) => handleResizeStart(e, 'sw')}
+              style={{
+                zIndex: 60,
+                borderBottomLeftRadius: '1rem'
+              }}
+            />
+            <div
+              className="absolute bottom-0 right-0 w-3 h-3 cursor-nwse-resize hover:bg-blue-500/40 transition-colors"
+              onMouseDown={(e) => handleResizeStart(e, 'se')}
+              style={{
+                zIndex: 60,
+                borderBottomRightRadius: '1rem'
+              }}
+            />
+          </>
+        )}
       </Card>
     </>
   )
