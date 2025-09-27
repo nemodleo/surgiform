@@ -1,27 +1,17 @@
 import { useState } from "react"
 import { useRouter } from "next/router"
 import LandingPageMobbin from "@/components/pages/LandingPageMobbin"
-import HeaderMinimal from "@/components/HeaderMinimal"
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<'home' | 'form' | 'mypage' | 'settings'>('home')
   const router = useRouter()
-
-  const handleNavigate = (page: string) => {
-    setCurrentPage(page as 'home' | 'form' | 'mypage' | 'settings')
-    if (page === 'form') {
-      router.push('/consent')
-    }
-  }
 
   const handleMainPageComplete = () => {
     router.push('/consent/basic-info')
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <HeaderMinimal onNavigate={handleNavigate} currentPage={currentPage} />
-      
+    <>
       {currentPage === 'home' && (
         <LandingPageMobbin onComplete={handleMainPageComplete} />
       )}
@@ -47,6 +37,6 @@ export default function Home() {
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }

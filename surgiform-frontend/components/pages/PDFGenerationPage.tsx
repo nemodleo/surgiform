@@ -61,7 +61,7 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
       )
       
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('PDF 생성 시간 초과 (30초)')), 30000)
+        setTimeout(() => reject(new Error('PDF 변환 시간 초과 (30초)')), 30000)
       )
       
       // Use the Korean PDF generator with proper font support
@@ -93,7 +93,7 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
         errorMessage: error instanceof Error ? error.message : 'Unknown error',
         errorStack: error instanceof Error ? error.stack : undefined
       })
-      alert(`PDF 생성 중 오류가 발생했습니다.\n\n오류 내용: ${error instanceof Error ? error.message : '알 수 없는 오류'}\n\n브라우저 콘솔에서 자세한 내용을 확인하세요.`)
+      alert(`PDF 변환 중 오류가 발생했습니다.\n\n오류 내용: ${error instanceof Error ? error.message : '알 수 없는 오류'}\n\n브라우저 콘솔에서 자세한 내용을 확인하세요.`)
     }
     
     setGenerating(false)
@@ -172,7 +172,7 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
         {/* Header */}
         <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
           <h2 className="text-lg font-semibold text-slate-900 mb-2">
-            수술 동의서 PDF 생성
+            수술 동의서 PDF 변환
           </h2>
           <p className="text-sm text-slate-600">
             작성된 수술 동의서를 PDF 파일로 저장합니다
@@ -186,7 +186,7 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
             <div className="text-center py-8">
               <div className="inline-flex items-center gap-2">
                 <Loader2 className="h-5 w-5 animate-spin text-slate-700" />
-                <span className="text-slate-700">PDF 생성 중...</span>
+                <span className="text-slate-700">PDF 변환 중...</span>
               </div>
             </div>
           ) : pdfGenerated && pdfUrl ? (
@@ -195,7 +195,7 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
               <div className="bg-slate-100 p-4 rounded-lg">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-slate-900">PDF 미리보기</h3>
-                  <span className="text-xs text-slate-600">PDF 생성 완료</span>
+                  <span className="text-xs text-slate-600">PDF 변환 완료</span>
                 </div>
                 <div className="border border-slate-200 rounded-lg overflow-hidden bg-white">
                   <iframe
