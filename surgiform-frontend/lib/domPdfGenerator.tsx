@@ -117,6 +117,87 @@ export const generateKoreanPDFFromDOM = async (
     
     <h1>수술 동의서</h1>
     
+    ${(() => {
+      // 수술 동의서 제목 미디어 요소들
+      const titleCanvases = canvasDrawings.filter((canvas: any) => 
+        canvas.title && canvas.title.includes("수술 동의서 제목")
+      );
+      const titleAudios = audioRecordings.filter((audio: any) => 
+        audio.title && audio.title.includes("수술 동의서 제목") && audio.audioBlob
+      );
+      const titleTexts = textNotes.filter((text: any) => 
+        text.title && text.title.includes("수술 동의서 제목")
+      );
+      
+      let titleMediaHtml = '';
+      
+      // Canvas drawings
+      if (titleCanvases.length > 0) {
+        titleMediaHtml += titleCanvases.map((canvas: any) => {
+          if (canvas.imageData) {
+            return `
+              <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${canvas.title}</div>
+                <img src="${canvas.imageData}" alt="Canvas drawing" style="max-width: 100%; height: auto; border: 1px solid #e2e8f0; border-radius: 4px;" />
+              </div>
+            `;
+          } else {
+            return `
+              <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${canvas.title}</div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 4px; height: 200px; background-color: white; position: relative;">
+                  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #cbd5e1; font-size: 12px;">
+                    <!-- 그림 설명 영역 (비어있음) -->
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        }).join('');
+      }
+      
+      // Audio recordings
+      if (titleAudios.length > 0) {
+        titleMediaHtml += titleAudios.map((audio: any) => {
+          const duration = audio.duration ? Math.floor(audio.duration) : 0;
+          const minutes = Math.floor(duration / 60);
+          const seconds = duration % 60;
+          const durationText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          
+          return `
+            <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+              <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${audio.title}</div>
+              <div style="border: 1px solid #e2e8f0; border-radius: 4px; height: 60px; background-color: white; position: relative; display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center; color: #64748b; font-size: 12px;">
+                  <div style="margin-bottom: 4px; font-weight: 500;">음성 녹음</div>
+                  <div>재생 시간: ${durationText}</div>
+                  <div style="margin-top: 2px; font-size: 10px; color: #94a3b8;">파일 ID: ${audio.id}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      
+      // Text notes
+      if (titleTexts.length > 0) {
+        titleMediaHtml += titleTexts.map((text: any) => {
+          return `
+            <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+              <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
+              <div style="border: 1px solid #e2e8f0; border-radius: 4px; min-height: 60px; background-color: white; position: relative; padding: 0px 8px 0 8px;">
+                <div style="color: #0f172a; font-size: 12px; line-height: 1; white-space: pre-line; margin: 0; padding: 0; text-indent: 0;">
+                  ${(text.content || '텍스트가 입력되지 않았습니다.').trim()}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      
+      return titleMediaHtml;
+    })()}
+    
     <h4>환자 정보</h4>
     <table class="info-table">
       <colgroup>
@@ -134,6 +215,87 @@ export const generateKoreanPDFFromDOM = async (
       </tbody>
     </table>
     
+    ${(() => {
+      // 환자 정보 미디어 요소들
+      const patientCanvases = canvasDrawings.filter((canvas: any) => 
+        canvas.title && canvas.title.includes("환자 정보")
+      );
+      const patientAudios = audioRecordings.filter((audio: any) => 
+        audio.title && audio.title.includes("환자 정보") && audio.audioBlob
+      );
+      const patientTexts = textNotes.filter((text: any) => 
+        text.title && text.title.includes("환자 정보")
+      );
+      
+      let patientMediaHtml = '';
+      
+      // Canvas drawings
+      if (patientCanvases.length > 0) {
+        patientMediaHtml += patientCanvases.map((canvas: any) => {
+          if (canvas.imageData) {
+            return `
+              <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${canvas.title}</div>
+                <img src="${canvas.imageData}" alt="Canvas drawing" style="max-width: 100%; height: auto; border: 1px solid #e2e8f0; border-radius: 4px;" />
+              </div>
+            `;
+          } else {
+            return `
+              <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${canvas.title}</div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 4px; height: 200px; background-color: white; position: relative;">
+                  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #cbd5e1; font-size: 12px;">
+                    <!-- 그림 설명 영역 (비어있음) -->
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        }).join('');
+      }
+      
+      // Audio recordings
+      if (patientAudios.length > 0) {
+        patientMediaHtml += patientAudios.map((audio: any) => {
+          const duration = audio.duration ? Math.floor(audio.duration) : 0;
+          const minutes = Math.floor(duration / 60);
+          const seconds = duration % 60;
+          const durationText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          
+          return `
+            <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+              <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${audio.title}</div>
+              <div style="border: 1px solid #e2e8f0; border-radius: 4px; height: 60px; background-color: white; position: relative; display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center; color: #64748b; font-size: 12px;">
+                  <div style="margin-bottom: 4px; font-weight: 500;">음성 녹음</div>
+                  <div>재생 시간: ${durationText}</div>
+                  <div style="margin-top: 2px; font-size: 10px; color: #94a3b8;">파일 ID: ${audio.id}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      
+      // Text notes
+      if (patientTexts.length > 0) {
+        patientMediaHtml += patientTexts.map((text: any) => {
+          return `
+            <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+              <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
+              <div style="border: 1px solid #e2e8f0; border-radius: 4px; min-height: 60px; background-color: white; position: relative; padding: 0px 8px 0 8px;">
+                <div style="color: #0f172a; font-size: 12px; line-height: 1; white-space: pre-line; margin: 0; padding: 0; text-indent: 0;">
+                  ${(text.content || '텍스트가 입력되지 않았습니다.').trim()}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      
+      return patientMediaHtml;
+    })()}
+    
     <h4>참여 의료진</h4>
     <table class="info-table">
       <colgroup>
@@ -148,6 +310,87 @@ export const generateKoreanPDFFromDOM = async (
       `).join('')}
       </tbody>
     </table>
+    
+    ${(() => {
+      // 참여 의료진 미디어 요소들
+      const teamCanvases = canvasDrawings.filter((canvas: any) => 
+        canvas.title && canvas.title.includes("참여 의료진")
+      );
+      const teamAudios = audioRecordings.filter((audio: any) => 
+        audio.title && audio.title.includes("참여 의료진") && audio.audioBlob
+      );
+      const teamTexts = textNotes.filter((text: any) => 
+        text.title && text.title.includes("참여 의료진")
+      );
+      
+      let teamMediaHtml = '';
+      
+      // Canvas drawings
+      if (teamCanvases.length > 0) {
+        teamMediaHtml += teamCanvases.map((canvas: any) => {
+          if (canvas.imageData) {
+            return `
+              <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${canvas.title}</div>
+                <img src="${canvas.imageData}" alt="Canvas drawing" style="max-width: 100%; height: auto; border: 1px solid #e2e8f0; border-radius: 4px;" />
+              </div>
+            `;
+          } else {
+            return `
+              <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${canvas.title}</div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 4px; height: 200px; background-color: white; position: relative;">
+                  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #cbd5e1; font-size: 12px;">
+                    <!-- 그림 설명 영역 (비어있음) -->
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        }).join('');
+      }
+      
+      // Audio recordings
+      if (teamAudios.length > 0) {
+        teamMediaHtml += teamAudios.map((audio: any) => {
+          const duration = audio.duration ? Math.floor(audio.duration) : 0;
+          const minutes = Math.floor(duration / 60);
+          const seconds = duration % 60;
+          const durationText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          
+          return `
+            <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+              <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${audio.title}</div>
+              <div style="border: 1px solid #e2e8f0; border-radius: 4px; height: 60px; background-color: white; position: relative; display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center; color: #64748b; font-size: 12px;">
+                  <div style="margin-bottom: 4px; font-weight: 500;">음성 녹음</div>
+                  <div>재생 시간: ${durationText}</div>
+                  <div style="margin-top: 2px; font-size: 10px; color: #94a3b8;">파일 ID: ${audio.id}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      
+      // Text notes
+      if (teamTexts.length > 0) {
+        teamMediaHtml += teamTexts.map((text: any) => {
+          return `
+            <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+              <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
+              <div style="border: 1px solid #e2e8f0; border-radius: 4px; min-height: 60px; background-color: white; position: relative; padding: 0px 8px 0 8px;">
+                <div style="color: #0f172a; font-size: 12px; line-height: 1; white-space: pre-line; margin: 0; padding: 0; text-indent: 0;">
+                  ${(text.content || '텍스트가 입력되지 않았습니다.').trim()}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      
+      return teamMediaHtml;
+    })()}
     
     <h4>1. 환자 상태 및 특이사항</h4>
     <table class="info-table">
@@ -168,6 +411,87 @@ export const generateKoreanPDFFromDOM = async (
         <tr><th>기타</th><td colspan="3">${formData.other_conditions || ""}</td></tr>
       </tbody>
     </table>
+    
+    ${(() => {
+      // 환자 상태 및 특이사항 미디어 요소들
+      const conditionCanvases = canvasDrawings.filter((canvas: any) => 
+        canvas.title && canvas.title.includes("1. 환자 상태 및 특이사항")
+      );
+      const conditionAudios = audioRecordings.filter((audio: any) => 
+        audio.title && audio.title.includes("1. 환자 상태 및 특이사항") && audio.audioBlob
+      );
+      const conditionTexts = textNotes.filter((text: any) => 
+        text.title && text.title.includes("1. 환자 상태 및 특이사항")
+      );
+      
+      let conditionMediaHtml = '';
+      
+      // Canvas drawings
+      if (conditionCanvases.length > 0) {
+        conditionMediaHtml += conditionCanvases.map((canvas: any) => {
+          if (canvas.imageData) {
+            return `
+              <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${canvas.title}</div>
+                <img src="${canvas.imageData}" alt="Canvas drawing" style="max-width: 100%; height: auto; border: 1px solid #e2e8f0; border-radius: 4px;" />
+              </div>
+            `;
+          } else {
+            return `
+              <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${canvas.title}</div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 4px; height: 200px; background-color: white; position: relative;">
+                  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #cbd5e1; font-size: 12px;">
+                    <!-- 그림 설명 영역 (비어있음) -->
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        }).join('');
+      }
+      
+      // Audio recordings
+      if (conditionAudios.length > 0) {
+        conditionMediaHtml += conditionAudios.map((audio: any) => {
+          const duration = audio.duration ? Math.floor(audio.duration) : 0;
+          const minutes = Math.floor(duration / 60);
+          const seconds = duration % 60;
+          const durationText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          
+          return `
+            <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+              <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${audio.title}</div>
+              <div style="border: 1px solid #e2e8f0; border-radius: 4px; height: 60px; background-color: white; position: relative; display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center; color: #64748b; font-size: 12px;">
+                  <div style="margin-bottom: 4px; font-weight: 500;">음성 녹음</div>
+                  <div>재생 시간: ${durationText}</div>
+                  <div style="margin-top: 2px; font-size: 10px; color: #94a3b8;">파일 ID: ${audio.id}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      
+      // Text notes
+      if (conditionTexts.length > 0) {
+        conditionMediaHtml += conditionTexts.map((text: any) => {
+          return `
+            <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+              <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
+              <div style="border: 1px solid #e2e8f0; border-radius: 4px; min-height: 60px; background-color: white; position: relative; padding: 0px 8px 0 8px;">
+                <div style="color: #0f172a; font-size: 12px; line-height: 1; white-space: pre-line; margin: 0; padding: 0; text-indent: 0;">
+                  ${(text.content || '텍스트가 입력되지 않았습니다.').trim()}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      
+      return conditionMediaHtml;
+    })()}
     
     ${(() => {
       const allItems = [
@@ -271,8 +595,89 @@ export const generateKoreanPDFFromDOM = async (
     <div class="signature-section">
       <h3>수술 동의서 확인</h3>
       
+      ${(() => {
+        // 수술 동의서 확인 미디어 요소들
+        const confirmationCanvases = canvasDrawings.filter((canvas: any) => 
+          canvas.title && canvas.title.includes("수술 동의서 확인")
+        );
+        const confirmationAudios = audioRecordings.filter((audio: any) => 
+          audio.title && audio.title.includes("수술 동의서 확인") && audio.audioBlob
+        );
+        const confirmationTexts = textNotes.filter((text: any) => 
+          text.title && text.title.includes("수술 동의서 확인")
+        );
+        
+        let confirmationMediaHtml = '';
+        
+        // Canvas drawings
+        if (confirmationCanvases.length > 0) {
+          confirmationMediaHtml += confirmationCanvases.map((canvas: any) => {
+            if (canvas.imageData) {
+              return `
+                <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                  <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${canvas.title}</div>
+                  <img src="${canvas.imageData}" alt="Canvas drawing" style="max-width: 100%; height: auto; border: 1px solid #e2e8f0; border-radius: 4px;" />
+                </div>
+              `;
+            } else {
+              return `
+                <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                  <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${canvas.title}</div>
+                  <div style="border: 1px solid #e2e8f0; border-radius: 4px; height: 200px; background-color: white; position: relative;">
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #cbd5e1; font-size: 12px;">
+                      <!-- 그림 설명 영역 (비어있음) -->
+                    </div>
+                  </div>
+                </div>
+              `;
+            }
+          }).join('');
+        }
+        
+        // Audio recordings
+        if (confirmationAudios.length > 0) {
+          confirmationMediaHtml += confirmationAudios.map((audio: any) => {
+            const duration = audio.duration ? Math.floor(audio.duration) : 0;
+            const minutes = Math.floor(duration / 60);
+            const seconds = duration % 60;
+            const durationText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            return `
+              <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${audio.title}</div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 4px; height: 60px; background-color: white; position: relative; display: flex; align-items: center; justify-content: center;">
+                  <div style="text-align: center; color: #64748b; font-size: 12px;">
+                    <div style="margin-bottom: 4px; font-weight: 500;">음성 녹음</div>
+                    <div>재생 시간: ${durationText}</div>
+                    <div style="margin-top: 2px; font-size: 10px; color: #94a3b8;">파일 ID: ${audio.id}</div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+        
+        // Text notes
+        if (confirmationTexts.length > 0) {
+          confirmationMediaHtml += confirmationTexts.map((text: any) => {
+            return `
+              <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 4px; min-height: 60px; background-color: white; position: relative; padding: 0px 8px 0 8px;">
+                  <div style="color: #0f172a; font-size: 12px; line-height: 1; white-space: pre-line; margin: 0; padding: 0; text-indent: 0;">
+                    ${(text.content || '텍스트가 입력되지 않았습니다.').trim()}
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+        
+        return confirmationMediaHtml;
+      })()}
+      
       <div style="margin-bottom: 20px;">
-        <p style="margin-bottom: 12px; color: #374151; font-size: 14px;">아래 내용을 읽고 동의해 주세요.</p>
+        <p style="margin-bottom: 12px; margin-top: 24px; color: #374151; font-size: 14px;">아래 내용을 읽고 동의해 주세요.</p>
         <div style="border: 1px solid #e2e8f0; border-radius: 8px; background-color: #f8fafc; padding: 16px;">
           <ol style="margin: 0; padding-left: 0; list-style: none; color: #374151; font-size: 14px; line-height: 1.6;">
             <li style="margin-bottom: 8px; display: flex; align-items: flex-start;">
