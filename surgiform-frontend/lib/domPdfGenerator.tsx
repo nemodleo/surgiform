@@ -187,7 +187,7 @@ export const generateKoreanPDFFromDOM = async (
               <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
               <div style="border: 1px solid #e2e8f0; border-radius: 4px; min-height: 60px; background-color: white; position: relative; padding: 0px 8px 0 8px;">
                 <div style="color: #0f172a; font-size: 12px; line-height: 1; white-space: pre-line; margin: 0; padding: 0; text-indent: 0;">
-                  ${(text.content || '텍스트가 입력되지 않았습니다.').trim()}
+                  ${(text.content || '').trim()}
                 </div>
               </div>
             </div>
@@ -285,7 +285,7 @@ export const generateKoreanPDFFromDOM = async (
               <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
               <div style="border: 1px solid #e2e8f0; border-radius: 4px; min-height: 60px; background-color: white; position: relative; padding: 0px 8px 0 8px;">
                 <div style="color: #0f172a; font-size: 12px; line-height: 1; white-space: pre-line; margin: 0; padding: 0; text-indent: 0;">
-                  ${(text.content || '텍스트가 입력되지 않았습니다.').trim()}
+                  ${(text.content || '').trim()}
                 </div>
               </div>
             </div>
@@ -381,7 +381,7 @@ export const generateKoreanPDFFromDOM = async (
               <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
               <div style="border: 1px solid #e2e8f0; border-radius: 4px; min-height: 60px; background-color: white; position: relative; padding: 0px 8px 0 8px;">
                 <div style="color: #0f172a; font-size: 12px; line-height: 1; white-space: pre-line; margin: 0; padding: 0; text-indent: 0;">
-                  ${(text.content || '텍스트가 입력되지 않았습니다.').trim()}
+                  ${(text.content || '').trim()}
                 </div>
               </div>
             </div>
@@ -482,7 +482,7 @@ export const generateKoreanPDFFromDOM = async (
               <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
               <div style="border: 1px solid #e2e8f0; border-radius: 4px; min-height: 60px; background-color: white; position: relative; padding: 0px 8px 0 8px;">
                 <div style="color: #0f172a; font-size: 12px; line-height: 1; white-space: pre-line; margin: 0; padding: 0; text-indent: 0;">
-                  ${(text.content || '텍스트가 입력되지 않았습니다.').trim()}
+                  ${(text.content || '').trim()}
                 </div>
               </div>
             </div>
@@ -580,7 +580,7 @@ export const generateKoreanPDFFromDOM = async (
                 <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
                 <div style="border: 1px solid #e2e8f0; border-radius: 4px; min-height: 60px; background-color: white; position: relative; padding: 0px 8px 0 8px;">
                   <div style="color: #0f172a; font-size: 12px; line-height: 1.5; white-space: pre-line; margin: 0; padding: 0; text-indent: 0;">
-                    ${(text.content || '텍스트가 입력되지 않았습니다.').trim()}
+                    ${(text.content || '').trim()}
                   </div>
                 </div>
               </div>
@@ -665,7 +665,7 @@ export const generateKoreanPDFFromDOM = async (
                 <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
                 <div style="border: 1px solid #e2e8f0; border-radius: 4px; min-height: 60px; background-color: white; position: relative; padding: 0px 8px 0 8px;">
                   <div style="color: #0f172a; font-size: 12px; line-height: 1; white-space: pre-line; margin: 0; padding: 0; text-indent: 0;">
-                    ${(text.content || '텍스트가 입력되지 않았습니다.').trim()}
+                    ${(text.content || '').trim()}
                   </div>
                 </div>
               </div>
