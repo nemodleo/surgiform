@@ -8,7 +8,7 @@ import HeaderMinimal from '@/components/HeaderMinimal'
 import { StepperMinimal } from '@/components/ui/stepper-minimal'
 
 const STEP_LABELS = [
-  "기본 정보",
+  "정보 입력",
   "동의서 작성", 
   "확인 · 서명",
   "PDF 변환"
