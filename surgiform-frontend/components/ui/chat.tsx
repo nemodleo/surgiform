@@ -67,6 +67,11 @@ export function ChatUI({
   const [resizeDirection, setResizeDirection] = useState<'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw' | null>(null)
   const [resizeOffset, setResizeOffset] = useState({ x: 0, y: 0 })
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [opacity, setOpacity] = useState({
+    top: 60,
+    middle: 60,
+    bottom: 60
+  })
   const chatRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -75,6 +80,13 @@ export function ChatUI({
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen)
+  }
+
+  const updateOpacity = (section: 'top' | 'middle' | 'bottom', value: number) => {
+    setOpacity(prev => ({
+      ...prev,
+      [section]: value
+    }))
   }
 
   useEffect(() => {
@@ -340,6 +352,44 @@ export function ChatUI({
         .chat-animate-pulse {
           animation: chat-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
+        .slider::-webkit-slider-thumb {
+          appearance: none;
+          height: 12px;
+          width: 12px;
+          border-radius: 50%;
+          background: #8b5cf6;
+          cursor: pointer;
+          box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px #6b7280;
+          margin-top: -4px;
+        }
+        .slider::-moz-range-thumb {
+          height: 12px;
+          width: 12px;
+          border-radius: 50%;
+          background: #8b5cf6;
+          cursor: pointer;
+          border: 2px solid #ffffff;
+          box-shadow: 0 0 0 1px #6b7280;
+        }
+        .slider::-webkit-slider-track {
+          background: transparent;
+          height: 4px;
+          border-radius: 2px;
+        }
+        .slider::-moz-range-track {
+          background: transparent;
+          height: 4px;
+          border-radius: 2px;
+          border: none;
+        }
+        .slider:hover::-webkit-slider-thumb {
+          background: #a855f7;
+          transform: scale(1.1);
+        }
+        .slider:hover::-moz-range-thumb {
+          background: #a855f7;
+          transform: scale(1.1);
+        }
       `}</style>
       <Card
         ref={chatRef}
@@ -363,7 +413,7 @@ export function ChatUI({
         {/* Header */}
         <div
           className={`flex items-center justify-between px-4 py-3 select-none ${isFullscreen ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}`}
-          style={{ backgroundColor: 'rgba(17, 24, 39, 0.6)' }}
+          style={{ backgroundColor: `rgba(17, 24, 39, ${opacity.top / 100})` }}
           onMouseDown={isFullscreen ? undefined : handleMouseDown}
           title={isFullscreen ? "" : "드래그하여 이동"}
         >
@@ -380,12 +430,44 @@ export function ChatUI({
                 </svg>
               </button>
             )}
+            
             <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #c084fc, #a855f7, #f472b6)' }}>
               <Bot className="h-5 w-5 text-white" />
             </div>
             <h3 className="font-medium text-base text-white">{title}</h3>
           </div>
+          
           <div className="flex items-center gap-3 pointer-events-none">
+            {/* 투명도 조절 슬라이더 - 우측 전체화면 UI 바로 왼쪽에 위치 */}
+            <div 
+              className="flex items-center pointer-events-auto"
+              onMouseDown={(e) => e.stopPropagation()}
+              onMouseMove={(e) => e.stopPropagation()}
+              onMouseUp={(e) => e.stopPropagation()}
+            >
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value={(opacity.top + opacity.middle + opacity.bottom) / 3}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value)
+                  setOpacity({
+                    top: value,
+                    middle: value,
+                    bottom: value
+                  })
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onMouseMove={(e) => e.stopPropagation()}
+                onMouseUp={(e) => e.stopPropagation()}
+                className="w-16 h-1 rounded-lg appearance-none cursor-pointer slider"
+                style={{
+                  background: `linear-gradient(to right, #1f2937 0%, #1f2937 ${(opacity.top + opacity.middle + opacity.bottom) / 3}%, #4b5563 ${(opacity.top + opacity.middle + opacity.bottom) / 3}%, #4b5563 100%)`
+                }}
+              />
+            </div>
             <button
               className="text-gray-400 hover:text-white transition-colors pointer-events-auto"
               onClick={toggleFullscreen}
@@ -408,7 +490,7 @@ export function ChatUI({
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4" style={{ backgroundColor: 'rgba(17, 24, 39, 0.6)' }}>
+        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4" style={{ backgroundColor: `rgba(17, 24, 39, ${opacity.middle / 100})` }}>
           {messages.map((message, index) => (
               <div
                 key={index}
@@ -452,7 +534,7 @@ export function ChatUI({
         </div>
 
         {/* Input - Positioned at bottom, expands upward */}
-        <div className="relative" style={{ backgroundColor: 'rgba(17, 24, 39, 0.6)' }}>
+        <div className="relative" style={{ backgroundColor: `rgba(17, 24, 39, ${opacity.bottom / 100})` }}>
           <div className="p-4">
             <div className="relative flex items-end">
               <textarea
@@ -471,7 +553,7 @@ export function ChatUI({
                 className="w-full resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all overflow-y-auto"
                 style={{ 
                   // backgroundColor: '#1f2937', 
-                  backgroundColor: 'rgba(17, 24, 39, 0.6)',
+                  backgroundColor: 'rgba(31, 41, 55, 0.5)',
                   color: 'white',
                   minHeight: '50px',
                   maxHeight: '300px',
