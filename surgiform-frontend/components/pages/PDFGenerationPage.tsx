@@ -146,6 +146,15 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
   }, [formData, consentData])
 
   useEffect(() => {
+    console.log('PDF Generation useEffect triggered:', {
+      dataLoaded,
+      hasPatientName: !!formData.patient_name,
+      pdfGenerated,
+      generating,
+      formData: formData,
+      signatureData: signatureData
+    })
+    
     // Generate PDF only once when data is loaded and formData is available
     if (dataLoaded && formData.patient_name && !pdfGenerated && !generating) {
       console.log('Data loaded, generating PDF with signature data:', signatureData)

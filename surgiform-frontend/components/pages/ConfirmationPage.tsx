@@ -68,6 +68,23 @@ interface CanvasData {
 export default function ConfirmationPage({ onComplete, onBack, formData, consentData }: ConfirmationPageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const submissionRef = useRef(false)
+  const [surgerySiteMarking, setSurgerySiteMarking] = useState<{
+    marking: 'yes' | 'no' | null
+    reason: string
+  }>(() => {
+    // Try to restore from sessionStorage
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('surgerySiteMarking')
+      if (saved) {
+        try {
+          return JSON.parse(saved)
+        } catch (e) {
+          console.error('Failed to parse saved surgery site marking:', e)
+        }
+      }
+    }
+    return { marking: null, reason: '' }
+  })
   const [signatures, setSignatures] = useState<Record<string, string>>(() => {
     // Try to restore signatures from sessionStorage on initial load
     if (typeof window !== 'undefined') {
@@ -485,10 +502,72 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                       <td className="px-4 py-3 text-sm text-slate-900" colSpan={3}>{formData.diagnosis || ""}</td>
                     </tr>
                     <tr>
-                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">수술부위표시</th>
-                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.surgery_site_detail || ""}</td>
                       <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">수술부위</th>
-                      <td className="px-4 py-3 text-sm text-slate-900">{formData.surgery_site || ""}</td>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.surgery_site_detail || ""}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">수술부위표시</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1 cursor-pointer" onClick={() => {
+                            if (surgerySiteMarking.marking === 'yes') {
+                              // 이미 선택된 경우 취소
+                              const newMarking = { ...surgerySiteMarking, marking: null }
+                              setSurgerySiteMarking(newMarking)
+                              sessionStorage.setItem('surgerySiteMarking', JSON.stringify(newMarking))
+                            } else {
+                              // 선택되지 않은 경우 선택
+                              const newMarking = { ...surgerySiteMarking, marking: 'yes' as 'yes' | 'no' }
+                              setSurgerySiteMarking(newMarking)
+                              sessionStorage.setItem('surgerySiteMarking', JSON.stringify(newMarking))
+                            }
+                          }}>
+                            <input 
+                              type="radio" 
+                              name="surgery_site_marking" 
+                              value="yes" 
+                              className="w-3 h-3 pointer-events-none" 
+                              checked={surgerySiteMarking.marking === 'yes'}
+                              readOnly
+                            />
+                            <span className="text-sm">예</span>
+                          </div>
+                          <div className="flex items-center gap-1 cursor-pointer" onClick={() => {
+                            if (surgerySiteMarking.marking === 'no') {
+                              // 이미 선택된 경우 취소
+                              const newMarking = { ...surgerySiteMarking, marking: null }
+                              setSurgerySiteMarking(newMarking)
+                              sessionStorage.setItem('surgerySiteMarking', JSON.stringify(newMarking))
+                            } else {
+                              // 선택되지 않은 경우 선택
+                              const newMarking = { ...surgerySiteMarking, marking: 'no' as 'yes' | 'no' }
+                              setSurgerySiteMarking(newMarking)
+                              sessionStorage.setItem('surgerySiteMarking', JSON.stringify(newMarking))
+                            }
+                          }}>
+                            <input 
+                              type="radio" 
+                              name="surgery_site_marking" 
+                              value="no" 
+                              className="w-3 h-3 pointer-events-none" 
+                              checked={surgerySiteMarking.marking === 'no'}
+                              readOnly
+                            />
+                            <span className="text-sm">아니오</span>
+                          </div>
+                          <span className="text-sm text-slate-500">(사유: </span>
+                          <input 
+                            type="text" 
+                            value={surgerySiteMarking.reason}
+                            onChange={(e) => {
+                              const newMarking = { ...surgerySiteMarking, reason: e.target.value }
+                              setSurgerySiteMarking(newMarking)
+                              sessionStorage.setItem('surgerySiteMarking', JSON.stringify(newMarking))
+                            }}
+                            className="border border-slate-300 rounded px-2 py-1 text-sm w-32"
+                            placeholder="사유 입력"
+                          />
+                          <span className="text-sm text-slate-500">)</span>
+                        </div>
+                      </td>
                     </tr>
                   </tbody>
                 </table>

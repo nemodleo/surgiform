@@ -36,6 +36,7 @@ export default function PDFRoute() {
   const router = useRouter()
   const [formData, setFormData] = useState<Record<string, unknown>>({})
   const [consentData, setConsentData] = useState<ConsentObjectData>({})
+  const [isDataLoaded, setIsDataLoaded] = useState(false)
   
   useEffect(() => {
     // Load data from sessionStorage
@@ -66,6 +67,7 @@ export default function PDFRoute() {
       }
       
       console.log('PDF Page - Data loaded successfully')
+      setIsDataLoaded(true)
     } catch (error) {
       console.error('Error parsing stored data:', error)
       router.push('/consent/basic-info')
@@ -85,7 +87,7 @@ export default function PDFRoute() {
     router.push('/consent/confirmation')
   }
   
-  if (!formData.patient_name) {
+  if (!isDataLoaded || !formData.patient_name) {
     return (
       <div className="max-w-4xl mx-auto">
         <div className="space-y-8">
@@ -110,10 +112,16 @@ export default function PDFRoute() {
     )
   }
   
+  console.log('PDF Page - Rendering PDFGenerationPage with data:', {
+    formData: formData,
+    consentData: consentData,
+    isDataLoaded: isDataLoaded
+  })
+
   return (
     <PDFGenerationPage
       formData={formData as never}
-      consentData={transformConsentDataToArray(consentData) as never}
+      consentData={consentData as never}
       onHome={handleHome}
       onBack={handleBack}
     />

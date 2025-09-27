@@ -55,6 +55,10 @@ export const generateKoreanPDFFromDOM = async (
   // Load canvas drawings
   const savedCanvases = localStorage.getItem('canvasDrawings') || sessionStorage.getItem('canvasDrawings')
   const canvasDrawings = savedCanvases ? JSON.parse(savedCanvases) : []
+  
+  // Load surgery site marking data
+  const savedSurgerySiteMarking = sessionStorage.getItem('surgerySiteMarking')
+  const surgerySiteMarking = savedSurgerySiteMarking ? JSON.parse(savedSurgerySiteMarking) : { marking: null, reason: '' }
 
   // Create HTML container for Korean text support
   let container: HTMLDivElement | null = null
@@ -118,7 +122,7 @@ export const generateKoreanPDFFromDOM = async (
         <tr><th>수술명</th><td colspan="3">${formData.surgery_name || ""}</td></tr>
         <tr><th>나이/성별</th><td>${formData.patient_age || ""}세 / ${formData.patient_gender === "MALE" ? "남성" : "여성"}</td><th>시행예정일</th><td>${formData.surgery_date || ""}</td></tr>
         <tr><th>진단명</th><td colspan="3">${formData.diagnosis || ""}</td></tr>
-        <tr><th>수술부위표시</th><td>${formData.surgery_site_detail || ""}</td><th>수술부위</th><td>${formData.surgery_site || ""}</td></tr>
+        <tr><th>수술부위</th><td>${formData.surgery_site_detail || ""}</td><th>수술부위표시</th><td>${surgerySiteMarking.marking === 'yes' ? '☑ 예' : '□ 예'} &nbsp;&nbsp; ${surgerySiteMarking.marking === 'no' ? '☑ 아니오' : '□ 아니오'} </br>(사유: _________)</td></tr>
       </tbody>
     </table>
     
