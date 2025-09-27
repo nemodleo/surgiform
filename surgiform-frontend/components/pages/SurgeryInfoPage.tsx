@@ -1429,10 +1429,142 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
 
         <div className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors">
           <div className="p-6 space-y-6">
+            {/* 수술 동의서 제목 */}
+            <div className="text-center">
+              <h1 className="text-2xl font-semibold text-slate-900 mb-8">수술 동의서</h1>
+            </div>
+            
+            {/* 환자 정보 */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
+                환자 정보
+              </label>
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <tbody className="divide-y divide-slate-200">
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">등록번호</th>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.registration_number || ""}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">환자명</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">{formData.patient_name}</td>
+                    </tr>
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">수술명</th>
+                      <td className="px-4 py-3 text-sm text-slate-900" colSpan={3}>{formData.surgery_name || ""}</td>
+                    </tr>
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">나이/성별</th>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.patient_age}세 / {formData.patient_gender === "MALE" ? "남성" : "여성"}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">시행예정일</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">{formData.surgery_date || ""}</td>
+                    </tr>
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">진단명</th>
+                      <td className="px-4 py-3 text-sm text-slate-900" colSpan={3}>{formData.diagnosis || ""}</td>
+                    </tr>
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">수술부위</th>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.surgery_site_detail || ""}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">수술부위표시</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">
+                        <div className="flex items-center gap-4">
+                          <span className="text-sm">□ 예</span>
+                          <span className="text-sm">□ 아니오</span>
+                          <span className="text-sm text-slate-500">(사유: _________ )</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* 참여 의료진 */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
+                참여 의료진
+              </label>
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-slate-50">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">성명</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">전문의여부</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-slate-700">진료과목</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {(formData.medical_team || formData.participants || []).map((doctor: any, index: number) => (
+                      <tr key={index}>
+                        <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">
+                          {doctor.name || ""}
+                          {doctor.is_specialist ? " (집도의)" : ""}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{doctor.is_specialist ? "전문의" : "일반의"}</td>
+                        <td className="px-4 py-3 text-sm text-slate-900">{doctor.department || ""}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 1. 환자 상태 및 특이사항
               </label>
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <tbody className="divide-y divide-slate-200">
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">과거병력</th>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.medical_history ? "있음" : "없음"}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">당뇨병</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">{formData.diabetes ? "있음" : "없음"}</td>
+                    </tr>
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">흡연유무</th>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.smoking ? "흡연" : "비흡연"}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">고혈압</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">{formData.hypertension ? "있음" : "없음"}</td>
+                    </tr>
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">알레르기</th>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.allergy ? "있음" : "없음"}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">저혈압</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">{formData.hypotension ? "있음" : "없음"}</td>
+                    </tr>
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">기도이상</th>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.airway_abnormal ? "있음" : "없음"}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">심혈관질환</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">{formData.cardiovascular ? "있음" : "없음"}</td>
+                    </tr>
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">호흡기질환</th>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.respiratory_disease ? "있음" : "없음"}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">간질환</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">{formData.liver_disease ? "있음" : "없음"}</td>
+                    </tr>
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">신장질환</th>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.kidney_disease ? "있음" : "없음"}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">신경계질환</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">{formData.neurological_disease ? "있음" : "없음"}</td>
+                    </tr>
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">복용약</th>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.medication ? "있음" : "없음"}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">마약복용</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">{formData.drug_abuse ? "있음" : "없음"}</td>
+                    </tr>
+                    <tr>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">기타</th>
+                      <td className="px-4 py-3 text-sm text-slate-900" colSpan={3}>{formData.other_conditions || "없음"}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
