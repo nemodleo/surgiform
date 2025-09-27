@@ -255,7 +255,7 @@ export const generateKoreanPDFFromDOM = async (
           <div class="signature-label">환자: ${formData.patient_name || '환자'}</div>
           ${signatureData?.patient ? 
             `<img src="${signatureData.patient}" alt="Patient signature" style="border: 1px solid #cbd5e1; border-radius: 4px; max-width: 200px; height: 80px; background: white; padding: 8px;" />` : 
-            `<div class="signature-placeholder">서명란</div>`
+            `<div style="width: 200px; height: 80px; border: 1px solid #cbd5e1; border-radius: 4px; background: white; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 14px;">서명란</div>`
           }
         </div>
         
@@ -263,7 +263,7 @@ export const generateKoreanPDFFromDOM = async (
           <div class="signature-label">의사: ${((formData.medical_team || formData.participants || []) as any[])[0]?.name || '의사'}</div>
           ${signatureData?.doctor ? 
             `<img src="${signatureData.doctor}" alt="Doctor signature" style="border: 1px solid #cbd5e1; border-radius: 4px; max-width: 200px; height: 80px; background: white; padding: 8px;" />` : 
-            `<div class="signature-placeholder">서명란</div>`
+            `<div style="width: 200px; height: 80px; border: 1px solid #cbd5e1; border-radius: 4px; background: white; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 14px;">서명란</div>`
           }
         </div>
       </div>
