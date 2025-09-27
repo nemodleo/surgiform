@@ -588,7 +588,33 @@ export const generateKoreanPDFFromDOM = async (
           }).join('');
         }
         
-        return `<div class="consent-item"><div class="consent-title">${item.number}. ${item.title}</div>${item.number !== "5" ? `<div class="consent-desc">${content}</div>` : ''}${mediaHtml}</div>`;
+        // 5-3, 5-5 섹션에 특별한 동의서 블록 추가
+        let specialBlock = '';
+        if (item.number === "5-3") {
+          specialBlock = `
+            <div style="margin: 16px 0; padding: 16px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+              <div style="color: #374151; font-size: 14px; line-height: 1.6;">
+                수술·시술·검사(이하 '수술 등') 과정에서 환자의 상태에 따라 부득이하게 방법이 변경되거나 범위가 추가될 수 있습니다.<br />
+                이 경우, 추가 설명이 필요한 사항이 있으면 수술 시행 전에 환자 또는 대리인에게 설명하고 동의를 받아야 합니다.<br />
+                다만, 수술 도중 환자의 상태로 인해 사전 설명과 동의가 불가능할 정도로 긴급한 변경 또는 추가가 필요한 경우에는,<br />
+                시행 후 가능한 한 신속히 그 사유와 결과를 환자 또는 대리인에게 설명하도록 합니다.
+              </div>
+            </div>
+          `;
+        } else if (item.number === "5-5") {
+          specialBlock = `
+            <div style="margin: 16px 0; padding: 16px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+              <div style="color: #374151; font-size: 14px; line-height: 1.6;">
+                수술·시술·검사 과정에서 환자의 상태나 의료기관의 사정(예: 응급환자 진료, 주치의의 질병·출장 등)에 따라 부득이하게 주치의(집도의)가 변경될 수 있습니다.<br />
+                이 경우, 시행 전에 환자 또는 대리인에게 변경 사유를 설명하고 동의를 받습니다.<br />
+                다만, 시행 도중 긴급한 상황으로 사전 설명과 동의가 불가능한 경우에는,<br />
+                시행 후 지체 없이 변경 사유와 결과를 환자 또는 대리인에게 설명합니다.
+              </div>
+            </div>
+          `;
+        }
+        
+        return `<div class="consent-item"><div class="consent-title">${item.number}. ${item.title}</div>${specialBlock}${item.number !== "5" ? `<div class="consent-desc">${content}</div>` : ''}${mediaHtml}</div>`;
       }).join('');
     })()}
     

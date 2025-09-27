@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { RotateCcw, Check, Plus, ChevronLeft, ChevronRight, X, Loader2, Upload, Image as ImageIcon, Mic, MicOff, Play, Square, FileText } from "lucide-react"
+import { RotateCcw, Check, Plus, ChevronLeft, ChevronRight, X, Loader2, Upload, Image as ImageIcon, Mic, MicOff, Play, Square, FileText, Eraser, Pause } from "lucide-react"
 import SignatureCanvas from "react-signature-canvas"
 import { surgiformAPI } from "@/lib/api"
 import { createConsentSubmission } from "@/lib/consentDataFormatter"
@@ -2487,6 +2487,31 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                   return (
                   <div key={index} className="mb-10">
                     <h4 className="text-sm font-semibold text-slate-900 mb-1">{item.number}. {item.title}</h4>
+                    
+                    {/* 5-3. 수술 방법 변경 및 수술 추가 가능성에 대한 특별 동의서 블록 */}
+                    {item.number === "5-3" && (
+                      <div className="mb-4 p-6 bg-slate-50 rounded-xl border border-slate-100">
+                        <div className="text-sm text-slate-800 leading-relaxed">
+                          수술·시술·검사(이하 ‘수술 등’) 과정에서 환자의 상태에 따라 부득이하게 방법이 변경되거나 범위가 추가될 수 있습니다.<br />
+                          이 경우, 추가 설명이 필요한 사항이 있으면 수술 시행 전에 환자 또는 대리인에게 설명하고 동의를 받아야 합니다.<br />
+                          다만, 수술 도중 환자의 상태로 인해 사전 설명과 동의가 불가능할 정도로 긴급한 변경 또는 추가가 필요한 경우에는,
+                          시행 후 가능한 한 신속히 그 사유와 결과를 환자 또는 대리인에게 설명하도록 합니다.
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* 5-5. 집도의 변경 가능성에 대한 특별 동의서 블록 */}
+                    {item.number === "5-5" && (
+                      <div className="mb-4 p-6 bg-slate-50 rounded-xl border border-slate-100">
+                        <div className="text-sm text-slate-800 leading-relaxed">
+                          수술·시술·검사 과정에서 환자의 상태나 의료기관의 사정(예: 응급환자 진료, 주치의의 질병·출장 등)에 따라 부득이하게 주치의(집도의)가 변경될 수 있습니다.
+                          이 경우, 시행 전에 환자 또는 대리인에게 변경 사유를 설명하고 동의를 받습니다.<br />
+                          다만, 시행 도중 긴급한 상황으로 사전 설명과 동의가 불가능한 경우에는,
+                          시행 후 지체 없이 변경 사유와 결과를 환자 또는 대리인에게 설명합니다.
+                        </div>
+                      </div>
+                    )}
+                    
                     {item.number !== "5" && (
                     <div className="mb-3">
                       <span className="text-sm text-slate-900 whitespace-pre-wrap">
