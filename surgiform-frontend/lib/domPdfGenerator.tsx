@@ -56,6 +56,14 @@ export const generateKoreanPDFFromDOM = async (
   const savedCanvases = localStorage.getItem('canvasDrawings') || sessionStorage.getItem('canvasDrawings')
   const canvasDrawings = savedCanvases ? JSON.parse(savedCanvases) : []
   
+  // Load audio recordings
+  const savedAudioRecordings = sessionStorage.getItem('confirmationAudioRecordings')
+  const audioRecordings = savedAudioRecordings ? JSON.parse(savedAudioRecordings) : []
+  
+  // Load text notes
+  const savedTextNotes = sessionStorage.getItem('confirmationTextNotes')
+  const textNotes = savedTextNotes ? JSON.parse(savedTextNotes) : []
+  
   // Load surgery site marking data
   const savedSurgerySiteMarking = sessionStorage.getItem('surgerySiteMarking')
   const surgerySiteMarking = savedSurgerySiteMarking ? JSON.parse(savedSurgerySiteMarking) : { marking: null, reason: '' }
@@ -182,9 +190,19 @@ export const generateKoreanPDFFromDOM = async (
           canvas.title && canvas.title.includes(`${item.number}. ${item.title}`)
         );
         
-        let canvasHtml = '';
+        const itemAudios = audioRecordings.filter((audio: any) => 
+          audio.title && audio.title.includes(`${item.number}. ${item.title}`) && audio.audioBlob
+        );
+        
+        const itemTexts = textNotes.filter((text: any) => 
+          text.title && text.title.includes(`${item.number}. ${item.title}`)
+        );
+        
+        let mediaHtml = '';
+        
+        // Canvas drawings
         if (itemCanvases.length > 0) {
-          canvasHtml = itemCanvases.map((canvas: any) => {
+          mediaHtml += itemCanvases.map((canvas: any) => {
             if (canvas.imageData) {
               return `
                 <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
@@ -207,7 +225,46 @@ export const generateKoreanPDFFromDOM = async (
           }).join('');
         }
         
-        return `<div class="consent-item"><div class="consent-title">${item.number}. ${item.title}</div>${item.number !== "5" ? `<div class="consent-desc">${content}</div>` : ''}${canvasHtml}</div>`;
+        // Audio recordings
+        if (itemAudios.length > 0) {
+          mediaHtml += itemAudios.map((audio: any) => {
+            const duration = audio.duration ? Math.floor(audio.duration) : 0;
+            const minutes = Math.floor(duration / 60);
+            const seconds = duration % 60;
+            const durationText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            return `
+              <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${audio.title}</div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 4px; height: 60px; background-color: white; position: relative; display: flex; align-items: center; justify-content: center;">
+                  <div style="text-align: center; color: #64748b; font-size: 12px;">
+                    <div style="margin-bottom: 4px; font-weight: 500;">음성 녹음</div>
+                    <div>재생 시간: ${durationText}</div>
+                    <div style="margin-top: 2px; font-size: 10px; color: #94a3b8;">파일 ID: ${audio.id}</div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+        
+        // Text notes
+        if (itemTexts.length > 0) {
+          mediaHtml += itemTexts.map((text: any) => {
+            return `
+              <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
+                <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
+                <div style="border: 1px solid #e2e8f0; border-radius: 4px; min-height: 60px; background-color: white; position: relative; padding: 0px 8px 0 8px;">
+                  <div style="color: #0f172a; font-size: 12px; line-height: 1.5; white-space: pre-line; margin: 0; padding: 0; text-indent: 0;">
+                    ${(text.content || '텍스트가 입력되지 않았습니다.').trim()}
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+        
+        return `<div class="consent-item"><div class="consent-title">${item.number}. ${item.title}</div>${item.number !== "5" ? `<div class="consent-desc">${content}</div>` : ''}${mediaHtml}</div>`;
       }).join('');
     })()}
     
