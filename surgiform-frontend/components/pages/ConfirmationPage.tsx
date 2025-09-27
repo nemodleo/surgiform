@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { RotateCcw, Check, Plus, ChevronLeft, ChevronRight, X, Loader2 } from "lucide-react"
+import { RotateCcw, Check, Plus, ChevronLeft, ChevronRight, X, Loader2, Upload, Image as ImageIcon } from "lucide-react"
 import SignatureCanvas from "react-signature-canvas"
 import { surgiformAPI } from "@/lib/api"
 import { createConsentSubmission } from "@/lib/consentDataFormatter"
@@ -224,12 +224,12 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
 
   // Save canvases whenever they change (including empty array to handle deletions)
   useEffect(() => {
-    console.log('💾 Saving canvases to sessionStorage:', canvases.length, 'canvases')
+    console.log('💾 Saving canvases to storage:', canvases.length, 'canvases')
     canvases.forEach((c, index) => {
       console.log(`💾 Canvas ${index + 1}: id=${c.id}, title="${c.title}", hasData=${!!c.imageData}, dataLength=${c.imageData?.length || 0}`)
     })
-    sessionStorage.setItem('confirmationCanvases', JSON.stringify(canvases))
-    console.log('💾 Saved to sessionStorage successfully')
+    saveCanvasesToStorage(canvases)
+    console.log('💾 Saved to storage successfully')
   }, [canvases])
 
   // Attempt to restore all canvases when they're loaded
@@ -332,9 +332,9 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     setCanvases(prev => {
       const updated = [...prev, newCanvas]
       console.log('➕ New canvas added, total canvases:', updated.length)
-      // Immediately save to sessionStorage
-      sessionStorage.setItem('confirmationCanvases', JSON.stringify(updated))
-      console.log('💾 Saved new canvas to sessionStorage')
+      // Immediately save to storage
+      saveCanvasesToStorage(updated)
+      console.log('💾 Saved new canvas to storage')
       return updated
     })
   }
@@ -353,9 +353,9 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
             canvas.id === canvasId ? { ...canvas, imageData: dataUrl } : canvas
           )
           console.log('💾 Updated canvases state, total canvases:', updated.length)
-          // Immediately save to sessionStorage
-          sessionStorage.setItem('confirmationCanvases', JSON.stringify(updated))
-          console.log('💾 Saved to sessionStorage immediately')
+          // Immediately save to storage
+          saveCanvasesToStorage(updated)
+          console.log('💾 Saved to storage immediately')
           return updated
         })
       } else {
@@ -369,14 +369,144 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
   const deleteCanvas = (canvasId: string) => {
     setCanvases(prev => {
       const updated = prev.filter(c => c.id !== canvasId)
-      // Update sessionStorage after deletion
-      sessionStorage.setItem('confirmationCanvases', JSON.stringify(updated))
+      // Update storage after deletion
+      saveCanvasesToStorage(updated)
       return updated
     })
     // Clean up restored state
     restoredCanvases.current.delete(canvasId)
     // Clean up ref
     delete signatureRefs.current[canvasId]
+  }
+
+  // 이미지를 350x600 크기로 리사이즈하는 함수
+  const resizeImageToFit = (dataUrl: string, maxWidth: number = 335, maxHeight: number = 600, quality: number = 1): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new window.Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')!
+        
+        // 원본 이미지 크기
+        const originalWidth = img.width
+        const originalHeight = img.height
+        
+        // 비율을 유지하면서 최대 크기에 맞도록 계산
+        const scaleX = maxWidth / originalWidth
+        const scaleY = maxHeight / originalHeight
+        const scale = Math.min(scaleX, scaleY) // 더 작은 스케일 사용
+        
+        // 리사이즈된 크기 계산
+        const resizedWidth = Math.floor(originalWidth * scale)
+        const resizedHeight = Math.floor(originalHeight * scale)
+        
+        // 캔버스 크기 설정
+        canvas.width = resizedWidth
+        canvas.height = resizedHeight
+        
+        // 이미지를 캔버스에 그리기
+        ctx.drawImage(img, 0, 0, resizedWidth, resizedHeight)
+        
+        // JPEG로 압축하여 반환
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality)
+        resolve(compressedDataUrl)
+      }
+      img.src = dataUrl
+    })
+  }
+
+  // 스토리지 저장 함수 (용량 초과 시 localStorage 사용)
+  const saveCanvasesToStorage = (canvases: CanvasData[]) => {
+    try {
+      const data = JSON.stringify(canvases)
+      sessionStorage.setItem('confirmationCanvases', data)
+    } catch (error) {
+      console.warn('SessionStorage 용량 초과, localStorage 사용:', error)
+      try {
+        localStorage.setItem('confirmationCanvases', JSON.stringify(canvases))
+        toast.info('데이터가 localStorage에 저장되었습니다.')
+      } catch (localError) {
+        console.error('localStorage도 용량 초과:', localError)
+        toast.error('저장 공간이 부족합니다. 이미지를 다시 업로드해주세요.')
+      }
+    }
+  }
+
+  // 이미지 업로드 처리
+  const handleImageUpload = async (canvasId: string, file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast.error('이미지 파일만 업로드 가능합니다.')
+      return
+    }
+
+    // 파일 크기 제한 (50MB) - 리사이즈되므로 더 큰 파일도 허용
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error('이미지 크기가 너무 큽니다. 50MB 이하의 파일을 선택해주세요.')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const originalImageData = e.target?.result as string
+      if (signatureRefs.current[canvasId]) {
+        try {
+          // 이미지를 250x400 크기로 미리 리사이즈
+          const resizedImageData = await resizeImageToFit(originalImageData, 335, 600, 1)
+          
+          const canvas = signatureRefs.current[canvasId]
+          const img = new window.Image()
+          img.onload = () => {
+            // 캔버스에 리사이즈된 이미지를 배경으로 그리기
+            const canvasElement = canvas.getCanvas()
+            const ctx = canvasElement.getContext('2d')
+            
+            if (ctx) {
+              // 캔버스 크기 가져오기
+              const canvasWidth = canvasElement.width
+              const canvasHeight = canvasElement.height
+              
+              // 리사이즈된 이미지 크기 가져오기
+              const imgWidth = img.width
+              const imgHeight = img.height
+              
+              // 캔버스 좌측 상단에 배치하기 위한 오프셋 계산
+              const offsetX = 0  // 좌측 정렬
+              const offsetY = 0  // 상단 정렬
+              
+              // 캔버스 지우기
+              ctx.clearRect(0, 0, canvasWidth, canvasHeight)
+              
+              // 흰색 배경 그리기
+              ctx.fillStyle = '#ffffff'
+              ctx.fillRect(0, 0, canvasWidth, canvasHeight)
+              
+              // 리사이즈된 이미지를 캔버스에 그리기 (좌측 상단 배치)
+              ctx.drawImage(img, offsetX, offsetY)
+              
+              // 캔버스 데이터 저장
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.9)
+              
+              setCanvases(prev => {
+                const updated = prev.map(canvas => 
+                  canvas.id === canvasId ? { ...canvas, imageData: dataUrl } : canvas
+                )
+                saveCanvasesToStorage(updated)
+                return updated
+              })
+              
+              toast.success('이미지가 캔버스에 추가되었습니다.')
+            } else {
+              toast.error('캔버스 컨텍스트를 가져올 수 없습니다.')
+            }
+          }
+          img.src = resizedImageData
+        } catch (error) {
+          console.error('이미지 리사이즈 실패:', error)
+          toast.error('이미지 처리 중 오류가 발생했습니다.')
+        }
+      }
+    }
+    reader.readAsDataURL(file)
   }
 
   const handleComplete = async () => {
@@ -741,13 +871,37 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                               variant="ghost"
                               size="sm"
                               onClick={() => {
+                                const input = document.getElementById(`image-upload-${canvas.id}`) as HTMLInputElement
+                                input?.click()
+                              }}
+                              className="h-6 w-6 p-0 text-slate-400 hover:text-blue-500"
+                              title="이미지 첨부"
+                            >
+                              <Upload className="h-3 w-3" />
+                            </Button>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0]
+                                if (file) {
+                                  handleImageUpload(canvas.id, file)
+                                }
+                              }}
+                              className="hidden"
+                              id={`image-upload-${canvas.id}`}
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
                                 if (signatureRefs.current[canvas.id]) {
                                   signatureRefs.current[canvas.id].clear()
                                   setCanvases(prev => {
                                     const updated = prev.map(c => 
                                       c.id === canvas.id ? { ...c, imageData: undefined } : c
                                     )
-                                    sessionStorage.setItem('confirmationCanvases', JSON.stringify(updated))
+                                    saveCanvasesToStorage(updated)
                                     return updated
                                   })
                                   restoredCanvases.current.delete(canvas.id)
