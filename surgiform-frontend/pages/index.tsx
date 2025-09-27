@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { useRouter } from "next/router"
 import LandingPageMobbin from "@/components/pages/LandingPageMobbin"
-import HeaderMinimal from "@/components/HeaderMinimal"
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<'home' | 'form' | 'mypage' | 'settings'>('home')
@@ -20,8 +19,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      <HeaderMinimal onNavigate={handleNavigate} currentPage={currentPage} />
-      
       {currentPage === 'home' && (
         <LandingPageMobbin onComplete={handleMainPageComplete} />
       )}
