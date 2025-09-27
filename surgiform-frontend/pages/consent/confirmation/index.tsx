@@ -1,6 +1,6 @@
-"use client"
 
-import { useRouter } from "next/navigation"
+
+import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import ConfirmationPage from "@/components/pages/ConfirmationPage"
 import { transformConsentDataToArray, type ConsentObjectData } from "@/lib/consentDataTransformer"

@@ -1,7 +1,5 @@
-"use client"
-
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/router"
 import LandingPageMobbin from "@/components/pages/LandingPageMobbin"
 import HeaderMinimal from "@/components/HeaderMinimal"
 

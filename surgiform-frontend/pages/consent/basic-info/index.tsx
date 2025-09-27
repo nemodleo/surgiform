@@ -1,6 +1,4 @@
-"use client"
-
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/router"
 import { useEffect } from "react"
 import BasicInfoPageMinimal from "@/components/pages/BasicInfoPageMinimal"
 

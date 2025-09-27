@@ -1543,23 +1543,24 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                     <tr>
                       <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">호흡기질환</th>
                       <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.respiratory_disease ? "있음" : "없음"}</td>
-                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">혈액응고 관련 질환</th>
-                      <td className="px-4 py-3 text-sm text-slate-900">{formData.blood_coagulation ? "있음" : "없음"}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">간질환</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">{formData.liver_disease ? "있음" : "없음"}</td>
                     </tr>
                     <tr>
-                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">복용약물</th>
-                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.medication ? "있음" : "없음"}</td>
                       <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">신장질환</th>
-                      <td className="px-4 py-3 text-sm text-slate-900">{formData.kidney_disease ? "있음" : "없음"}</td>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.kidney_disease ? "있음" : "없음"}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">신경계질환</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">{formData.neurological_disease ? "있음" : "없음"}</td>
                     </tr>
                     <tr>
-                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">마약복용 혹은 약물사고</th>
-                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.drug_abuse ? "있음" : "없음"}</td>
-                      <td className="px-4 py-3 text-sm text-slate-900" colSpan={2}></td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">복용약</th>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.medication ? "있음" : "없음"}</td>
+                      <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">마약복용</th>
+                      <td className="px-4 py-3 text-sm text-slate-900">{formData.drug_abuse ? "있음" : "없음"}</td>
                     </tr>
                     <tr>
                       <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">기타</th>
-                      <td className="px-4 py-3 text-sm text-slate-900" colSpan={3}>{formData.other_conditions || ""}</td>
+                      <td className="px-4 py-3 text-sm text-slate-900" colSpan={3}>{formData.other_conditions || "없음"}</td>
                     </tr>
                   </tbody>
                 </table>

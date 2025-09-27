@@ -1,6 +1,6 @@
-"use client"
 
-import { useRouter } from "next/navigation"
+
+import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import dynamic from "next/dynamic"
 import { transformConsentDataToArray, type ConsentObjectData } from "@/lib/consentDataTransformer"
