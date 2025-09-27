@@ -272,6 +272,22 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     const attemptRestore = (attempts = 0) => {
       try {
         ref.fromDataURL(imageData)
+        
+        // 캔버스 복원 후 흰색 배경 그리기
+        const canvas = ref.getCanvas()
+        const ctx = canvas.getContext('2d')
+        if (ctx) {
+          // 현재 이미지 데이터를 백업
+          const currentImageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+          
+          // 흰색 배경으로 채우기
+          ctx.fillStyle = '#ffffff'
+          ctx.fillRect(0, 0, canvas.width, canvas.height)
+          
+          // 백업된 이미지 데이터를 다시 그리기
+          ctx.putImageData(currentImageData, 0, 0)
+        }
+        
         restoredCanvases.current.add(canvasId)
         delete pendingRestores.current[canvasId]
         console.log(`✅ Canvas ${canvasId} restored successfully on attempt ${attempts + 1}`)
