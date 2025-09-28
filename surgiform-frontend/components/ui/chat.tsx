@@ -397,7 +397,8 @@ export function ChatUI({
         style={{
           height: isFullscreen ? '100vh' : `${size.height}px`,
           width: isFullscreen ? '100vw' : `${size.width}px`,
-          backgroundColor: 'rgba(17, 24, 39, 0.6)',
+          // backgroundColor: 'rgba(17, 24, 39, 0.6)',
+          backgroundColor: 'transparent',
           color: 'white',
           borderRadius: isFullscreen ? '0' : '1rem',
           border: 'none',
