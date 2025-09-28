@@ -180,13 +180,10 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
         case 'surgery_date':
           const dateValue = value as string
           if (dateValue) {
+            // 날짜 형식만 검증하고 과거/미래 제약은 제거
             const selectedDate = new Date(dateValue)
-            const today = new Date()
-            today.setHours(0, 0, 0, 0)
-            selectedDate.setHours(0, 0, 0, 0)
-            
-            if (selectedDate < today) {
-              newErrors.surgery_date = '과거 날짜는 선택할 수 없습니다'
+            if (isNaN(selectedDate.getTime())) {
+              newErrors.surgery_date = '올바른 날짜를 입력해주세요'
             } else {
               delete newErrors.surgery_date
               isValid = true
@@ -552,7 +549,6 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
                     onChange={(e) => handleFieldChange('surgery_date', e.target.value)}
                     onBlur={() => handleBlur('surgery_date')}
                     className={getInputStyle('surgery_date')}
-                    min={today}
                   />
                 </div>
                 {errors.surgery_date && touched.surgery_date && (
