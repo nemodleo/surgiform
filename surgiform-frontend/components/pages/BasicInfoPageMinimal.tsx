@@ -111,6 +111,125 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
     return `${numbers.slice(0, 4)}-${numbers.slice(4, 8)}`
   }
 
+  // Comprehensive validation function
+  const validateField = useCallback(async (field: keyof FormData, value: unknown, showLoading = true) => {
+    let isValid = false
+    
+    if (showLoading) {
+      setIsValidating(prev => ({ ...prev, [field]: true }))
+    }
+    
+    // Simulate async validation
+    await new Promise(resolve => setTimeout(resolve, 200))
+    
+    // Get current errors state
+    setErrors(prevErrors => {
+      const newErrors = { ...prevErrors }
+      
+      switch (field) {
+        case 'registration_number':
+          const regValue = value as string
+          const cleanedNum = regValue.replace(/[^\d]/g, '')
+          if (!regValue) {
+            newErrors.registration_number = '등록번호를 입력해주세요'
+          } else if (cleanedNum.length !== 8) {
+            newErrors.registration_number = '등록번호는 8자리 숫자여야 합니다'
+          } else if (regValue !== formatRegistrationNumber(regValue)) {
+            newErrors.registration_number = '올바른 형식이 아닙니다 (XXXX-XXXX)'
+          } else {
+            delete newErrors.registration_number
+            isValid = true
+          }
+          break
+          
+        case 'patient_name':
+          const nameValue = value as string
+          if (!nameValue) {
+            newErrors.patient_name = '환자명을 입력해주세요'
+          } else if (nameValue.length < 2) {
+            newErrors.patient_name = '2자 이상 입력해주세요'
+          } else {
+            delete newErrors.patient_name
+            isValid = true
+          }
+          break
+          
+        case 'patient_age':
+          const ageValue = value as string
+          const age = parseInt(ageValue)
+          if (!ageValue) {
+            newErrors.patient_age = '나이를 입력해주세요'
+          } else if (isNaN(age) || age < 0 || age > 150) {
+            newErrors.patient_age = '올바른 나이를 입력해주세요 (0-150)'
+          } else {
+            delete newErrors.patient_age
+            isValid = true
+          }
+          break
+          
+        case 'patient_gender':
+          const genderValue = value as string
+          if (!genderValue) {
+            newErrors.patient_gender = '성별을 선택해주세요'
+          } else {
+            delete newErrors.patient_gender
+            isValid = true
+          }
+          break
+          
+        case 'surgery_date':
+          const dateValue = value as string
+          if (dateValue) {
+            const selectedDate = new Date(dateValue)
+            const today = new Date()
+            today.setHours(0, 0, 0, 0)
+            selectedDate.setHours(0, 0, 0, 0)
+            
+            if (selectedDate < today) {
+              newErrors.surgery_date = '과거 날짜는 선택할 수 없습니다'
+            } else {
+              delete newErrors.surgery_date
+              isValid = true
+            }
+          }
+          break
+          
+        case 'diagnosis':
+          const diagnosisValue = value as string
+          if (diagnosisValue && diagnosisValue.length < 2) {
+            newErrors.diagnosis = '2자 이상 입력해주세요'
+          } else if (diagnosisValue) {
+            delete newErrors.diagnosis
+            isValid = true
+          }
+          break
+          
+        case 'surgery_site':
+          const siteValue = value as string
+          if (siteValue) {
+            delete newErrors.surgery_site
+            isValid = true
+          }
+          break
+      }
+      
+      return newErrors
+    })
+    
+    setIsValidating(prev => ({ ...prev, [field]: false }))
+    
+    // Update completed fields
+    if (isValid) {
+      setCompletedFields(prev => new Set([...prev, field]))
+    } else {
+      setCompletedFields(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(field)
+        return newSet
+      })
+    }
+  }, [])
+
   // Real-time validation with debounce (skip during IME composition)
   useEffect(() => {
     if (isComposing) return // Skip validation during IME composition
@@ -123,121 +242,7 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
       })
     }, 500) // Increased delay for better Korean input
     return () => clearTimeout(timer)
-  }, [formData, touched, isComposing])
-
-  // Comprehensive validation function
-  const validateField = useCallback(async (field: keyof FormData, value: unknown, showLoading = true) => {
-    const newErrors = { ...errors }
-    let isValid = false
-    
-    if (showLoading) {
-      setIsValidating({ ...isValidating, [field]: true })
-    }
-    
-    // Simulate async validation
-    await new Promise(resolve => setTimeout(resolve, 200))
-    
-    switch (field) {
-      case 'registration_number':
-        const regValue = value as string
-        const cleanedNum = regValue.replace(/[^\d]/g, '')
-        if (!regValue) {
-          newErrors.registration_number = '등록번호를 입력해주세요'
-        } else if (cleanedNum.length !== 8) {
-          newErrors.registration_number = '등록번호는 8자리 숫자여야 합니다'
-        } else if (regValue !== formatRegistrationNumber(regValue)) {
-          newErrors.registration_number = '올바른 형식이 아닙니다 (XXXX-XXXX)'
-        } else {
-          delete newErrors.registration_number
-          isValid = true
-        }
-        break
-        
-      case 'patient_name':
-        const nameValue = value as string
-        if (!nameValue) {
-          newErrors.patient_name = '환자명을 입력해주세요'
-        } else if (nameValue.length < 2) {
-          newErrors.patient_name = '2자 이상 입력해주세요'
-        } else {
-          delete newErrors.patient_name
-          isValid = true
-        }
-        break
-        
-      case 'patient_age':
-        const ageValue = value as string
-        const age = parseInt(ageValue)
-        if (!ageValue) {
-          newErrors.patient_age = '나이를 입력해주세요'
-        } else if (isNaN(age) || age < 0 || age > 150) {
-          newErrors.patient_age = '올바른 나이를 입력해주세요 (0-150)'
-        } else {
-          delete newErrors.patient_age
-          isValid = true
-        }
-        break
-        
-      case 'patient_gender':
-        const genderValue = value as string
-        if (!genderValue) {
-          newErrors.patient_gender = '성별을 선택해주세요'
-        } else {
-          delete newErrors.patient_gender
-          isValid = true
-        }
-        break
-        
-      case 'surgery_date':
-        const dateValue = value as string
-        if (dateValue) {
-          const selectedDate = new Date(dateValue)
-          const today = new Date()
-          today.setHours(0, 0, 0, 0)
-          selectedDate.setHours(0, 0, 0, 0)
-          
-          if (selectedDate < today) {
-            newErrors.surgery_date = '과거 날짜는 선택할 수 없습니다'
-          } else {
-            delete newErrors.surgery_date
-            isValid = true
-          }
-        }
-        break
-        
-      case 'diagnosis':
-        const diagnosisValue = value as string
-        if (diagnosisValue && diagnosisValue.length < 2) {
-          newErrors.diagnosis = '2자 이상 입력해주세요'
-        } else if (diagnosisValue) {
-          delete newErrors.diagnosis
-          isValid = true
-        }
-        break
-        
-      case 'surgery_site':
-        const siteValue = value as string
-        if (siteValue) {
-          delete newErrors.surgery_site
-          isValid = true
-        }
-        break
-    }
-    
-    setErrors(newErrors)
-    setIsValidating({ ...isValidating, [field]: false })
-    
-    // Update completed fields
-    if (isValid) {
-      setCompletedFields(prev => new Set([...prev, field]))
-    } else {
-      setCompletedFields(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(field)
-        return newSet
-      })
-    }
-  }, [errors, isValidating])
+  }, [formData, touched, isComposing, validateField])
 
   const handleFieldChange = async (field: keyof FormData, value: string) => {
     let processedValue = value
@@ -289,16 +294,25 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
     let hasError = false
     const newTouched: Partial<Record<keyof FormData, boolean>> = {}
     
-    // Mark all required fields as touched
+    // Mark all required fields as touched and validate
     for (const field of requiredFields) {
       newTouched[field] = true
       await validateField(field, formData[field], false)
-      if (!formData[field] || errors[field]) {
-        hasError = true
-      }
     }
     
     setTouched({ ...touched, ...newTouched })
+    
+    // Check for errors after a short delay to allow state updates
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    // Check current errors state
+    const currentErrors = errors
+    for (const field of requiredFields) {
+      if (!formData[field] || currentErrors[field]) {
+        hasError = true
+        break
+      }
+    }
     
     if (hasError) {
       toast.error("필수 정보를 올바르게 입력해주세요")
@@ -307,7 +321,7 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
       
       // Focus on first error field
       const firstErrorField = requiredFields.find(field => 
-        !formData[field] || errors[field]
+        !formData[field] || currentErrors[field]
       )
       if (firstErrorField && inputRefs.current[firstErrorField]) {
         inputRefs.current[firstErrorField]?.focus()
