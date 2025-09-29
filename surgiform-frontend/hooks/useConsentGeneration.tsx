@@ -41,8 +41,9 @@ export const useConsentGeneration = ({ onSuccess, onError }: UseConsentGeneratio
       const result = await surgiformAPI.generateConsentWithProgress(
         data,
         (newProgress, message) => {
-          console.log(`API 완료: ${newProgress}% - ${message}`); // 디버그용
-          // 진행률은 SurgeryInfoPage에서 관리하므로 여기서는 로그만
+          console.log(`진행률 업데이트: ${newProgress}% - ${message}`); // 디버그용
+          setProgress(newProgress);
+          setProgressMessage(message);
         }
       );
 

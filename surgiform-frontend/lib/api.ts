@@ -161,10 +161,41 @@ export const surgiformAPI = {
     onProgress?: (progress: number, message: string) => void
   ) => {
     return new Promise<ConsentGenerateOut>((resolve, reject) => {
-      // 진행률은 SurgeryInfoPage.tsx에서 관리하므로 여기서는 API 호출만
+      // 진행률 시뮬레이션 (실제 API 호출과 함께)
+      const progressMessages = [
+        { progress: 10, message: "서버 연결 확인 중..." },
+        { progress: 20, message: "환자 정보 분석 중..." },
+        { progress: 35, message: "수술 정보 처리 중..." },
+        { progress: 50, message: "의학적 위험도 평가 중..." },
+        { progress: 65, message: "동의서 내용 생성 중..." },
+        { progress: 80, message: "참고 문헌 검색 중..." },
+        { progress: 90, message: "최종 검토 중..." },
+        { progress: 100, message: "동의서 생성 완료!" }
+      ];
+
+      let currentStep = 0;
+      
+      // 진행률 업데이트 함수
+      const updateProgress = () => {
+        if (currentStep < progressMessages.length) {
+          const { progress, message } = progressMessages[currentStep];
+          onProgress?.(progress, message);
+          currentStep++;
+          
+          // 마지막 단계가 아니면 다음 단계로
+          if (currentStep < progressMessages.length) {
+            setTimeout(updateProgress, Math.random() * 2000 + 1000); // 1-3초 랜덤
+          }
+        }
+      };
+
+      // 진행률 업데이트 시작
+      updateProgress();
+
       // 실제 API 호출
       api.post<ConsentGenerateOut>('/consent', data)
         .then(response => {
+          // API 완료 시 100% 보장
           onProgress?.(100, "동의서 생성 완료!");
           resolve(response.data);
         })

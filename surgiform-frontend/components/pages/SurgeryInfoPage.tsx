@@ -546,34 +546,21 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
     }
   });
 
-  // 진행률에 따른 메시지 업데이트
-  const getProgressMessage = () => {
-    if (virtualProgress < 10) return "요청 데이터 검증 중..."
-    if (virtualProgress < 20) return "환자 정보 처리 중..."
-    if (virtualProgress < 30) return "의료 용어 번역 중..."
-    if (virtualProgress < 40) return "키워드 추출 중..."
-    if (virtualProgress < 50) return "의료 문서 검색 중..."
-    if (virtualProgress < 60) return "수술 위험도 분석 중..."
-    if (virtualProgress < 70) return "대안 치료법 검토 중..."
-    if (virtualProgress < 80) return "합병증 정보 수집 중..."
-    if (virtualProgress < 90) return "동의서 내용 생성 중..."
-    return "최종 검토 중..."
-  }
 
   // 메시지 번갈아가기 위한 useEffect
   useEffect(() => {
-    if (isGenerating) {
+    if (isGenerating || loading) {
       const interval = setInterval(() => {
         setShowTimeMessage(prev => !prev)
       }, 3000) // 3초마다 번갈아가기
       
       return () => clearInterval(interval)
     }
-  }, [isGenerating])
+  }, [isGenerating, loading])
 
   // 하단 메시지 번갈아가기 (3초 주기, 엇갈린 타이밍)
   useEffect(() => {
-    if (isGenerating) {
+    if (isGenerating || loading) {
       let interval: NodeJS.Timeout
       
       // 1.5초 지연 후 시작해서 타이밍 엇갈리게
@@ -588,14 +575,14 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
         if (interval) clearInterval(interval)
       }
     }
-  }, [isGenerating])
+  }, [isGenerating, loading])
 
   // 가상 진행률을 위한 state
   const [virtualProgress, setVirtualProgress] = useState(0)
 
   // 가상 진행률 업데이트 useEffect (1분 30초 = 90초에 맞춤)
   useEffect(() => {
-    if (isGenerating) {
+    if (isGenerating || loading) {
       // 시작할 때 0으로 초기화
       setVirtualProgress(0)
       
@@ -615,11 +602,11 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
     }
     // isGenerating이 false가 되어도 즉시 100%로 만들지 않음
     // API 응답이 완료되면 useConsentGeneration 훅에서 별도로 100% 처리
-  }, [isGenerating])
+  }, [isGenerating, loading])
 
   // API 완료 시 100% 처리를 위한 useEffect
   useEffect(() => {
-    if (!isGenerating && virtualProgress > 0 && virtualProgress < 100) {
+    if (!isGenerating && !loading && virtualProgress > 0 && virtualProgress < 100) {
       // API가 완료되었고 이전에 진행 중이었다면 100%로 설정
       const timer = setTimeout(() => {
         setVirtualProgress(100)
@@ -627,7 +614,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       
       return () => clearTimeout(timer)
     }
-  }, [isGenerating, virtualProgress])
+  }, [isGenerating, loading, virtualProgress])
   
   const [consentData, setConsentData] = useState<ConsentData | null>(initialData || null)
 
@@ -1311,7 +1298,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <p className="text-base text-slate-600 font-normal">
               {showTimeMessage 
                 ? "약 1-2분 소요됩니다"
-                : getProgressMessage()
+                : "동의서 생성 중..."
               }
             </p>
           </div>
