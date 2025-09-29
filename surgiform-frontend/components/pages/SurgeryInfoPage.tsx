@@ -2,6 +2,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
+import styles from "@/styles/page-layout.module.css"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RefreshCw, WifiOff, X, ChevronLeft, ChevronRight, Bot, Sparkles } from "lucide-react"
@@ -1345,7 +1346,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
 
   // 정상 UI - 스크린샷과 동일한 레이아웃
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className={`max-w-4xl mx-auto ${styles.pageBottomSpacing}`}>
       <div className="space-y-8">
         <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
             <div>

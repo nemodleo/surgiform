@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
+import styles from "@/styles/page-layout.module.css"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -411,7 +412,7 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
   
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className={`max-w-4xl mx-auto ${styles.pageBottomSpacing}`}>
       
       <form onSubmit={handleSubmit} className="space-y-8">
         

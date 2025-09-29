@@ -1,0 +1,22 @@
+/* 페이지 하단 여백을 위한 공통 스타일 */
+
+/* 기본 페이지 하단 여백 */
+.pageBottomSpacing {
+  padding-bottom: 30px; /* 나중에 내용 추가할 때까지 최소한의 여백 */
+}
+
+/* 모바일에서는 조금 더 작은 여백 */
+@media (max-width: 768px) {
+  .pageBottomSpacing {
+    padding-bottom: 20px;
+  }
+}
+
+/* 추후 푸터나 이용약관 영역을 위한 예약 클래스 */
+.footerSpace {
+  min-height: 80px;
+}
+
+.termsSpace {
+  min-height: 40px;
+}

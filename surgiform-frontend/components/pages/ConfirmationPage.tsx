@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import styles from "@/styles/page-layout.module.css"
 import { Button } from "@/components/ui/button"
 import { RotateCcw, Check, Plus, ChevronLeft, ChevronRight, X, Loader2, Upload, Image as ImageIcon, Mic, Play, Square, FileText, Eraser, Pause } from "lucide-react"
 import SignatureCanvas from "react-signature-canvas"
@@ -1298,7 +1299,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
 
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className={`max-w-4xl mx-auto ${styles.pageBottomSpacing}`}>
       <div className="space-y-8">
         {/* Header */}
         <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">

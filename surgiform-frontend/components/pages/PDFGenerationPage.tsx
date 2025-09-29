@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import styles from "@/styles/page-layout.module.css"
 import { Button } from "@/components/ui/button"
 import { Download, Loader2, Home, ChevronLeft } from "lucide-react"
 import { generateKoreanPDFFromDOM } from "@/lib/domPdfGenerator"
@@ -134,7 +135,7 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
   }, [dataLoaded, formData, signatureData, generatePDF, generating, pdfGenerated]) // Watch for data loading
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className={`max-w-4xl mx-auto ${styles.pageBottomSpacing}`}>
       <div className="space-y-8">
         {/* Header */}
         <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
