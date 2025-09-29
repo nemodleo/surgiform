@@ -33,7 +33,7 @@ export const useConsentGeneration = ({ onSuccess, onError }: UseConsentGeneratio
 
       toast.success('수술동의서가 성공적으로 생성되었습니다.');
       
-      onSuccess?.(result);
+      onSuccess?.(result.data);
       return result;
 
     } catch (error) {
@@ -91,7 +91,7 @@ export const useConsentGeneration = ({ onSuccess, onError }: UseConsentGeneratio
       
       // 의료진 정보
       if (consentData?.formData?.medical_team && consentData.formData.medical_team.length > 0) {
-        const medicalTeamInfo = consentData.formData.medical_team.map(doctor => 
+        const medicalTeamInfo = consentData.formData.medical_team.map((doctor: any) =>
           `${doctor.name} (${doctor.is_specialist ? '전문의' : '전공의'}, ${doctor.department})`
         ).join(', ');
         consentInfoParts.push(`참여 의료진: ${medicalTeamInfo}`);

@@ -690,7 +690,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         setTimeout(() => reject(new Error('getUserMedia timeout after 5 seconds')), 5000)
       })
       
-      const stream = await Promise.race([streamPromise, timeoutPromise])
+      const stream = await Promise.race([streamPromise, timeoutPromise]) as MediaStream
       
       console.log('🎤 getUserMedia 성공! 스트림 받음:', stream)
       console.log('🎤 Microphone access granted, stream:', stream)
@@ -912,12 +912,13 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       toast('음성 녹음을 시작했습니다.')
       
     } catch (error) {
-      console.error('[ConfirmationPage] 음성 녹음 시작 실패:', error)
-      console.error('[ConfirmationPage] 오류 이름:', error.name)
-      console.error('[ConfirmationPage] 오류 메시지:', error.message)
-      console.error('[ConfirmationPage] 오류 스택:', error.stack)
-      
-      if (error.name === 'NotAllowedError') {
+      const errorObj = error as Error
+      console.error('[ConfirmationPage] 음성 녹음 시작 실패:', errorObj)
+      console.error('[ConfirmationPage] 오류 이름:', errorObj.name)
+      console.error('[ConfirmationPage] 오류 메시지:', errorObj.message)
+      console.error('[ConfirmationPage] 오류 스택:', errorObj.stack)
+
+      if (errorObj.name === 'NotAllowedError') {
         // 사용자에게 마이크 권한 허용 방법 안내
         const userConfirmed = window.confirm(
           '마이크 권한이 거부되었습니다.\n\n' +
@@ -941,11 +942,11 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         console.log('🎤 1. 브라우저 주소창 왼쪽의 🔒 설정 아이콘 클릭')
         console.log('🎤 2. 마이크 권한을 "허용"으로 변경')
         console.log('🎤 3. 페이지를 새로고침 후 다시 시도')
-      } else if (error.name === 'NotFoundError') {
+      } else if (errorObj.name === 'NotFoundError') {
         toast.error('마이크를 찾을 수 없습니다. 마이크가 연결되어 있는지 확인해주세요.')
-      } else if (error.name === 'NotSupportedError') {
+      } else if (errorObj.name === 'NotSupportedError') {
         toast.error('이 브라우저는 음성 녹음을 지원하지 않습니다.')
-      } else if (error.message && error.message.includes('timeout')) {
+      } else if (errorObj.message && errorObj.message.includes('timeout')) {
         toast.error('마이크 권한 요청이 시간 초과되었습니다. 브라우저 설정에서 마이크 권한을 확인해주세요.')
         console.log('🎤 getUserMedia 타임아웃 - 권한 요청이 5초 내에 응답하지 않음')
         
@@ -1000,7 +1001,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       // 상태 리셋 (onstop 이벤트에서 duration 설정 후)
       setTimeout(() => {
         setRecordingTime(0)
-        setAudioLevel(0)
         setWaveformData([])
         waveformRef.current = []
         currentRecordingTimeRef.current = 0
@@ -1146,7 +1146,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       console.warn('SessionStorage 용량 초과, localStorage 사용:', error)
       try {
         localStorage.setItem('confirmationCanvases', JSON.stringify(canvases))
-        toast.info('데이터가 localStorage에 저장되었습니다.')
+        toast('데이터가 localStorage에 저장되었습니다.')
       } catch (localError) {
         console.error('[ConfirmationPage] localStorage 용량 초과:', localError)
         toast.error('저장 공간이 부족합니다. 이미지를 다시 업로드해주세요.')
@@ -1773,7 +1773,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => togglePlayback(mediaElement.id)}
+                                onClick={() => playAudio(mediaElement.id)}
                                 className="h-6 w-6 p-0 text-slate-400 hover:text-blue-500"
                                 title={playingId === mediaElement.id ? "일시정지" : "재생"}
                               >
@@ -2019,7 +2019,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => togglePlayback(mediaElement.id)}
+                                onClick={() => playAudio(mediaElement.id)}
                                 className="h-6 w-6 p-0 text-slate-400 hover:text-blue-500"
                                 title={playingId === mediaElement.id ? "일시정지" : "재생"}
                               >
@@ -2294,7 +2294,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => togglePlayback(mediaElement.id)}
+                                onClick={() => playAudio(mediaElement.id)}
                                 className="h-6 w-6 p-0 text-slate-400 hover:text-blue-500"
                                 title={playingId === mediaElement.id ? "일시정지" : "재생"}
                               >
@@ -2478,12 +2478,12 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                     if (item.consentKey.includes('.')) {
                       // 중첩된 키 처리 (예: surgery_method_content.overall_description)
                       const keys = item.consentKey.split('.');
-                      let value = consentConsents;
+                      let value: unknown = consentConsents;
                       for (const key of keys) {
-                        value = value?.[key as keyof typeof value];
+                        value = (value as Record<string, unknown>)?.[key];
                         if (!value) break;
                       }
-                      content = value || "";
+                      content = value as string || "";
                     } else {
                       content = (consentConsents as unknown as Record<string, unknown>)[item.consentKey] as string || "";
                     }
@@ -2923,7 +2923,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => togglePlayback(mediaElement.id)}
+                                  onClick={() => playAudio(mediaElement.id)}
                                   className="h-6 w-6 p-0 text-slate-400 hover:text-blue-500"
                                   title={playingId === mediaElement.id ? "일시정지" : "재생"}
                                 >

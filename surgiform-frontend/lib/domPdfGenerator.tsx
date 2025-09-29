@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // PDF 생성 라이브러리는 함수 내에서 동적 import로 로드
 
 interface FormData {
@@ -305,7 +306,7 @@ export const generateKoreanPDFFromDOM = async (
       </colgroup>
       <thead><tr><th>성명</th><th>전문의여부</th><th>진료과목</th></tr></thead>
       <tbody>
-        ${((formData.medical_team || formData.participants || []) as Array<{ name?: string; department?: string }>).map((doctor: { name?: string; department?: string }) => `
+        ${((formData.medical_team || formData.participants || []) as any[]).map((doctor: any) => `
           <tr><td>${doctor.name || ""}${doctor.is_specialist ? ' (집도의)' : ''}</td><td>${doctor.is_specialist ? '전문의' : '일반의'}</td><td>${doctor.department || ""}</td></tr>
       `).join('')}
       </tbody>

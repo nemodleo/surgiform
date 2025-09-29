@@ -1,4 +1,5 @@
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
@@ -79,10 +80,10 @@ export default function SurgeryInfoRoute() {
   
   return (
     <SurgeryInfoPage
-      onComplete={handleComplete}
+      onComplete={handleComplete as any}
       onBack={handleBack}
       formData={formData}
-      initialData={consentData || undefined}
+      initialData={consentData as any || undefined}
     />
   )
 }

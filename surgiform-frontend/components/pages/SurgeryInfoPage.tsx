@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
@@ -161,68 +162,68 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
     const newValues: Record<string, string> = {}
     
     // 2. 예정된 수술/시술/검사를 하지 않을 경우의 예후
-    if (consents.prognosis_without_surgery) {
-      newValues["2"] = consents.prognosis_without_surgery
-      newValues.general_info = consents.prognosis_without_surgery
+    if ((consents as any).prognosis_without_surgery) {
+      newValues["2"] = (consents as any).prognosis_without_surgery
+      newValues.general_info = (consents as any).prognosis_without_surgery
     }
     
     // 3. 예정된 수술 이외의 시행 가능한 다른 방법
-    if (consents.alternative_treatments) {
-      newValues["3"] = consents.alternative_treatments
-      newValues.surgical_site = consents.alternative_treatments
+    if ((consents as any).alternative_treatments) {
+      newValues["3"] = (consents as any).alternative_treatments
+      newValues.surgical_site = (consents as any).alternative_treatments
     }
     
     // 4. 수술 목적/필요/효과
-    if (consents.surgery_purpose_necessity_effect) {
-      newValues["4"] = consents.surgery_purpose_necessity_effect
-      newValues.purpose = consents.surgery_purpose_necessity_effect
+    if ((consents as any).surgery_purpose_necessity_effect) {
+      newValues["4"] = (consents as any).surgery_purpose_necessity_effect
+      newValues.purpose = (consents as any).surgery_purpose_necessity_effect
     }
     
     // surgery_method_content 하위 필드들
-    if (consents.surgery_method_content) {
-      if (consents.surgery_method_content.overall_description) {
-        newValues["5-1"] = consents.surgery_method_content.overall_description
-        newValues.overall_description = consents.surgery_method_content.overall_description
-        newValues.surgical_method = consents.surgery_method_content.overall_description
+    if ((consents as any).surgery_method_content) {
+      if ((consents as any).surgery_method_content.overall_description) {
+        newValues["5-1"] = (consents as any).surgery_method_content.overall_description
+        newValues.overall_description = (consents as any).surgery_method_content.overall_description
+        newValues.surgical_method = (consents as any).surgery_method_content.overall_description
       }
       
-      if (consents.surgery_method_content.estimated_duration) {
-        newValues["5-2"] = consents.surgery_method_content.estimated_duration
-        newValues.estimated_duration = consents.surgery_method_content.estimated_duration
+      if ((consents as any).surgery_method_content.estimated_duration) {
+        newValues["5-2"] = (consents as any).surgery_method_content.estimated_duration
+        newValues.estimated_duration = (consents as any).surgery_method_content.estimated_duration
       }
       
-      if (consents.surgery_method_content.method_change_or_addition) {
-        newValues["5-3"] = consents.surgery_method_content.method_change_or_addition
-        newValues.method_change_or_addition = consents.surgery_method_content.method_change_or_addition
+      if ((consents as any).surgery_method_content.method_change_or_addition) {
+        newValues["5-3"] = (consents as any).surgery_method_content.method_change_or_addition
+        newValues.method_change_or_addition = (consents as any).surgery_method_content.method_change_or_addition
       }
       
-      if (consents.surgery_method_content.transfusion_possibility) {
-        newValues["5-4"] = consents.surgery_method_content.transfusion_possibility
-        newValues.transfusion_possibility = consents.surgery_method_content.transfusion_possibility
+      if ((consents as any).surgery_method_content.transfusion_possibility) {
+        newValues["5-4"] = (consents as any).surgery_method_content.transfusion_possibility
+        newValues.transfusion_possibility = (consents as any).surgery_method_content.transfusion_possibility
       }
       
-      if (consents.surgery_method_content.surgeon_change_possibility) {
-        newValues["5-5"] = consents.surgery_method_content.surgeon_change_possibility
-        newValues.surgeon_change_possibility = consents.surgery_method_content.surgeon_change_possibility
+      if ((consents as any).surgery_method_content.surgeon_change_possibility) {
+        newValues["5-5"] = (consents as any).surgery_method_content.surgeon_change_possibility
+        newValues.surgeon_change_possibility = (consents as any).surgery_method_content.surgeon_change_possibility
       }
     }
     
     // 6. 발생 가능한 합병증/후유증/부작용
-    if (consents.possible_complications_sequelae) {
-      newValues["6"] = consents.possible_complications_sequelae
-      newValues.complications = consents.possible_complications_sequelae
+    if ((consents as any).possible_complications_sequelae) {
+      newValues["6"] = (consents as any).possible_complications_sequelae
+      newValues.complications = (consents as any).possible_complications_sequelae
     }
     
     // 7. 문제 발생시 조치사항
-    if (consents.emergency_measures) {
-      newValues["7"] = consents.emergency_measures
-      newValues.postop_course = consents.emergency_measures
+    if ((consents as any).emergency_measures) {
+      newValues["7"] = (consents as any).emergency_measures
+      newValues.postop_course = (consents as any).emergency_measures
     }
     
     // 8. 진단/수술 관련 사망 위험성
-    if (consents.mortality_risk) {
-      newValues["8"] = consents.mortality_risk
-      newValues.others = consents.mortality_risk
+    if ((consents as any).mortality_risk) {
+      newValues["8"] = (consents as any).mortality_risk
+      newValues.others = (consents as any).mortality_risk
     }
     
     setTextareaValues((prev: Record<string, string>) => ({ ...prev, ...newValues }))
@@ -237,24 +238,25 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       }
       // references가 API 형태인 경우 변환
       else if (Array.isArray(references)) {
+        transformedReferences = {}
         references.forEach((ref: { category: string; references: Array<{ title: string; content: string }> }) => {
           const categoryKey = ref.category.toLowerCase().replace(/\s+/g, '_') as keyof ConsentData['references']
-          if (!transformedReferences[categoryKey]) {
-            transformedReferences[categoryKey] = []
+          if (!transformedReferences![categoryKey]) {
+            transformedReferences![categoryKey] = []
           }
-          transformedReferences[categoryKey]?.push(...ref.references.map((r: { title: string; content: string }) => ({
+          (transformedReferences![categoryKey] as any[])?.push(...ref.references.map((r: { title: string; content: string }) => ({
             title: r.title,
-            url: r.url,
-            text: ref.content
+            url: (r as any).url || '',
+            text: (ref as any).content || r.content
           })))
         })
       }
       
       if (transformedReferences) {
-        setConsentData((prev: ConsentData) => ({
+        setConsentData((prev: ConsentData | null) => prev ? ({
           ...prev,
           references: transformedReferences
-        }))
+        }) : null)
       }
     }
     
@@ -283,10 +285,10 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
           if (!transformedReferences[categoryKey]) {
             transformedReferences[categoryKey] = [];
           }
-          transformedReferences[categoryKey]?.push(...ref.references.map(r => ({
+          (transformedReferences[categoryKey] as any[])?.push(...ref.references.map((r: any) => ({
             title: r.title,
-            url: r.url,
-            text: ref.content
+            url: r.url || '',
+            text: ref.content || ''
           })));
         });
       }
@@ -306,73 +308,73 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
           
           // 일반 생성: 사용자 입력이 없는 경우만 API 응답으로 채우기
           // 2. 예정된 수술/시술/검사를 하지 않을 경우의 예후
-          if (consents.prognosis_without_surgery && (!prev["2"] || prev["2"].trim() === "")) {
-            newValues["2"] = consents.prognosis_without_surgery;
-            newValues.general_info = consents.prognosis_without_surgery; // fallback
+          if ((consents as any).prognosis_without_surgery && (!prev["2"] || prev["2"].trim() === "")) {
+            newValues["2"] = (consents as any).prognosis_without_surgery;
+            newValues.general_info = (consents as any).prognosis_without_surgery; // fallback
           }
           
           // 3. 예정된 수술 이외의 시행 가능한 다른 방법
-          if (consents.alternative_treatments && (!prev["3"] || prev["3"].trim() === "")) {
-            newValues["3"] = consents.alternative_treatments;
-            newValues.surgical_site = consents.alternative_treatments; // fallback
+          if ((consents as any).alternative_treatments && (!prev["3"] || prev["3"].trim() === "")) {
+            newValues["3"] = (consents as any).alternative_treatments;
+            newValues.surgical_site = (consents as any).alternative_treatments; // fallback
           }
           
           // 4. 수술 목적/필요/효과
-          if (consents.surgery_purpose_necessity_effect && (!prev["4"] || prev["4"].trim() === "")) {
-            newValues["4"] = consents.surgery_purpose_necessity_effect;
-            newValues.purpose = consents.surgery_purpose_necessity_effect; // fallback
+          if ((consents as any).surgery_purpose_necessity_effect && (!prev["4"] || prev["4"].trim() === "")) {
+            newValues["4"] = (consents as any).surgery_purpose_necessity_effect;
+            newValues.purpose = (consents as any).surgery_purpose_necessity_effect; // fallback
           }
           
           // surgery_method_content 하위 필드들
-          if (consents.surgery_method_content) {
+          if ((consents as any).surgery_method_content) {
             // 5-1. 수술 과정 전반에 대한 설명
-            if (consents.surgery_method_content.overall_description && (!prev["5-1"] || prev["5-1"].trim() === "")) {
-              newValues["5-1"] = consents.surgery_method_content.overall_description;
-              newValues.overall_description = consents.surgery_method_content.overall_description;
-              newValues.surgical_method = consents.surgery_method_content.overall_description; // fallback
+            if ((consents as any).surgery_method_content.overall_description && (!prev["5-1"] || prev["5-1"].trim() === "")) {
+              newValues["5-1"] = (consents as any).surgery_method_content.overall_description;
+              newValues.overall_description = (consents as any).surgery_method_content.overall_description;
+              newValues.surgical_method = (consents as any).surgery_method_content.overall_description; // fallback
             }
             
             // 5-2. 수술 추정 소요시간
-            if (consents.surgery_method_content.estimated_duration && (!prev["5-2"] || prev["5-2"].trim() === "")) {
-              newValues["5-2"] = consents.surgery_method_content.estimated_duration;
-              newValues.estimated_duration = consents.surgery_method_content.estimated_duration;
+            if ((consents as any).surgery_method_content.estimated_duration && (!prev["5-2"] || prev["5-2"].trim() === "")) {
+              newValues["5-2"] = (consents as any).surgery_method_content.estimated_duration;
+              newValues.estimated_duration = (consents as any).surgery_method_content.estimated_duration;
             }
             
             // 5-3. 수술 방법 변경 및 수술 추가 가능성
-            if (consents.surgery_method_content.method_change_or_addition && (!prev["5-3"] || prev["5-3"].trim() === "")) {
-              newValues["5-3"] = consents.surgery_method_content.method_change_or_addition;
-              newValues.method_change_or_addition = consents.surgery_method_content.method_change_or_addition;
+            if ((consents as any).surgery_method_content.method_change_or_addition && (!prev["5-3"] || prev["5-3"].trim() === "")) {
+              newValues["5-3"] = (consents as any).surgery_method_content.method_change_or_addition;
+              newValues.method_change_or_addition = (consents as any).surgery_method_content.method_change_or_addition;
             }
             
             // 5-4. 수혈 가능성
-            if (consents.surgery_method_content.transfusion_possibility && (!prev["5-4"] || prev["5-4"].trim() === "")) {
-              newValues["5-4"] = consents.surgery_method_content.transfusion_possibility;
-              newValues.transfusion_possibility = consents.surgery_method_content.transfusion_possibility;
+            if ((consents as any).surgery_method_content.transfusion_possibility && (!prev["5-4"] || prev["5-4"].trim() === "")) {
+              newValues["5-4"] = (consents as any).surgery_method_content.transfusion_possibility;
+              newValues.transfusion_possibility = (consents as any).surgery_method_content.transfusion_possibility;
             }
             
             // 5-5. 집도의 변경 가능성
-            if (consents.surgery_method_content.surgeon_change_possibility && (!prev["5-5"] || prev["5-5"].trim() === "")) {
-              newValues["5-5"] = consents.surgery_method_content.surgeon_change_possibility;
-              newValues.surgeon_change_possibility = consents.surgery_method_content.surgeon_change_possibility;
+            if ((consents as any).surgery_method_content.surgeon_change_possibility && (!prev["5-5"] || prev["5-5"].trim() === "")) {
+              newValues["5-5"] = (consents as any).surgery_method_content.surgeon_change_possibility;
+              newValues.surgeon_change_possibility = (consents as any).surgery_method_content.surgeon_change_possibility;
             }
           }
           
           // 6. 발생 가능한 합병증/후유증/부작용
-          if (consents.possible_complications_sequelae && (!prev["6"] || prev["6"].trim() === "")) {
-            newValues["6"] = consents.possible_complications_sequelae;
-            newValues.complications = consents.possible_complications_sequelae; // fallback
+          if ((consents as any).possible_complications_sequelae && (!prev["6"] || prev["6"].trim() === "")) {
+            newValues["6"] = (consents as any).possible_complications_sequelae;
+            newValues.complications = (consents as any).possible_complications_sequelae; // fallback
           }
           
           // 7. 문제 발생시 조치사항
-          if (consents.emergency_measures && (!prev["7"] || prev["7"].trim() === "")) {
-            newValues["7"] = consents.emergency_measures;
-            newValues.postop_course = consents.emergency_measures; // fallback
+          if ((consents as any).emergency_measures && (!prev["7"] || prev["7"].trim() === "")) {
+            newValues["7"] = (consents as any).emergency_measures;
+            newValues.postop_course = (consents as any).emergency_measures; // fallback
           }
           
           // 8. 진단/수술 관련 사망 위험성
-          if (consents.mortality_risk && (!prev["8"] || prev["8"].trim() === "")) {
-            newValues["8"] = consents.mortality_risk;
-            newValues.others = consents.mortality_risk; // fallback
+          if ((consents as any).mortality_risk && (!prev["8"] || prev["8"].trim() === "")) {
+            newValues["8"] = (consents as any).mortality_risk;
+            newValues.others = (consents as any).mortality_risk; // fallback
           }
           
           return newValues;
@@ -403,10 +405,10 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
           if (!transformedReferences[categoryKey]) {
             transformedReferences[categoryKey] = [];
           }
-          transformedReferences[categoryKey]?.push(...ref.references.map(r => ({
+          (transformedReferences[categoryKey] as any[])?.push(...ref.references.map((r: any) => ({
             title: r.title,
-            url: r.url,
-            text: ref.content
+            url: r.url || '',
+            text: ref.content || ''
           })));
         });
       }
@@ -426,73 +428,73 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
           
           // AI 재생성: 기존 내용을 강제로 덮어쓰기
           // 2. 예정된 수술/시술/검사를 하지 않을 경우의 예후
-          if (consents.prognosis_without_surgery) {
-            newValues["2"] = consents.prognosis_without_surgery;
-            newValues.general_info = consents.prognosis_without_surgery; // fallback
+          if ((consents as any).prognosis_without_surgery) {
+            newValues["2"] = (consents as any).prognosis_without_surgery;
+            newValues.general_info = (consents as any).prognosis_without_surgery; // fallback
           }
           
           // 3. 예정된 수술 이외의 시행 가능한 다른 방법
-          if (consents.alternative_treatments) {
-            newValues["3"] = consents.alternative_treatments;
-            newValues.surgical_site = consents.alternative_treatments; // fallback
+          if ((consents as any).alternative_treatments) {
+            newValues["3"] = (consents as any).alternative_treatments;
+            newValues.surgical_site = (consents as any).alternative_treatments; // fallback
           }
           
           // 4. 수술 목적/필요/효과
-          if (consents.surgery_purpose_necessity_effect) {
-            newValues["4"] = consents.surgery_purpose_necessity_effect;
-            newValues.purpose = consents.surgery_purpose_necessity_effect; // fallback
+          if ((consents as any).surgery_purpose_necessity_effect) {
+            newValues["4"] = (consents as any).surgery_purpose_necessity_effect;
+            newValues.purpose = (consents as any).surgery_purpose_necessity_effect; // fallback
           }
           
           // surgery_method_content 하위 필드들
-          if (consents.surgery_method_content) {
+          if ((consents as any).surgery_method_content) {
             // 5-1. 수술 과정 전반에 대한 설명
-            if (consents.surgery_method_content.overall_description) {
-              newValues["5-1"] = consents.surgery_method_content.overall_description;
-              newValues.overall_description = consents.surgery_method_content.overall_description;
-              newValues.surgical_method = consents.surgery_method_content.overall_description; // fallback
+            if ((consents as any).surgery_method_content.overall_description) {
+              newValues["5-1"] = (consents as any).surgery_method_content.overall_description;
+              newValues.overall_description = (consents as any).surgery_method_content.overall_description;
+              newValues.surgical_method = (consents as any).surgery_method_content.overall_description; // fallback
             }
             
             // 5-2. 수술 추정 소요시간
-            if (consents.surgery_method_content.estimated_duration) {
-              newValues["5-2"] = consents.surgery_method_content.estimated_duration;
-              newValues.estimated_duration = consents.surgery_method_content.estimated_duration;
+            if ((consents as any).surgery_method_content.estimated_duration) {
+              newValues["5-2"] = (consents as any).surgery_method_content.estimated_duration;
+              newValues.estimated_duration = (consents as any).surgery_method_content.estimated_duration;
             }
             
             // 5-3. 수술 방법 변경 및 수술 추가 가능성
-            if (consents.surgery_method_content.method_change_or_addition) {
-              newValues["5-3"] = consents.surgery_method_content.method_change_or_addition;
-              newValues.method_change_or_addition = consents.surgery_method_content.method_change_or_addition;
+            if ((consents as any).surgery_method_content.method_change_or_addition) {
+              newValues["5-3"] = (consents as any).surgery_method_content.method_change_or_addition;
+              newValues.method_change_or_addition = (consents as any).surgery_method_content.method_change_or_addition;
             }
             
             // 5-4. 수혈 가능성
-            if (consents.surgery_method_content.transfusion_possibility) {
-              newValues["5-4"] = consents.surgery_method_content.transfusion_possibility;
-              newValues.transfusion_possibility = consents.surgery_method_content.transfusion_possibility;
+            if ((consents as any).surgery_method_content.transfusion_possibility) {
+              newValues["5-4"] = (consents as any).surgery_method_content.transfusion_possibility;
+              newValues.transfusion_possibility = (consents as any).surgery_method_content.transfusion_possibility;
             }
             
             // 5-5. 집도의 변경 가능성
-            if (consents.surgery_method_content.surgeon_change_possibility) {
-              newValues["5-5"] = consents.surgery_method_content.surgeon_change_possibility;
-              newValues.surgeon_change_possibility = consents.surgery_method_content.surgeon_change_possibility;
+            if ((consents as any).surgery_method_content.surgeon_change_possibility) {
+              newValues["5-5"] = (consents as any).surgery_method_content.surgeon_change_possibility;
+              newValues.surgeon_change_possibility = (consents as any).surgery_method_content.surgeon_change_possibility;
             }
           }
           
           // 6. 발생 가능한 합병증/후유증/부작용
-          if (consents.possible_complications_sequelae) {
-            newValues["6"] = consents.possible_complications_sequelae;
-            newValues.complications = consents.possible_complications_sequelae; // fallback
+          if ((consents as any).possible_complications_sequelae) {
+            newValues["6"] = (consents as any).possible_complications_sequelae;
+            newValues.complications = (consents as any).possible_complications_sequelae; // fallback
           }
           
           // 7. 문제 발생시 조치사항
-          if (consents.emergency_measures) {
-            newValues["7"] = consents.emergency_measures;
-            newValues.postop_course = consents.emergency_measures; // fallback
+          if ((consents as any).emergency_measures) {
+            newValues["7"] = (consents as any).emergency_measures;
+            newValues.postop_course = (consents as any).emergency_measures; // fallback
           }
           
           // 8. 진단/수술 관련 사망 위험성
-          if (consents.mortality_risk) {
-            newValues["8"] = consents.mortality_risk;
-            newValues.others = consents.mortality_risk; // fallback
+          if ((consents as any).mortality_risk) {
+            newValues["8"] = (consents as any).mortality_risk;
+            newValues.others = (consents as any).mortality_risk; // fallback
           }
           
           return newValues;
@@ -500,13 +502,13 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       }
       
       // AI 재생성 완료 후 상태 리셋
-      setIsRegenerating(false);
+      // setIsRegenerating(false); // Function removed
       toast.success('수술 정보가 성공적으로 재생성되었습니다');
     },
     onError: (error) => {
       console.error("[SurgeryInfoPage] 동의서 재생성 오류:", error);
       setError(error.message);
-      setIsRegenerating(false);
+      // setIsRegenerating(false); // Function removed
     }
   });
 
@@ -798,7 +800,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
     }
 
     // AI 재생성 상태 설정
-    setIsRegenerating(true)
+    // setIsRegenerating(true) // Function removed
 
     isGeneratingRef.current = true
     setLoading(true)
@@ -1375,7 +1377,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                   <tbody className="divide-y divide-slate-200">
                     <tr>
                       <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">등록번호</th>
-                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.registration_number || ""}</td>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{(formData.registration_number as string) || "-"}</td>
                       <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">환자명</th>
                       <td className="px-4 py-3 text-sm text-slate-900">{formData.patient_name}</td>
                     </tr>
@@ -1391,11 +1393,11 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                     </tr>
                     <tr>
                       <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">진단명</th>
-                      <td className="px-4 py-3 text-sm text-slate-900" colSpan={3}>{formData.diagnosis || ""}</td>
+                      <td className="px-4 py-3 text-sm text-slate-900" colSpan={3}>{(formData.diagnosis as string) || "-"}</td>
                     </tr>
                     <tr>
                       <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">수술부위</th>
-                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.surgery_site_detail || ""}</td>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{(formData.surgery_site_detail as string) || "-"}</td>
                       <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">수술부위표시</th>
                       <td className="px-4 py-3 text-sm text-slate-900">
                         <div className="flex items-center gap-4">
@@ -1425,7 +1427,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
-                    {(formData.medical_team || formData.participants || []).map((doctor: { name?: string; is_specialist?: boolean; department?: string }, index: number) => (
+                    {((formData.medical_team || formData.participants || []) as any[]).map((doctor: any, index: number) => (
                       <tr key={index}>
                         <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">
                           {doctor.name || ""}
@@ -1491,7 +1493,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                     </tr>
                     <tr>
                       <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200 w-1/4">기타</th>
-                      <td className="px-4 py-3 text-sm text-slate-900" colSpan={3}>{formData.other_conditions || "없음"}</td>
+                      <td className="px-4 py-3 text-sm text-slate-900" colSpan={3}>{(formData.other_conditions as string) || "없음"}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -1569,7 +1571,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 5. 수술 방법 및 내용
-                <InlineReferences references={consentData?.references?.surgery_method_content} />
+                <InlineReferences references={consentData?.references?.surgery_method_content as any} />
               </label>
             </div>
           
