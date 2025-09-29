@@ -10,7 +10,7 @@ import { ConsentGenerateIn } from '@/lib/api';
 export const ConsentGenerationExample: React.FC = () => {
   const [showProgress, setShowProgress] = useState(false);
   
-  const { generateConsent, isGenerating, progress, progressMessage } = useConsentGeneration({
+  const { generateConsent, isGenerating } = useConsentGeneration({
     onSuccess: (result) => {
       setShowProgress(false);
       console.log('생성 완료:', result);
@@ -86,8 +86,8 @@ export const ConsentGenerationExample: React.FC = () => {
 
         <ProgressModal
           isOpen={showProgress}
-          progress={progress}
-          message={progressMessage}
+          progress={0}
+          message="생성 중..."
           onCancel={handleCancel}
         />
       </CardContent>

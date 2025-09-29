@@ -514,11 +514,11 @@ export const generateKoreanPDFFromDOM = async (
           canvas.title && canvas.title.includes(`${item.number}. ${item.title}`)
         );
         
-        const itemAudios = audioRecordings.filter((audio: any) => 
+        const itemAudios = audioRecordings.filter((audio: { title?: string; audioBlob?: Blob }) => 
           audio.title && audio.title.includes(`${item.number}. ${item.title}`) && audio.audioBlob
         );
         
-        const itemTexts = textNotes.filter((text: any) => 
+        const itemTexts = textNotes.filter((text: { title?: string; content?: string }) => 
           text.title && text.title.includes(`${item.number}. ${item.title}`)
         );
         
@@ -526,7 +526,7 @@ export const generateKoreanPDFFromDOM = async (
         
         // Canvas drawings
         if (itemCanvases.length > 0) {
-          mediaHtml += itemCanvases.map((canvas: any) => {
+          mediaHtml += itemCanvases.map((canvas: { title?: string; imageData?: string }) => {
             if (canvas.imageData) {
               return `
                 <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
@@ -551,7 +551,7 @@ export const generateKoreanPDFFromDOM = async (
         
         // Audio recordings
         if (itemAudios.length > 0) {
-          mediaHtml += itemAudios.map((audio: any) => {
+          mediaHtml += itemAudios.map((audio: { id?: string; title?: string; duration?: number }) => {
             const duration = audio.duration ? Math.floor(audio.duration) : 0;
             const minutes = Math.floor(duration / 60);
             const seconds = duration % 60;
@@ -574,7 +574,7 @@ export const generateKoreanPDFFromDOM = async (
         
         // Text notes
         if (itemTexts.length > 0) {
-          mediaHtml += itemTexts.map((text: any) => {
+          mediaHtml += itemTexts.map((text: { title?: string; content?: string }) => {
             return `
               <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
                 <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
@@ -623,13 +623,13 @@ export const generateKoreanPDFFromDOM = async (
       
       ${(() => {
         // 수술 동의서 확인 미디어 요소들
-        const confirmationCanvases = canvasDrawings.filter((canvas: any) => 
+        const confirmationCanvases = canvasDrawings.filter((canvas: { title?: string; imageData?: string }) => 
           canvas.title && canvas.title.includes("수술 동의서 확인")
         );
-        const confirmationAudios = audioRecordings.filter((audio: any) => 
+        const confirmationAudios = audioRecordings.filter((audio: { title?: string; audioBlob?: Blob }) => 
           audio.title && audio.title.includes("수술 동의서 확인") && audio.audioBlob
         );
-        const confirmationTexts = textNotes.filter((text: any) => 
+        const confirmationTexts = textNotes.filter((text: { title?: string; content?: string }) => 
           text.title && text.title.includes("수술 동의서 확인")
         );
         
@@ -637,7 +637,7 @@ export const generateKoreanPDFFromDOM = async (
         
         // Canvas drawings
         if (confirmationCanvases.length > 0) {
-          confirmationMediaHtml += confirmationCanvases.map((canvas: any) => {
+          confirmationMediaHtml += confirmationCanvases.map((canvas: { title?: string; imageData?: string }) => {
             if (canvas.imageData) {
               return `
                 <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
@@ -662,7 +662,7 @@ export const generateKoreanPDFFromDOM = async (
         
         // Audio recordings
         if (confirmationAudios.length > 0) {
-          confirmationMediaHtml += confirmationAudios.map((audio: any) => {
+          confirmationMediaHtml += confirmationAudios.map((audio: { id?: string; title?: string; duration?: number }) => {
             const duration = audio.duration ? Math.floor(audio.duration) : 0;
             const minutes = Math.floor(duration / 60);
             const seconds = duration % 60;
@@ -685,7 +685,7 @@ export const generateKoreanPDFFromDOM = async (
         
         // Text notes
         if (confirmationTexts.length > 0) {
-          confirmationMediaHtml += confirmationTexts.map((text: any) => {
+          confirmationMediaHtml += confirmationTexts.map((text: { title?: string; content?: string }) => {
             return `
               <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
                 <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
@@ -748,7 +748,7 @@ export const generateKoreanPDFFromDOM = async (
         </div>
         
         <div class="signature-item" style="flex: 1;">
-          <div class="signature-label">의사: ${((formData.medical_team || formData.participants || []) as any[])[0]?.name || '의사'}</div>
+          <div class="signature-label">의사: ${((formData.medical_team || formData.participants || []) as Array<{ name?: string }>)[0]?.name || '의사'}</div>
           ${signatureData?.doctor ? 
             `<img src="${signatureData.doctor}" alt="Doctor signature" style="border: 1px solid #cbd5e1; border-radius: 4px; max-width: 200px; height: 80px; background: white; padding: 8px;" />` : 
             `<div style="width: 200px; height: 80px; border: 1px solid #cbd5e1; border-radius: 4px; background: white; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 14px;">서명란</div>`

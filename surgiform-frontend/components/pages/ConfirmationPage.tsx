@@ -566,7 +566,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     
     // 평균 음성 레벨 계산
     const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length
-    setAudioLevel(average)
     
     // 파형 데이터 생성 (iOS Voice Memo 스타일)
     const normalizedValue = Math.min(average / 255, 1)
@@ -593,7 +592,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       return permissionStatus.state
     } catch (error) {
       console.log('🎤 권한 상태 확인 실패 (일부 브라우저에서 지원하지 않음):', error)
-      console.log('🎤 에러 상세:', error.name, error.message)
+      console.log('🎤 에러 상세:', error instanceof Error ? error.name : 'unknown', error instanceof Error ? error.message : 'unknown')
       return 'unknown'
     }
   }
