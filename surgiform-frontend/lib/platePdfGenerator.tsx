@@ -245,7 +245,7 @@ export const generatePlatePDF = async (
     return pdf.output('blob')
     
   } catch (error) {
-    console.error('PDF generation error:', error)
+    console.error('[platePdfGenerator] PDF 생성 오류:', error)
     if (document.body.contains(container)) {
       document.body.removeChild(container)
     }

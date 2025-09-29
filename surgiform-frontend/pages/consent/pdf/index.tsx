@@ -43,12 +43,8 @@ export default function PDFRoute() {
     const savedFormData = sessionStorage.getItem('formData')
     const savedConsentSubmissionData = sessionStorage.getItem('consentSubmissionData')
     
-    console.log('PDF Page - Loading data from storage:')
-    console.log('savedFormData exists:', !!savedFormData)
-    console.log('savedConsentSubmissionData exists:', !!savedConsentSubmissionData)
     
     if (!savedFormData) {
-      console.log('No formData found, redirecting to basic-info')
       router.push('/consent/basic-info')
       return
     }
@@ -62,11 +58,9 @@ export default function PDFRoute() {
         const parsedConsentData = JSON.parse(savedConsentSubmissionData)
         setConsentData(parsedConsentData)
       } else {
-        console.log('No consentSubmissionData found, using empty object')
         setConsentData({})
       }
       
-      console.log('PDF Page - Data loaded successfully')
       setIsDataLoaded(true)
     } catch (error) {
       console.error('Error parsing stored data:', error)
@@ -112,11 +106,6 @@ export default function PDFRoute() {
     )
   }
   
-  console.log('PDF Page - Rendering PDFGenerationPage with data:', {
-    formData: formData,
-    consentData: consentData,
-    isDataLoaded: isDataLoaded
-  })
 
   return (
     <PDFGenerationPage

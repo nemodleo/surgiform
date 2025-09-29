@@ -43,15 +43,9 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
   const [dataLoaded, setDataLoaded] = useState(false)
 
   const generatePDF = async () => {
-    console.log('=== PDF Generation Started ===')
     setGenerating(true)
     
     try {
-      console.log('Generating PDF with data:', {
-        formData,
-        consentData,
-        signatureData
-      })
       
       // Generate PDF using DOM-based approach
       const pdfGenerationPromise = generateKoreanPDFFromDOM(
@@ -70,23 +64,17 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
         timeoutPromise
       ]) as Blob
       
-      console.log('PDF blob created:', {
-        size: pdfBlob.size,
-        type: pdfBlob.type
-      })
       
       const url = URL.createObjectURL(pdfBlob)
-      console.log('PDF URL created:', url)
       
       setPdfUrl(url)
       setPdfGenerated(true)
       setShowPreview(true)
       
-      console.log('=== PDF Generation Completed Successfully ===')
       
     } catch (error) {
-      console.error('PDF generation error:', error)
-      console.error('Error details:', {
+      console.error('[PDFGenerationPage] PDF 생성 오류:', error)
+      console.error('[PDFGenerationPage] 오류 상세:', {
         formData,
         consentData,
         signatureData,
@@ -100,29 +88,20 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
   }
 
   useEffect(() => {
-    console.log('PDFGenerationPage - Starting data loading...')
-    console.log('formData:', formData)
-    console.log('consentData:', consentData)
     
     // Try sessionStorage first (for consent flow), then localStorage
     const savedSignatures = sessionStorage.getItem('signatureData') || localStorage.getItem('signatureData')
     const canvasDrawings = sessionStorage.getItem('canvasDrawings') || localStorage.getItem('canvasDrawings')
     
-    console.log('Loading signature data from storage...')
-    console.log('Session signatureData:', sessionStorage.getItem('signatureData'))
-    console.log('Session canvasDrawings:', sessionStorage.getItem('canvasDrawings'))
-    console.log('Local signatureData:', localStorage.getItem('signatureData'))
-    console.log('Local canvasDrawings:', localStorage.getItem('canvasDrawings'))
     
     let finalSignatureData: SignatureData = {}
     
     if (savedSignatures) {
       try {
         const sigData = JSON.parse(savedSignatures)
-        console.log('Parsed signature data:', sigData)
         finalSignatureData = { ...sigData }
       } catch (error) {
-        console.error('Error parsing signature data:', error)
+        console.error('[PDFGenerationPage] 서명 데이터 파싱 오류:', error)
       }
     }
     
@@ -130,35 +109,23 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
     if (canvasDrawings) {
       try {
         const drawings = JSON.parse(canvasDrawings)
-        console.log('Parsed canvas drawings:', drawings)
         // If canvases not already in signatureData, add them
         if (!finalSignatureData.canvases) {
           finalSignatureData.canvases = drawings
         }
       } catch (error) {
-        console.error('Error parsing canvas drawings:', error)
+        console.error('[PDFGenerationPage] 캔버스 그림 파싱 오류:', error)
       }
     }
     
-    console.log('Final signature data to use:', finalSignatureData)
     setSignatureData(finalSignatureData)
     setDataLoaded(true)
   }, [formData, consentData])
 
   useEffect(() => {
-    console.log('PDF Generation useEffect triggered:', {
-      dataLoaded,
-      hasPatientName: !!formData.patient_name,
-      pdfGenerated,
-      generating,
-      formData: formData,
-      signatureData: signatureData
-    })
     
     // Generate PDF only once when data is loaded and formData is available
     if (dataLoaded && formData.patient_name && !pdfGenerated && !generating) {
-      console.log('Data loaded, generating PDF with signature data:', signatureData)
-      console.log('formData available:', !!formData.patient_name)
       const timer = setTimeout(() => {
         generatePDF()
       }, 500)
@@ -208,7 +175,7 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
                     }}
                     title="PDF 미리보기"
                     onError={() => {
-                      console.error('PDF iframe 로딩 실패')
+                      console.error('[PDFGenerationPage] PDF iframe 로딩 실패')
                     }}
                   />
                   <div className="p-2 text-xs text-slate-500 bg-slate-50 border-t border-slate-200">
@@ -221,12 +188,9 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
               <div className="flex flex-col items-center gap-3 pt-4">
                 <Button 
                   onClick={async () => {
-                    console.log('=== PDF Download Button Clicked ===')
-                    console.log('pdfUrl:', pdfUrl)
                     
                     if (pdfUrl) {
                       try {
-                        console.log('Creating download link with better compatibility...')
                         
                         // Create a more compatible filename (ASCII only)
                         const now = new Date()
@@ -240,7 +204,6 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
                         const patientName = (formData.patient_name || 'patient').replace(/[^a-zA-Z0-9가-힣]/g, '_')
                         const filename = `${patientName}_consent_${timestamp}.pdf`
                         
-                        console.log('Download filename (ASCII):', filename)
                         
                         // Method 1: Try direct download with better browser compatibility
                         const link = document.createElement('a')
@@ -250,26 +213,22 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
                         
                         // Add to DOM, click, then remove
                         document.body.appendChild(link)
-                        console.log('Triggering download...')
                         link.click()
                         document.body.removeChild(link)
                         
-                        console.log('Download triggered successfully')
                         
                         // Alternative method: If direct download fails, open in new tab
                         setTimeout(() => {
-                          console.log('Opening PDF in new tab as fallback...')
                           window.open(pdfUrl, '_blank')
                         }, 1000)
                         
                       } catch (error) {
-                        console.error('Download error:', error)
+                        console.error('[PDFGenerationPage] 다운로드 오류:', error)
                         // Fallback: open in new tab
-                        console.log('Fallback: Opening PDF in new tab...')
                         window.open(pdfUrl, '_blank')
                       }
                     } else {
-                      console.error('No PDF URL available for download')
+                      console.error('[PDFGenerationPage] 다운로드용 PDF URL 없음')
                       alert('PDF 파일이 준비되지 않았습니다. 잠시 후 다시 시도해주세요.')
                     }
                   }}

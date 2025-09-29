@@ -894,7 +894,7 @@ export const generateKoreanPDFFromDOM = async (
       })
       return blob
     } catch (error) {
-      console.error('Standard blob creation failed:', error)
+      console.error('[domPdfGenerator] 표준 blob 생성 실패:', error)
       
       // Method 2: ArrayBuffer fallback
       try {
@@ -907,12 +907,12 @@ export const generateKoreanPDFFromDOM = async (
         })
         return blob
       } catch (fallbackError) {
-        console.error('ArrayBuffer fallback also failed:', fallbackError)
+        console.error('[domPdfGenerator] ArrayBuffer 대체 방법도 실패:', fallbackError)
         throw fallbackError
       }
     }
   } catch (error) {
-    console.error('Korean PDF generation error:', error)
+    console.error('[domPdfGenerator] 한국어 PDF 생성 오류:', error)
     // Clean up container if it exists
     if (container && document.body.contains(container)) {
       document.body.removeChild(container)

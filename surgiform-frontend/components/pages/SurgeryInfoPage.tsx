@@ -94,19 +94,12 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
     try {
       const snapshotStr = localStorage.getItem(API_SNAPSHOT_KEY)
       if (!snapshotStr) {
-        console.log('❌ 스냅샷이 없습니다')
         return
       }
       
       const snapshot = JSON.parse(snapshotStr)
-      console.log('🔍 스냅샷 레퍼런스 확인:', {
-        hasReferences: !!snapshot.references,
-        referencesKeys: snapshot.references ? Object.keys(snapshot.references) : '없음',
-        referencesCount: snapshot.references ? Object.keys(snapshot.references).length : 0,
-        sampleReference: snapshot.references ? Object.values(snapshot.references)[0] : null
-      })
     } catch (error) {
-      console.error('❌ 스냅샷 확인 실패:', error)
+      console.error('[SurgeryInfoPage] 스냅샷 확인 실패:', error)
     }
   }, [])
   
@@ -132,14 +125,8 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
         }
       }
       localStorage.setItem(API_SNAPSHOT_KEY, JSON.stringify(snapshot))
-      console.log('API 스냅샷 저장됨:', {
-        consents: Object.keys(snapshot.consents || {}),
-        references: snapshot.references ? Object.keys(snapshot.references) : '없음',
-        timestamp: snapshot.timestamp,
-        formData: snapshot.formData
-      })
     } catch (error) {
-      console.error('API 스냅샷 저장 실패:', error)
+      console.error('[SurgeryInfoPage] API 스냅샷 저장 실패:', error)
     }
   }, [formData.patient_name, formData.surgery_name, formData.diagnosis])
   
@@ -158,26 +145,12 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
         snapshot.formData?.diagnosis === formData.diagnosis
       
       if (!isFormDataMatch) {
-        console.log('폼 데이터가 일치하지 않아 스냅샷 무시:', {
-          snapshot: snapshot.formData,
-          current: {
-            patient_name: formData.patient_name,
-            surgery_name: formData.surgery_name,
-            diagnosis: formData.diagnosis
-          }
-        })
         return null
       }
       
-      console.log('API 스냅샷 로드됨:', {
-        consents: Object.keys(snapshot.consents || {}),
-        references: snapshot.references ? Object.keys(snapshot.references) : '없음',
-        timestamp: snapshot.timestamp,
-        formData: snapshot.formData
-      })
       return snapshot
     } catch (error) {
-      console.error('API 스냅샷 로드 실패:', error)
+      console.error('[SurgeryInfoPage] API 스냅샷 로드 실패:', error)
       return null
     }
   }, [formData.patient_name, formData.surgery_name, formData.diagnosis])
@@ -285,19 +258,14 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
           references: transformedReferences
         }))
       }
-      
-      console.log('스냅샷에서 references 로드됨:', transformedReferences ? Object.keys(transformedReferences) : [])
     }
     
-    console.log('스냅샷으로부터 textarea 초기화됨:', newValues)
   }, [])
   
   // 일반 생성용 훅
   const { 
     generateConsent: generateConsentWithProgress, 
     isGenerating, 
-    progress, 
-    progressMessage,
     showChat,
     setShowChat,
     chatMessages,
@@ -307,7 +275,6 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
     handleSendMessage
   } = useConsentGeneration({
     onSuccess: (result) => {
-      console.log('동의서 생성 성공:', result);
       const { consents, references } = result;
       
       // Transform references from API format to ConsentData format
@@ -417,7 +384,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       toast.success('수술 정보가 성공적으로 생성되었습니다');
     },
     onError: (error) => {
-      console.error("Error generating consent:", error);
+      console.error("[SurgeryInfoPage] 동의서 생성 오류:", error);
       setError(error.message);
     }
   });
@@ -428,7 +395,6 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
     isGenerating: isRegeneratingInProgress
   } = useConsentGeneration({
     onSuccess: (result) => {
-      console.log('동의서 재생성 성공:', result);
       const { consents, references } = result;
       
       // Transform references from API format to ConsentData format
@@ -540,7 +506,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       toast.success('수술 정보가 성공적으로 재생성되었습니다');
     },
     onError: (error) => {
-      console.error("Error regenerating consent:", error);
+      console.error("[SurgeryInfoPage] 동의서 재생성 오류:", error);
       setError(error.message);
       setIsRegenerating(false);
     }
@@ -626,7 +592,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       try {
         return JSON.parse(saved)
       } catch (e) {
-        console.error('Failed to parse saved textarea values:', e)
+        console.error('[SurgeryInfoPage] 저장된 textarea 값 파싱 실패:', e)
       }
     }
     return {
@@ -726,11 +692,9 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   const generateConsent = useCallback(async () => {
     // Prevent duplicate API calls
     if (isGeneratingRef.current || isGenerating) {
-      console.log('중복 API 호출 방지됨:', { isGeneratingRef: isGeneratingRef.current, isGenerating })
       return
     }
 
-    console.log('동의서 생성 시작')
     isGeneratingRef.current = true
     setLoading(true)
     setError(null)
@@ -788,13 +752,12 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
         })())
       };
 
-      console.log('동의서 생성 시작 - 진행률 표시와 함께:', payload);
       
       // 진행률 표시와 함께 동의서 생성
       await generateConsentWithProgress(payload);
 
     } catch (error: unknown) {
-      console.error("동의서 생성 오류:", error);
+      console.error("[SurgeryInfoPage] 동의서 생성 오류:", error);
       // 에러는 useConsentGeneration에서 처리됨
     } finally {
       isGeneratingRef.current = false
@@ -815,15 +778,9 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   const regenerateConsent = useCallback(async () => {
     // Prevent duplicate API calls
     if (isGeneratingRef.current || isGenerating || isRegeneratingInProgress) {
-      console.log('AI 재생성 중복 호출 방지됨:', { 
-        isGeneratingRef: isGeneratingRef.current, 
-        isGenerating, 
-        isRegeneratingInProgress 
-      })
       return
     }
 
-    console.log('AI 재생성 시작')
     // AI 재생성 상태 설정
     setIsRegenerating(true)
 
@@ -871,13 +828,12 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
         })())
       }
 
-      console.log('Regenerating consent with payload:', payload)
       
       // 재생성 전용 훅 사용
       await regenerateConsentWithProgress(payload);
 
     } catch (error: unknown) {
-      console.error("동의서 재생성 오류:", error);
+      console.error("[SurgeryInfoPage] 동의서 재생성 오류:", error);
       // 에러는 useConsentGeneration에서 처리됨
     } finally {
       isGeneratingRef.current = false
@@ -920,13 +876,11 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       // 먼저 스냅샷을 확인하여 textarea 초기화
       const snapshot = loadApiSnapshot()
       if (snapshot) {
-        console.log('스냅샷 발견, textarea 초기화 중...')
         initializeTextareasFromSnapshot(snapshot)
         
         // references는 initializeTextareasFromSnapshot에서 처리됨
       } else {
         // 스냅샷이 없으면 API 호출 (중복 방지를 위해 조건 추가)
-        console.log('스냅샷 없음, API 호출 중...')
         if (!isGeneratingRef.current && !isGenerating) {
           generateConsent()
         }
@@ -952,7 +906,6 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
         prevFormData.diagnosis !== currentFormData.diagnosis
       
       if (hasChanged) {
-        console.log('폼 데이터 변경됨, 스냅샷 무효화')
         localStorage.removeItem(API_SNAPSHOT_KEY)
         // textarea도 초기화
         setTextareaValues({})
@@ -967,7 +920,6 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   }, [formData.patient_name, formData.surgery_name, formData.diagnosis])
 
   const handleTextareaChange = (field: string, value: string) => {
-    console.log('handleTextareaChange 호출됨:', { field, value: value.substring(0, 50) + '...', formData })
     
     setTextareaValues((prev: typeof textareaValues) => {
       const newValues = { ...prev, [field]: value }
@@ -984,7 +936,6 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
     try {
       const snapshotStr = localStorage.getItem(API_SNAPSHOT_KEY)
       if (!snapshotStr) {
-        console.log('스냅샷이 없어서 업데이트 불가')
         return
       }
       
@@ -997,10 +948,6 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
         snapshot.formData?.diagnosis === currentFormData.diagnosis
       
       if (!isFormDataMatch) {
-        console.log('폼 데이터가 일치하지 않아서 업데이트 불가', {
-          snapshot: snapshot.formData,
-          current: currentFormData
-        })
         return
       }
       
@@ -1083,15 +1030,9 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
         references: snapshot.references as ConsentData['references']
       }))
       
-      console.log('사용자 입력으로 스냅샷 업데이트됨:', {
-        field,
-        value: value.substring(0, 50) + '...',
-        updatedConsents: Object.keys(snapshot.consents || {}),
-        references: snapshot.references ? Object.keys(snapshot.references) : '없음'
-      })
       
     } catch (error) {
-      console.error('스냅샷 업데이트 실패:', error)
+      console.error('[SurgeryInfoPage] 스냅샷 업데이트 실패:', error)
     }
   }, [])
 

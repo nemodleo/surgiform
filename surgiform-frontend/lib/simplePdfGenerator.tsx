@@ -195,7 +195,7 @@ export const generateSimplePDF = async (
         } else {
           img.onload = () => resolve(true)
           img.onerror = () => {
-            console.error('Image failed to load:', img.src.substring(0, 50))
+            console.error('[simplePdfGenerator] 이미지 로드 실패:', img.src.substring(0, 50))
             resolve(false)
           }
         }
@@ -308,7 +308,7 @@ export const generateSimplePDF = async (
     return pdf.output('blob')
     
   } catch (error) {
-    console.error('PDF generation error:', error)
+    console.error('[simplePdfGenerator] PDF 생성 오류:', error)
     // Clean up on error
     if (document.body.contains(container)) {
       document.body.removeChild(container)

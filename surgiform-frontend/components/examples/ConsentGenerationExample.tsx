@@ -18,7 +18,7 @@ export const ConsentGenerationExample: React.FC = () => {
     },
     onError: (error) => {
       setShowProgress(false);
-      console.error('생성 실패:', error);
+      console.error('[ConsentGenerationExample] 생성 실패:', error);
     }
   });
 

@@ -389,8 +389,8 @@ export const generateKoreanPDF = async (formData: FormData, consentData: Consent
     console.log('PDF generated successfully, blob size:', blob.size)
     return blob
   } catch (error) {
-    console.error('PDF generation error:', error)
-    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
+    console.error('[koreanPdfGenerator] PDF 생성 오류:', error)
+    console.error('[koreanPdfGenerator] 오류 스택:', error instanceof Error ? error.stack : '스택 추적 없음')
     throw error
   }
 }

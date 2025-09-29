@@ -230,7 +230,7 @@ export function ChatUI({
             }
           }
         } catch (e) {
-          console.error('Failed to parse saved chat data:', e)
+          console.error('[chat] 저장된 채팅 데이터 파싱 실패:', e)
         }
       }
 
@@ -310,7 +310,7 @@ export function ChatUI({
       setConversationId(response.conversation_id)
       
     } catch (error) {
-      console.error("Error sending message:", error)
+      console.error("[chat] 메시지 전송 오류:", error)
       const errorMessage: Message = {
         role: "assistant",
         content: "죄송합니다. 메시지 처리 중 오류가 발생했습니다. 다시 시도해주세요.",

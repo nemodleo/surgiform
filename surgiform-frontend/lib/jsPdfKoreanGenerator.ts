@@ -140,7 +140,7 @@ export const generateKoreanPDFWithJsPDF = async (
         doc.addImage(signatureData.patient, 'PNG', 20, yPos + 5, 60, 20)
         yPos += 35
       } catch (e) {
-        console.error('Failed to add patient signature:', e)
+        console.error('[jsPdfKoreanGenerator] 환자 서명 추가 실패:', e)
         yPos += 10
       }
     }
@@ -153,7 +153,7 @@ export const generateKoreanPDFWithJsPDF = async (
         doc.addImage(signatureData.doctor, 'PNG', 20, yPos + 5, 60, 20)
         yPos += 35
       } catch (e) {
-        console.error('Failed to add doctor signature:', e)
+        console.error('[jsPdfKoreanGenerator] 의사 서명 추가 실패:', e)
         yPos += 10
       }
     }

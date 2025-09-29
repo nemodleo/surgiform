@@ -224,7 +224,7 @@ export async function generateHighQualityPDF(
         
         yPosition -= 80
       } catch (e) {
-        console.error('Error adding patient signature:', e)
+        console.error('[pdfGenerator] 환자 서명 추가 오류:', e)
         yPosition -= 30
       }
     }
@@ -248,7 +248,7 @@ export async function generateHighQualityPDF(
         
         yPosition -= 80
       } catch (e) {
-        console.error('Error adding doctor signature:', e)
+        console.error('[pdfGenerator] 의사 서명 추가 오류:', e)
         yPosition -= 30
       }
     }

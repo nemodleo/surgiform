@@ -11,8 +11,6 @@ interface UseConsentGenerationProps {
 
 export const useConsentGeneration = ({ onSuccess, onError }: UseConsentGenerationProps = {}) => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [progressMessage, setProgressMessage] = useState('');
   
   // ChatUI 관련 상태
   const [showChat, setShowChat] = useState(false);
@@ -22,39 +20,24 @@ export const useConsentGeneration = ({ onSuccess, onError }: UseConsentGeneratio
   const generateConsent = useCallback(async (data: ConsentGenerateIn) => {
     try {
       setIsGenerating(true);
-      setProgress(0);
-      setProgressMessage('서버 연결 확인 중...');
-
-      console.log('진행률 추적 시작'); // 디버그용
 
       // 먼저 서버 헬스체크
       try {
         await surgiformAPI.healthCheck();
-        console.log('서버 연결 확인됨');
       } catch (healthError) {
-        console.error('서버 연결 실패:', healthError);
+        console.error('[useConsentGeneration] 서버 연결 실패:', healthError);
         throw new Error('서버에 연결할 수 없습니다. 백엔드 서버가 실행 중인지 확인해주세요.');
       }
 
-      setProgressMessage('동의서 생성을 시작합니다...');
+      const result = await surgiformAPI.generateConsentWithProgress(data);
 
-      const result = await surgiformAPI.generateConsentWithProgress(
-        data,
-        (newProgress, message) => {
-          console.log(`진행률 업데이트: ${newProgress}% - ${message}`); // 디버그용
-          setProgress(newProgress);
-          setProgressMessage(message);
-        }
-      );
-
-      console.log('API 호출 완료');
       toast.success('수술동의서가 성공적으로 생성되었습니다.');
       
       onSuccess?.(result);
       return result;
 
     } catch (error) {
-      console.error('동의서 생성 오류:', error); // 디버그용
+      console.error('[useConsentGeneration] 동의서 생성 오류:', error);
       
       let errorMessage = '동의서 생성에 실패했습니다.';
       
@@ -76,17 +59,10 @@ export const useConsentGeneration = ({ onSuccess, onError }: UseConsentGeneratio
     }
   }, [onSuccess, onError]);
 
-  const resetProgress = useCallback(() => {
-    setProgress(0);
-    setProgressMessage('');
-  }, []);
 
   // ChatUI 관련 함수
   const handleSendMessage = useCallback(async (message: string, history: ChatMessage[], consentData?: any) => {
     try {
-      console.log('전송할 consentData:', consentData);
-      console.log('전송할 consents (원본):', consentData?.consents);
-      console.log('전송할 references (원본):', consentData?.references);
       
       // consentData가 없거나 consents가 없는 경우 기본값 제공
       const consents = consentData?.consents || {};
@@ -159,7 +135,6 @@ export const useConsentGeneration = ({ onSuccess, onError }: UseConsentGeneratio
         consent_information: consentInformation
       };
       
-      console.log('필터링된 consents:', filteredConsents);
       
       const chatRequest: ChatRequest = {
         message,
@@ -169,12 +144,6 @@ export const useConsentGeneration = ({ onSuccess, onError }: UseConsentGeneratio
         references: references
       };
 
-      console.log('전송할 chatRequest:', JSON.stringify(chatRequest, null, 2));
-      console.log('전송할 history 타입:', typeof chatRequest.history);
-      console.log('전송할 history 길이:', chatRequest.history?.length);
-      if (chatRequest.history && chatRequest.history.length > 0) {
-        console.log('첫 번째 메시지 구조:', JSON.stringify(chatRequest.history[0], null, 2));
-      }
       
       const response = await surgiformAPI.sendChatMessage(chatRequest);
       const chatResponse = response.data;
@@ -184,7 +153,7 @@ export const useConsentGeneration = ({ onSuccess, onError }: UseConsentGeneratio
       // 메시지 상태 관리는 chat.tsx에서 처리하므로 여기서는 하지 않음
       return chatResponse;
     } catch (error) {
-      console.error('채팅 오류:', error);
+      console.error('[useConsentGeneration] 채팅 오류:', error);
       throw error;
     }
   }, [conversationId]);
@@ -192,9 +161,6 @@ export const useConsentGeneration = ({ onSuccess, onError }: UseConsentGeneratio
   return {
     generateConsent,
     isGenerating,
-    progress,
-    progressMessage,
-    resetProgress,
     // ChatUI 관련
     showChat,
     setShowChat,

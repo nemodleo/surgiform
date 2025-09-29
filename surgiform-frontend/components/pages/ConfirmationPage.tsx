@@ -107,7 +107,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         try {
           return JSON.parse(saved)
         } catch (e) {
-          console.error('Failed to parse saved surgery site marking:', e)
+          console.error('[ConfirmationPage] 저장된 수술 부위 표시 파싱 실패:', e)
         }
       }
     }
@@ -120,10 +120,9 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       if (saved) {
         try {
           const parsed = JSON.parse(saved)
-          console.log('🖋️ Restored signatures from sessionStorage on init:', Object.keys(parsed))
           return parsed
         } catch (e) {
-          console.error('Failed to parse saved signatures:', e)
+          console.error('[ConfirmationPage] 저장된 서명 파싱 실패:', e)
         }
       }
     }
@@ -139,7 +138,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
           console.log('🎨 Restored canvases from sessionStorage on init:', parsed.length, 'canvases')
           return parsed
         } catch (e) {
-          console.error('Failed to parse saved canvases:', e)
+          console.error('[ConfirmationPage] 저장된 캔버스 파싱 실패:', e)
         }
       }
     }
@@ -154,7 +153,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         try {
           return JSON.parse(saved)
         } catch (e) {
-          console.error('Failed to parse saved audio recordings:', e)
+          console.error('[ConfirmationPage] 저장된 음성 녹음 파싱 실패:', e)
         }
       }
     }
@@ -169,7 +168,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         try {
           return JSON.parse(saved)
         } catch (e) {
-          console.error('Failed to parse saved text notes:', e)
+          console.error('[ConfirmationPage] 저장된 텍스트 노트 파싱 실패:', e)
         }
       }
     }
@@ -207,7 +206,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         const parsed = JSON.parse(current)
         console.log('🔍 Parsed:', parsed.length, 'canvases with data:', parsed.filter((c: CanvasData) => c.imageData).length)
       } catch (e) {
-        console.error('🔍 Parse error:', e)
+        console.error('[ConfirmationPage] 데이터 파싱 오류:', e)
       }
     }
   }
@@ -381,7 +380,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         if (attempts < 15) {
           setTimeout(() => attemptRestore(attempts + 1), 100 + (attempts * 50))
         } else {
-          console.error(`💥 Failed to restore canvas ${canvasId} after ${attempts + 1} attempts`)
+          console.error(`[ConfirmationPage] 캔버스 복원 실패 (${attempts + 1}회 시도 후):`, canvasId)
         }
       }
     }
@@ -615,13 +614,13 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     
     // MediaRecorder 지원 확인
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      console.error('🎤 MediaDevices API not supported')
+      console.error('[ConfirmationPage] MediaDevices API 미지원')
       toast.error('이 브라우저는 음성 녹음을 지원하지 않습니다.')
       return
     }
     
     if (!window.MediaRecorder) {
-      console.error('🎤 MediaRecorder API not supported')
+      console.error('[ConfirmationPage] MediaRecorder API 미지원')
       toast.error('이 브라우저는 MediaRecorder를 지원하지 않습니다.')
       return
     }
@@ -898,12 +897,12 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       }
       
       mediaRecorder.onerror = (event) => {
-        console.error('🎤 MediaRecorder error:', event)
-        console.error('🎤 Error details:', event.error)
+        console.error('[ConfirmationPage] MediaRecorder 오류:', event)
+        console.error('[ConfirmationPage] 오류 상세:', event.error)
         
         // 3초 제한 관련 오류인지 확인
         if (event.error && event.error.name === 'NotSupportedError') {
-          console.error('🎤 ⚠️ NotSupportedError - possibly related to 3-second limit')
+          console.error('[ConfirmationPage] NotSupportedError - 3초 제한 관련 가능성')
         }
         
         toast.error('음성 녹음 중 오류가 발생했습니다.')
@@ -917,10 +916,10 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       toast('음성 녹음을 시작했습니다.')
       
     } catch (error) {
-      console.error('🎤 음성 녹음 시작 실패:', error)
-      console.error('🎤 Error name:', error.name)
-      console.error('🎤 Error message:', error.message)
-      console.error('🎤 Error stack:', error.stack)
+      console.error('[ConfirmationPage] 음성 녹음 시작 실패:', error)
+      console.error('[ConfirmationPage] 오류 이름:', error.name)
+      console.error('[ConfirmationPage] 오류 메시지:', error.message)
+      console.error('[ConfirmationPage] 오류 스택:', error.stack)
       
       if (error.name === 'NotAllowedError') {
         // 사용자에게 마이크 권한 허용 방법 안내
@@ -1153,7 +1152,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         localStorage.setItem('confirmationCanvases', JSON.stringify(canvases))
         toast.info('데이터가 localStorage에 저장되었습니다.')
       } catch (localError) {
-        console.error('localStorage도 용량 초과:', localError)
+        console.error('[ConfirmationPage] localStorage 용량 초과:', localError)
         toast.error('저장 공간이 부족합니다. 이미지를 다시 업로드해주세요.')
       }
     }
@@ -1224,7 +1223,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
           }
           img.src = resizedImageData
         } catch (error) {
-          console.error('이미지 리사이즈 실패:', error)
+          console.error('[ConfirmationPage] 이미지 리사이즈 실패:', error)
           toast.error('이미지 처리 중 오류가 발생했습니다.')
         }
       }
@@ -1291,7 +1290,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       console.log('Data saved to storage')
       onComplete()
     } catch (error) {
-      console.error('Error submitting consent data:', error)
+      console.error('[ConfirmationPage] 동의서 데이터 제출 오류:', error)
       toast.error('동의서 제출 중 오류가 발생했습니다')
     } finally {
       setIsSubmitting(false)
@@ -2843,7 +2842,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                   );
                 }).filter(Boolean); // null 항목 제거
               } catch (e) {
-                console.error('Error loading surgery info data:', e);
+                console.error('[ConfirmationPage] 수술 정보 데이터 로드 오류:', e);
                 return null;
               }
             })()}

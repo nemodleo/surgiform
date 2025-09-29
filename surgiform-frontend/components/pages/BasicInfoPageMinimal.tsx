@@ -352,17 +352,6 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 800))
 
-    console.log('🔄 BasicInfo form submission - Final formData:', formData)
-    console.log('🔄 Special conditions in formData:', {
-      medical_history: formData.medical_history,
-      diabetes: formData.diabetes,
-      smoking: formData.smoking,
-      hypertension: formData.hypertension,
-      allergy: formData.allergy,
-      other_conditions: formData.other_conditions,
-      mortality_risk: formData.mortality_risk,
-      morbidity_risk: formData.morbidity_risk
-    })
 
     onComplete(formData)
     toast.success("기본 정보가 저장되었습니다")
@@ -740,7 +729,6 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
                         name={item.id}
                         checked={formData[item.id as keyof FormData] === true}
                         onChange={() => {
-                          console.log(`Setting ${item.id} to true`)
                           setFormData({...formData, [item.id]: true})
                         }}
                         className="mr-1.5"
@@ -753,7 +741,6 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
                         name={item.id}
                         checked={formData[item.id as keyof FormData] === false}
                         onChange={() => {
-                          console.log(`Setting ${item.id} to false`)
                           setFormData({...formData, [item.id]: false})
                         }}
                         className="mr-1.5"
