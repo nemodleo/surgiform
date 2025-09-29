@@ -35,13 +35,6 @@ export function ChatUI({
   initialMessages = [],
   title = "이음"
 }: ChatUIProps) {
-  // Initialize with introduction message if no initial messages
-  const introMessage: Message = {
-    role: "assistant",
-    content: "안녕하세요. 의료진과 환자를 신뢰와 책임으로 잇는 AI 도우미 이음입니다.\n수술 정보 문의부터 동의서 검토·수정까지 도와드릴게요.",
-    timestamp: new Date()
-  }
-  
   const [messages, setMessages] = useState<Message[]>([])
 
   // Initialize messages on mount or when initialMessages change
@@ -49,9 +42,15 @@ export function ChatUI({
     if (initialMessages.length > 0) {
       setMessages(initialMessages)
     } else {
+      // Initialize with introduction message if no initial messages
+      const introMessage: Message = {
+        role: "assistant",
+        content: "안녕하세요. 의료진과 환자를 신뢰와 책임으로 잇는 AI 도우미 이음입니다.\n수술 정보 문의부터 동의서 검토·수정까지 도와드릴게요.",
+        timestamp: new Date()
+      }
       setMessages([introMessage])
     }
-  }, [initialMessages, introMessage]) // Include both dependencies
+  }, [initialMessages]) // Only depend on initialMessages
   const [inputMessage, setInputMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [, setConversationId] = useState(initialConversationId)
