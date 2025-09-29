@@ -772,7 +772,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
             if (typeof mediaRecorderRef.current.requestData === 'function') {
               mediaRecorderRef.current.requestData()
             }
-          } catch (e) {
+          } catch {
           }
         }
       }, 1000)

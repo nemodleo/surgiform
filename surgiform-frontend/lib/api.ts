@@ -132,8 +132,8 @@ export interface ChatRequest {
   conversation_id?: string;
   history?: ChatMessage[];
   system_prompt?: string;
-  consents?: any;
-  references?: any;
+  consents?: Record<string, unknown>;
+  references?: Record<string, unknown>;
 }
 
 export interface ChatResponse {

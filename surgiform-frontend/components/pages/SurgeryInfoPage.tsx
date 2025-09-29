@@ -103,9 +103,9 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   
   // 전역에서 테스트 함수 사용 가능하도록 설정 (개발용)
   useEffect(() => {
-    (window as any).checkReferencesInSnapshot = checkReferencesInSnapshot
+    (window as Window & { checkReferencesInSnapshot?: () => void }).checkReferencesInSnapshot = checkReferencesInSnapshot
     return () => {
-      delete (window as any).checkReferencesInSnapshot
+      delete (window as Window & { checkReferencesInSnapshot?: () => void }).checkReferencesInSnapshot
     }
   }, [checkReferencesInSnapshot])
   

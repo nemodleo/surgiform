@@ -137,7 +137,7 @@ export default function DocumentViewer({ formData, signatureData }: DocumentView
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {(formData.medical_team || formData.participants || []).map((doctor: any, index: number) => (
+                  {(formData.medical_team || formData.participants || []).map((doctor: { name?: string; is_specialist?: boolean; department?: string }, index: number) => (
                     <tr key={index}>
                       <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{doctor.name || ""}</td>
                       <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{doctor.is_specialist ? "전문의" : "일반의"}</td>

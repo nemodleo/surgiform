@@ -327,7 +327,7 @@ export const generateKoreanPDFFromDOM = async (
       
       // Canvas drawings
       if (teamCanvases.length > 0) {
-        teamMediaHtml += teamCanvases.map((canvas: any) => {
+        teamMediaHtml += teamCanvases.map((canvas: { title?: string; imageData?: string }) => {
           if (canvas.imageData) {
             return `
               <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
@@ -352,7 +352,7 @@ export const generateKoreanPDFFromDOM = async (
       
       // Audio recordings
       if (teamAudios.length > 0) {
-        teamMediaHtml += teamAudios.map((audio: any) => {
+        teamMediaHtml += teamAudios.map((audio: { id?: string; title?: string; duration?: number }) => {
           const duration = audio.duration ? Math.floor(audio.duration) : 0;
           const minutes = Math.floor(duration / 60);
           const seconds = duration % 60;
@@ -375,7 +375,7 @@ export const generateKoreanPDFFromDOM = async (
       
       // Text notes
       if (teamTexts.length > 0) {
-        teamMediaHtml += teamTexts.map((text: any) => {
+        teamMediaHtml += teamTexts.map((text: { title?: string; content?: string }) => {
           return `
             <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
               <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
@@ -414,13 +414,13 @@ export const generateKoreanPDFFromDOM = async (
     
     ${(() => {
       // 환자 상태 및 특이사항 미디어 요소들
-      const conditionCanvases = canvasDrawings.filter((canvas: any) => 
+      const conditionCanvases = canvasDrawings.filter((canvas: { title?: string; imageData?: string }) => 
         canvas.title && canvas.title.includes("1. 환자 상태 및 특이사항")
       );
-      const conditionAudios = audioRecordings.filter((audio: any) => 
+      const conditionAudios = audioRecordings.filter((audio: { title?: string; audioBlob?: Blob }) => 
         audio.title && audio.title.includes("1. 환자 상태 및 특이사항") && audio.audioBlob
       );
-      const conditionTexts = textNotes.filter((text: any) => 
+      const conditionTexts = textNotes.filter((text: { title?: string; content?: string }) => 
         text.title && text.title.includes("1. 환자 상태 및 특이사항")
       );
       
@@ -428,7 +428,7 @@ export const generateKoreanPDFFromDOM = async (
       
       // Canvas drawings
       if (conditionCanvases.length > 0) {
-        conditionMediaHtml += conditionCanvases.map((canvas: any) => {
+        conditionMediaHtml += conditionCanvases.map((canvas: { title?: string; imageData?: string }) => {
           if (canvas.imageData) {
             return `
               <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
@@ -453,7 +453,7 @@ export const generateKoreanPDFFromDOM = async (
       
       // Audio recordings
       if (conditionAudios.length > 0) {
-        conditionMediaHtml += conditionAudios.map((audio: any) => {
+        conditionMediaHtml += conditionAudios.map((audio: { id?: string; title?: string; duration?: number }) => {
           const duration = audio.duration ? Math.floor(audio.duration) : 0;
           const minutes = Math.floor(duration / 60);
           const seconds = duration % 60;
@@ -476,7 +476,7 @@ export const generateKoreanPDFFromDOM = async (
       
       // Text notes
       if (conditionTexts.length > 0) {
-        conditionMediaHtml += conditionTexts.map((text: any) => {
+        conditionMediaHtml += conditionTexts.map((text: { title?: string; content?: string }) => {
           return `
             <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
               <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
@@ -510,7 +510,7 @@ export const generateKoreanPDFFromDOM = async (
       ];
       return allItems.map(item => {
         const content = item.number === "5" ? "" : (surgeryData[item.key] || '내용이 입력되지 않았습니다.');
-        const itemCanvases = canvasDrawings.filter((canvas: any) => 
+        const itemCanvases = canvasDrawings.filter((canvas: { title?: string; imageData?: string }) => 
           canvas.title && canvas.title.includes(`${item.number}. ${item.title}`)
         );
         
@@ -803,7 +803,7 @@ export const generateKoreanPDFFromDOM = async (
     }
     
     // Convert canvas to image and split into multiple pages
-    const imgData = canvas.toDataURL('image/png', 1.0)
+    canvas.toDataURL('image/png', 1.0)
     
     // PDF page dimensions (A4)
     const pdfWidth = pdf.internal.pageSize.getWidth()

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Download, Loader2, Home, ChevronLeft } from "lucide-react"
 import { generateKoreanPDFFromDOM } from "@/lib/domPdfGenerator"
@@ -42,7 +42,7 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
   const [, setShowPreview] = useState(false)
   const [dataLoaded, setDataLoaded] = useState(false)
 
-  const generatePDF = async () => {
+  const generatePDF = useCallback(async () => {
     setGenerating(true)
     
     try {
@@ -83,9 +83,9 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
       })
       alert(`PDF 변환 중 오류가 발생했습니다.\n\n오류 내용: ${error instanceof Error ? error.message : '알 수 없는 오류'}\n\n브라우저 콘솔에서 자세한 내용을 확인하세요.`)
     }
-    
+
     setGenerating(false)
-  }
+  }, [formData, consentData, signatureData])
 
   useEffect(() => {
     
