@@ -683,15 +683,6 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
           </div>
         </div>
 
-        {/* 안내문 */}
-        <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
-          <p className="text-sm text-slate-600 leading-relaxed">
-              다음의 설명 내용은 의료진이 환자 본인이나 대리인(보호자)에게 환자가 시행 받을 검사에 대한 정보를 제공하여
-              환자 본인이나 대리인이 자주적 의사에 따라 검사 여부를 결정할 수 있도록 하기 위한 것입니다.
-              설명 내용 중 이해가 되지 않는 부분이 있다면 설명의사에게 추가 설명을 요청할 수 있습니다.
-            </p>
-        </div>
-
         {/* 환자 상태 및 특이사항 */}
         <div className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors">
           <div className="p-6">
