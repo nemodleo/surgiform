@@ -27,7 +27,6 @@ export default function App({ Component, pageProps }: AppProps) {
   
   const currentStep = STEP_PATHS.findIndex(path => router.pathname.startsWith(path))
   const isConsentPage = router.pathname.startsWith('/consent')
-  const isHomePage = router.pathname === '/'
   
   useEffect(() => {
     const handleRouteChange = (url: string) => {

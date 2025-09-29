@@ -51,7 +51,7 @@ export function ChatUI({
     } else {
       setMessages([introMessage])
     }
-  }, [initialMessages.length]) // Only depend on length to avoid infinite loop
+  }, [initialMessages, introMessage]) // Include both dependencies
   const [inputMessage, setInputMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [, setConversationId] = useState(initialConversationId)
@@ -65,7 +65,6 @@ export function ChatUI({
   const [size, setSize] = useState({ width: 400, height: 600 })
   const [isResizing, setIsResizing] = useState(false)
   const [resizeDirection, setResizeDirection] = useState<'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw' | null>(null)
-  const [resizeOffset, setResizeOffset] = useState({ x: 0, y: 0 })
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [opacity, setOpacity] = useState({
     top: 60,
@@ -82,12 +81,6 @@ export function ChatUI({
     setIsFullscreen(!isFullscreen)
   }
 
-  const updateOpacity = (section: 'top' | 'middle' | 'bottom', value: number) => {
-    setOpacity(prev => ({
-      ...prev,
-      [section]: value
-    }))
-  }
 
   useEffect(() => {
     scrollToBottom()
@@ -166,10 +159,6 @@ export function ChatUI({
     e.stopPropagation()
     setIsResizing(true)
     setResizeDirection(direction)
-    setResizeOffset({
-      x: e.clientX - size.width,
-      y: e.clientY - size.height
-    })
   }
 
   // Add global mouse events
@@ -238,7 +227,6 @@ export function ChatUI({
       // Chat button is 64px square, so position window so its bottom-right aligns with button's bottom-right
       const chatButtonRight = 32
       const chatButtonBottom = 32
-      const chatButtonSize = 64
 
       const x = Math.max(0, window.innerWidth - chatButtonRight - size.width)
       const y = Math.max(0, window.innerHeight - chatButtonBottom - size.height)

@@ -408,8 +408,6 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
 
   const labelStyle = "text-sm font-medium text-slate-700"
 
-  // Get today's date for surgery date min value
-  const today = new Date().toISOString().split('T')[0]
   
 
   return (

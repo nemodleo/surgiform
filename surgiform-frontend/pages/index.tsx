@@ -3,15 +3,9 @@ import { useRouter } from "next/router"
 import LandingPageMobbin from "@/components/pages/LandingPageMobbin"
 
 export default function Home() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'form' | 'mypage' | 'settings'>('home')
+  const [currentPage] = useState<'home' | 'form' | 'mypage' | 'settings'>('home')
   const router = useRouter()
 
-  const handleNavigate = (page: string) => {
-    setCurrentPage(page as 'home' | 'form' | 'mypage' | 'settings')
-    if (page === 'form') {
-      router.push('/consent')
-    }
-  }
 
   const handleMainPageComplete = () => {
     router.push('/consent/basic-info')

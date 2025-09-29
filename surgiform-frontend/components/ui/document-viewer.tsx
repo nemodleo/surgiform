@@ -47,7 +47,7 @@ interface DocumentViewerProps {
   }
 }
 
-export default function DocumentViewer({ formData, consentData, signatureData }: DocumentViewerProps) {
+export default function DocumentViewer({ formData, signatureData }: DocumentViewerProps) {
   const [surgeryData, setSurgeryData] = useState<Record<string, string>>({})
   const [canvasDrawings, setCanvasDrawings] = useState<Array<{ title: string; imageData: string }>>([])
 

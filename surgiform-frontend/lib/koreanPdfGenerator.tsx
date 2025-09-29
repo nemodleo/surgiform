@@ -280,8 +280,8 @@ const SurgicalConsentPDF = ({ formData = {}, consentData = {}, signatureData = {
                       <Text style={styles.drawingLabel}>
                         설명 그림 {drawIndex + 1}
                       </Text>
-                      <Image 
-                        style={[styles.drawingImage, { width: 200, height: 150 }]} 
+                      <Image
+                        style={[styles.drawingImage, { width: 200, height: 150 }]}
                         src={drawing.imageData}
                       />
                     </View>
@@ -318,8 +318,8 @@ const SurgicalConsentPDF = ({ formData = {}, consentData = {}, signatureData = {
                 <Text style={{ fontSize: 11, fontWeight: 700, marginBottom: 5, color: '#333333' }}>
                   {drawing.title || `추가 설명 그림 ${index + 1}`}
                 </Text>
-                <Image 
-                  style={{ width: 250, height: 180, borderWidth: 1, borderColor: '#e0e0e0' }} 
+                <Image
+                  style={{ width: 250, height: 180, borderWidth: 1, borderColor: '#e0e0e0' }}
                   src={drawing.imageData}
                 />
               </View>
@@ -337,8 +337,8 @@ const SurgicalConsentPDF = ({ formData = {}, consentData = {}, signatureData = {
           {signatureData.patient && typeof signatureData.patient === 'string' && (
             <View style={styles.signature}>
               <Text style={styles.text}>환자: {formData.patient_name || '환자'}</Text>
-              <Image 
-                style={styles.signatureImage} 
+              <Image
+                style={styles.signatureImage}
                 src={signatureData.patient}
               />
             </View>
@@ -347,8 +347,8 @@ const SurgicalConsentPDF = ({ formData = {}, consentData = {}, signatureData = {
           {signatureData.doctor && typeof signatureData.doctor === 'string' && (
             <View style={styles.signature}>
               <Text style={styles.text}>의사: {formData.medical_team?.[0]?.name || '의사'}</Text>
-              <Image 
-                style={styles.signatureImage} 
+              <Image
+                style={styles.signatureImage}
                 src={signatureData.doctor}
               />
             </View>

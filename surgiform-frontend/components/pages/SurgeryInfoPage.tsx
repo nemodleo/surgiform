@@ -3,8 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { RefreshCw, WifiOff, X, ChevronLeft, ChevronRight, Bot, Sparkles, ExternalLink } from "lucide-react"
-import { surgiformAPI, ChatMessage, ChatRequest } from "@/lib/api"
+import { RefreshCw, WifiOff, X, ChevronLeft, ChevronRight, Bot, Sparkles } from "lucide-react"
 import { ChatUI } from "@/components/ui/chat"
 import { useConsentGeneration } from "@/hooks/useConsentGeneration"
 import toast from "react-hot-toast"
@@ -81,7 +80,6 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   const [error, setError] = useState<string | null>(null)
   const [showTimeMessage, setShowTimeMessage] = useState(false)
   const [showBottomMessage, setShowBottomMessage] = useState(false)
-  const [isRegenerating, setIsRegenerating] = useState(false)
   
   // API 응답 스냅샷 저장 키
   const API_SNAPSHOT_KEY = 'surgery_info_api_snapshot'
@@ -96,8 +94,8 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       if (!snapshotStr) {
         return
       }
-      
-      const snapshot = JSON.parse(snapshotStr)
+
+      JSON.parse(snapshotStr)
     } catch (error) {
       console.error('[SurgeryInfoPage] 스냅샷 확인 실패:', error)
     }
@@ -112,7 +110,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   }, [checkReferencesInSnapshot])
   
   // API 응답 스냅샷 저장 함수
-  const saveApiSnapshot = useCallback((consents: any, references: any) => {
+  const saveApiSnapshot = useCallback((consents: unknown, references: unknown) => {
     try {
       const snapshot = {
         consents,
@@ -156,7 +154,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   }, [formData.patient_name, formData.surgery_name, formData.diagnosis])
   
   // 스냅샷을 기반으로 textarea 초기화 함수
-  const initializeTextareasFromSnapshot = useCallback((snapshot: any) => {
+  const initializeTextareasFromSnapshot = useCallback((snapshot: { consents?: unknown; references?: unknown; formData?: unknown }) => {
     if (!snapshot?.consents) return
     
     const { consents, references } = snapshot
@@ -239,12 +237,12 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       }
       // references가 API 형태인 경우 변환
       else if (Array.isArray(references)) {
-        references.forEach((ref: any) => {
+        references.forEach((ref: { category: string; references: Array<{ title: string; content: string }> }) => {
           const categoryKey = ref.category.toLowerCase().replace(/\s+/g, '_') as keyof ConsentData['references']
           if (!transformedReferences[categoryKey]) {
             transformedReferences[categoryKey] = []
           }
-          transformedReferences[categoryKey]?.push(...ref.references.map((r: any) => ({
+          transformedReferences[categoryKey]?.push(...ref.references.map((r: { title: string; content: string }) => ({
             title: r.title,
             url: r.url,
             text: ref.content
@@ -253,7 +251,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
       }
       
       if (transformedReferences) {
-        setConsentData((prev: any) => ({
+        setConsentData((prev: ConsentData) => ({
           ...prev,
           references: transformedReferences
         }))
@@ -770,6 +768,24 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
     formData.surgery_name,
     formData.surgery_date,
     formData.diagnosis,
+    formData.surgery_site_detail,
+    formData.symptoms,
+    formData.registration_number,
+    formData.medical_team,
+    formData.medical_history,
+    formData.diabetes,
+    formData.smoking,
+    formData.hypertension,
+    formData.allergy,
+    formData.cardiovascular,
+    formData.respiratory_disease,
+    formData.blood_coagulation,
+    formData.medication,
+    formData.kidney_disease,
+    formData.drug_abuse,
+    formData.other_conditions,
+    formData.mortality_risk,
+    formData.morbidity_risk,
     generateConsentWithProgress,
     isGenerating
   ])
@@ -886,7 +902,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
         }
       }
     }
-  }, [formData.patient_name, loadApiSnapshot, initializeTextareasFromSnapshot, generateConsent, isGenerating])
+  }, [formData, loadApiSnapshot, initializeTextareasFromSnapshot, generateConsent, isGenerating])
 
   // 폼 데이터 변경 시 스냅샷 무효화
   useEffect(() => {
@@ -932,7 +948,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   }
   
   // 사용자 입력을 스냅샷에 반영하는 함수
-  const updateSnapshotWithUserInput = useCallback((field: string, value: string, currentFormData: any) => {
+  const updateSnapshotWithUserInput = useCallback((field: string, value: string, currentFormData: FormData) => {
     try {
       const snapshotStr = localStorage.getItem(API_SNAPSHOT_KEY)
       if (!snapshotStr) {
@@ -1189,19 +1205,6 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   }
 
   // Auto-resize textarea function
-  const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>, field: string) => {
-    const textarea = e.target
-
-    // Reset height to auto to get the correct scrollHeight
-    textarea.style.height = 'auto'
-
-    // Set height to scrollHeight + some padding for an extra line
-    const newHeight = Math.max(80, textarea.scrollHeight + 24) // 80px minimum, +24px for extra line
-    textarea.style.height = `${newHeight}px`
-
-    // Update the value
-    handleTextareaChange(field, textarea.value)
-  }
 
 
   const handleComplete = () => {
@@ -1422,7 +1425,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
-                    {(formData.medical_team || formData.participants || []).map((doctor: any, index: number) => (
+                    {(formData.medical_team || formData.participants || []).map((doctor: { name?: string; is_specialist?: boolean; department?: string }, index: number) => (
                       <tr key={index}>
                         <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">
                           {doctor.name || ""}
@@ -1497,7 +1500,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 2. 예정된 수술/시술/검사를 하지 않을 경우의 예후
-                <InlineReferences references={(consentData?.references as any)?.prognosis_without_surgery} />
+                <InlineReferences references={(consentData?.references as { prognosis_without_surgery?: Reference[] })?.prognosis_without_surgery} />
               </label>
               <textarea
                 data-field="general_info"
@@ -1520,7 +1523,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 3. 예정된 수술 이외의 시행 가능한 다른 방법
-                <InlineReferences references={(consentData?.references as any)?.alternative_treatments} />
+                <InlineReferences references={(consentData?.references as { alternative_treatments?: Reference[] })?.alternative_treatments} />
               </label>
               <textarea
                 data-field="surgical_site"
@@ -1543,7 +1546,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 4. 수술 목적/필요/효과
-                <InlineReferences references={(consentData?.references as any)?.surgery_purpose_necessity_effect} />
+                <InlineReferences references={(consentData?.references as { surgery_purpose_necessity_effect?: Reference[] })?.surgery_purpose_necessity_effect} />
               </label>
               <textarea
                 data-field="surgical_method"
@@ -1573,7 +1576,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 5-1. 수술 과정 전반에 대한 설명
-                <InlineReferences references={(consentData?.references as any)?.surgery_method_content?.overall_description} />
+                <InlineReferences references={(consentData?.references as { surgery_method_content?: { overall_description?: Reference[] } })?.surgery_method_content?.overall_description} />
               </label>
               <textarea
                 data-field="overall_description"
@@ -1596,7 +1599,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 5-2. 수술 추정 소요시간
-                <InlineReferences references={(consentData?.references as any)?.surgery_method_content?.estimated_duration} />
+                <InlineReferences references={(consentData?.references as { surgery_method_content?: { estimated_duration?: Reference[] } })?.surgery_method_content?.estimated_duration} />
               </label>
               <textarea
                 data-field="estimated_duration"
@@ -1619,7 +1622,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 5-3. 수술 방법 변경 및 수술 추가 가능성
-                <InlineReferences references={(consentData?.references as any)?.surgery_method_content?.method_change_or_addition} />
+                <InlineReferences references={(consentData?.references as { surgery_method_content?: { method_change_or_addition?: Reference[] } })?.surgery_method_content?.method_change_or_addition} />
               </label>
               <textarea
                 data-field="method_change_or_addition"
@@ -1642,7 +1645,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 5-4. 수혈 가능성
-                <InlineReferences references={(consentData?.references as any)?.surgery_method_content?.transfusion_possibility} />
+                <InlineReferences references={(consentData?.references as { surgery_method_content?: { transfusion_possibility?: Reference[] } })?.surgery_method_content?.transfusion_possibility} />
               </label>
               <textarea
                 data-field="transfusion_possibility"
@@ -1665,7 +1668,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 5-5. 집도의 변경 가능성
-                <InlineReferences references={(consentData?.references as any)?.surgery_method_content?.surgeon_change_possibility} />
+                <InlineReferences references={(consentData?.references as { surgery_method_content?: { surgeon_change_possibility?: Reference[] } })?.surgery_method_content?.surgeon_change_possibility} />
               </label>
               <textarea
                 data-field="surgeon_change_possibility"
@@ -1688,7 +1691,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 6. 발생 가능한 합병증/후유증/부작용
-                <InlineReferences references={(consentData?.references as any)?.possible_complications_sequelae} />
+                <InlineReferences references={(consentData?.references as { possible_complications_sequelae?: Reference[] })?.possible_complications_sequelae} />
               </label>
               <textarea
                 data-field="complications"
@@ -1711,7 +1714,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 7. 문제 발생시 조치사항
-                <InlineReferences references={(consentData?.references as any)?.emergency_measures} />
+                <InlineReferences references={(consentData?.references as { emergency_measures?: Reference[] })?.emergency_measures} />
               </label>
               <textarea
                 data-field="postop_course"
@@ -1734,7 +1737,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-600 flex items-center gap-2">
                 8. 진단/수술 관련 사망 위험성
-                <InlineReferences references={(consentData?.references as any)?.mortality_risk} />
+                <InlineReferences references={(consentData?.references as { mortality_risk?: Reference[] })?.mortality_risk} />
               </label>
               <textarea
                 data-field="others"

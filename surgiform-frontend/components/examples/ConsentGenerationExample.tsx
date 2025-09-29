@@ -60,7 +60,7 @@ export const ConsentGenerationExample: React.FC = () => {
 
     try {
       await generateConsent(sampleData);
-    } catch (error) {
+    } catch {
       // 에러는 hook에서 처리됨
     }
   };

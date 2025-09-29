@@ -119,13 +119,13 @@ export const generateKoreanPDFFromDOM = async (
     
     ${(() => {
       // 수술 동의서 제목 미디어 요소들
-      const titleCanvases = canvasDrawings.filter((canvas: any) => 
+      const titleCanvases = canvasDrawings.filter((canvas: { title?: string; imageData?: string }) => 
         canvas.title && canvas.title.includes("수술 동의서 제목")
       );
-      const titleAudios = audioRecordings.filter((audio: any) => 
+      const titleAudios = audioRecordings.filter((audio: { title?: string; audioBlob?: Blob }) => 
         audio.title && audio.title.includes("수술 동의서 제목") && audio.audioBlob
       );
-      const titleTexts = textNotes.filter((text: any) => 
+      const titleTexts = textNotes.filter((text: { title?: string; content?: string }) => 
         text.title && text.title.includes("수술 동의서 제목")
       );
       
@@ -133,7 +133,7 @@ export const generateKoreanPDFFromDOM = async (
       
       // Canvas drawings
       if (titleCanvases.length > 0) {
-        titleMediaHtml += titleCanvases.map((canvas: any) => {
+        titleMediaHtml += titleCanvases.map((canvas: { title?: string; imageData?: string }) => {
           if (canvas.imageData) {
             return `
               <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
@@ -158,7 +158,7 @@ export const generateKoreanPDFFromDOM = async (
       
       // Audio recordings
       if (titleAudios.length > 0) {
-        titleMediaHtml += titleAudios.map((audio: any) => {
+        titleMediaHtml += titleAudios.map((audio: { id?: string; title?: string; duration?: number }) => {
           const duration = audio.duration ? Math.floor(audio.duration) : 0;
           const minutes = Math.floor(duration / 60);
           const seconds = duration % 60;
@@ -181,7 +181,7 @@ export const generateKoreanPDFFromDOM = async (
       
       // Text notes
       if (titleTexts.length > 0) {
-        titleMediaHtml += titleTexts.map((text: any) => {
+        titleMediaHtml += titleTexts.map((text: { title?: string; content?: string }) => {
           return `
             <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
               <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
@@ -217,13 +217,13 @@ export const generateKoreanPDFFromDOM = async (
     
     ${(() => {
       // 환자 정보 미디어 요소들
-      const patientCanvases = canvasDrawings.filter((canvas: any) => 
+      const patientCanvases = canvasDrawings.filter((canvas: { title?: string; imageData?: string }) => 
         canvas.title && canvas.title.includes("환자 정보")
       );
-      const patientAudios = audioRecordings.filter((audio: any) => 
+      const patientAudios = audioRecordings.filter((audio: { title?: string; audioBlob?: Blob }) => 
         audio.title && audio.title.includes("환자 정보") && audio.audioBlob
       );
-      const patientTexts = textNotes.filter((text: any) => 
+      const patientTexts = textNotes.filter((text: { title?: string; content?: string }) => 
         text.title && text.title.includes("환자 정보")
       );
       
@@ -231,7 +231,7 @@ export const generateKoreanPDFFromDOM = async (
       
       // Canvas drawings
       if (patientCanvases.length > 0) {
-        patientMediaHtml += patientCanvases.map((canvas: any) => {
+        patientMediaHtml += patientCanvases.map((canvas: { title?: string; imageData?: string }) => {
           if (canvas.imageData) {
             return `
               <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
@@ -256,7 +256,7 @@ export const generateKoreanPDFFromDOM = async (
       
       // Audio recordings
       if (patientAudios.length > 0) {
-        patientMediaHtml += patientAudios.map((audio: any) => {
+        patientMediaHtml += patientAudios.map((audio: { id?: string; title?: string; duration?: number }) => {
           const duration = audio.duration ? Math.floor(audio.duration) : 0;
           const minutes = Math.floor(duration / 60);
           const seconds = duration % 60;
@@ -279,7 +279,7 @@ export const generateKoreanPDFFromDOM = async (
       
       // Text notes
       if (patientTexts.length > 0) {
-        patientMediaHtml += patientTexts.map((text: any) => {
+        patientMediaHtml += patientTexts.map((text: { title?: string; content?: string }) => {
           return `
             <div style="margin-top: 16px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
               <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${text.title}</div>
@@ -305,7 +305,7 @@ export const generateKoreanPDFFromDOM = async (
       </colgroup>
       <thead><tr><th>성명</th><th>전문의여부</th><th>진료과목</th></tr></thead>
       <tbody>
-        ${((formData.medical_team || formData.participants || []) as any[]).map((doctor: any) => `
+        ${((formData.medical_team || formData.participants || []) as Array<{ name?: string; department?: string }>).map((doctor: { name?: string; department?: string }) => `
           <tr><td>${doctor.name || ""}${doctor.is_specialist ? ' (집도의)' : ''}</td><td>${doctor.is_specialist ? '전문의' : '일반의'}</td><td>${doctor.department || ""}</td></tr>
       `).join('')}
       </tbody>
@@ -313,13 +313,13 @@ export const generateKoreanPDFFromDOM = async (
     
     ${(() => {
       // 참여 의료진 미디어 요소들
-      const teamCanvases = canvasDrawings.filter((canvas: any) => 
+      const teamCanvases = canvasDrawings.filter((canvas: { title?: string; imageData?: string }) => 
         canvas.title && canvas.title.includes("참여 의료진")
       );
-      const teamAudios = audioRecordings.filter((audio: any) => 
+      const teamAudios = audioRecordings.filter((audio: { title?: string; audioBlob?: Blob }) => 
         audio.title && audio.title.includes("참여 의료진") && audio.audioBlob
       );
-      const teamTexts = textNotes.filter((text: any) => 
+      const teamTexts = textNotes.filter((text: { title?: string; content?: string }) => 
         text.title && text.title.includes("참여 의료진")
       );
       

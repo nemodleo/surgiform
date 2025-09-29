@@ -155,8 +155,7 @@ export const surgiformAPI = {
 
   // Consent generation with progress tracking (단순 API 호출)
   generateConsentWithProgress: (
-    data: ConsentGenerateIn, 
-    onProgress?: (progress: number, message: string) => void
+    data: ConsentGenerateIn
   ) => {
     return api.post<ConsentGenerateOut>('/consent', data);
   },

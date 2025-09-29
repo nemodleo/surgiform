@@ -3,7 +3,7 @@
 import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import dynamic from "next/dynamic"
-import { transformConsentDataToArray, type ConsentObjectData } from "@/lib/consentDataTransformer"
+import { type ConsentObjectData } from "@/lib/consentDataTransformer"
 
 // PDF 페이지를 동적으로 로드하여 ChunkLoadError 방지
 const PDFGenerationPage = dynamic(() => import("@/components/pages/PDFGenerationPage"), {

@@ -2,9 +2,8 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { RotateCcw, Check, Plus, ChevronLeft, ChevronRight, X, Loader2, Upload, Image as ImageIcon, Mic, MicOff, Play, Square, FileText, Eraser, Pause } from "lucide-react"
+import { RotateCcw, Check, Plus, ChevronLeft, ChevronRight, X, Loader2, Upload, Image as ImageIcon, Mic, Play, Square, FileText, Eraser, Pause } from "lucide-react"
 import SignatureCanvas from "react-signature-canvas"
-import { surgiformAPI } from "@/lib/api"
 import { createConsentSubmission } from "@/lib/consentDataFormatter"
 import toast from "react-hot-toast"
 
@@ -180,9 +179,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
   const [playingId, setPlayingId] = useState<string | null>(null)
   const [recordingTime, setRecordingTime] = useState(0)
   const [playingTime, setPlayingTime] = useState(0)
-  const [audioLevel, setAudioLevel] = useState(0)
   const [waveformData, setWaveformData] = useState<number[]>([])
-  const [sttText, setSttText] = useState<string>('')
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -313,7 +310,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     canvases.forEach((c: CanvasData, index: number) => {
       console.log(`📋 Canvas ${index + 1}: id=${c.id}, title="${c.title}", hasData=${!!c.imageData}, dataLength=${c.imageData?.length || 0}`)
     })
-  }, [])
+  }, [canvases, signatures])
 
   // Save signatures whenever they change
   useEffect(() => {
@@ -349,7 +346,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         }, 500)
       }
     })
-  }, [canvases.length]) // Only trigger when number of canvases changes
+  }, [canvases]) // Trigger when canvases changes
 
   // Function to restore a specific canvas
   const restoreCanvas = (canvasId: string, imageData: string) => {
@@ -803,14 +800,14 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         const audioUrl = URL.createObjectURL(audioBlob)
 
         // STT 텍스트 생성
-        generateSTTText(audioBlob)
+        generateSTTText()
 
         // recordingTime을 ref에서 안전하게 가져오기
         const capturedRecordingTime = currentRecordingTimeRef.current
         const stateRecordingTime = recordingTime
 
         // 다중 방법으로 duration 설정 (안정성 향상)
-        const updateAudioDuration = (duration: number, source: string) => {
+        const updateAudioDuration = (duration: number) => {
           setAudioRecordings(prev => {
             const updated = prev.map(recording => {
               if (recording.id === audioId) {
@@ -833,7 +830,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
 
         // 방법 1: 즉시 더 정확한 시간으로 설정 (백업용)
         const bestDuration = Math.max(capturedRecordingTime, stateRecordingTime)
-        updateAudioDuration(bestDuration, 'best captured time')
+        updateAudioDuration(bestDuration)
 
         // 방법 2: 실제 오디오 duration 가져오기 (비동기)
         const tempAudio = new Audio(audioUrl)
@@ -845,7 +842,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
           if (actualDuration && isFinite(actualDuration) && !isNaN(actualDuration) && actualDuration > 0) {
             // 실제 duration과 우리가 추적한 시간 중 더 큰 값 사용 (추적된 시간이 더 정확할 수 있음)
             const mostAccurateDuration = Math.max(actualDuration, bestDuration)
-            updateAudioDuration(mostAccurateDuration, 'metadata')
+            updateAudioDuration(mostAccurateDuration)
           }
         }
 
@@ -859,7 +856,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         tempAudio.addEventListener('canplay', updateFromAudio)
 
         // 방법 3: 여러 시점에서 체크 (타임아웃)
-        const checkDuration = (delay: number, source: string) => {
+        const checkDuration = (delay: number) => {
           setTimeout(() => {
             if (tempAudio.readyState >= 1) { // HAVE_METADATA
               const actualDuration = tempAudio.duration
@@ -867,20 +864,20 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
               if (actualDuration && isFinite(actualDuration) && !isNaN(actualDuration) && actualDuration > 0) {
                 // 메타데이터 duration과 추적된 시간 중 더 큰 값 사용 (추적된 시간이 더 정확할 수 있음)
                 const finalDuration = Math.max(actualDuration, bestDuration)
-                updateAudioDuration(finalDuration, source)
+                updateAudioDuration(finalDuration)
               } else if (bestDuration > 0) {
                 // 메타데이터가 없으면 bestDuration 사용
-                updateAudioDuration(bestDuration, 'fallback to best captured')
+                updateAudioDuration(bestDuration)
               }
             }
           }, delay)
         }
 
         // 여러 시점에서 체크
-        checkDuration(100, '100ms timeout')
-        checkDuration(500, '500ms timeout')
-        checkDuration(1000, '1000ms timeout')
-        checkDuration(2000, '2000ms timeout')
+        checkDuration(100)
+        checkDuration(500)
+        checkDuration(1000)
+        checkDuration(2000)
 
         // 녹음 시간 리셋은 stopRecording에서 처리됨
 
@@ -971,7 +968,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
   }
   
   // STT 텍스트 생성 함수
-  const generateSTTText = (audioBlob: Blob) => {
+  const generateSTTText = () => {
     // 실제 STT 구현 시:
     // 1. audioBlob을 FormData로 변환
     // 2. STT API 엔드포인트로 전송
@@ -1191,9 +1188,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
               const canvasWidth = canvasElement.width
               const canvasHeight = canvasElement.height
               
-              // 리사이즈된 이미지 크기 가져오기
-              const imgWidth = img.width
-              const imgHeight = img.height
               
               // 캔버스 좌측 상단에 배치하기 위한 오프셋 계산
               const offsetX = 0  // 좌측 정렬
@@ -1303,7 +1297,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     { key: "doctor", label: "의사 서명", name: formData.participants?.[0]?.name || "의사" }
   ]
 
-  const allSignaturesComplete = requiredSignatures.every(sig => signatures[sig.key])
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -1937,7 +1930,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
-                      {(formData.medical_team || formData.participants || []).map((doctor: any, index: number) => (
+                      {(formData.medical_team || formData.participants || []).map((doctor: { name?: string; is_specialist?: boolean; department?: string }, index: number) => (
                         <tr key={index}>
                           <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">
                             {doctor.name || ""}
@@ -2493,7 +2486,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                       }
                       content = value || "";
                     } else {
-                      content = (consentConsents as any)[item.consentKey] || "";
+                      content = (consentConsents as unknown as Record<string, unknown>)[item.consentKey] as string || "";
                     }
                   }
                   

@@ -131,7 +131,7 @@ export default function PDFGenerationPage({ formData, consentData, onHome, onBac
       }, 500)
       return () => clearTimeout(timer)
     }
-  }, [dataLoaded, formData, signatureData]) // Watch for data loading
+  }, [dataLoaded, formData, signatureData, generatePDF, generating, pdfGenerated]) // Watch for data loading
 
   return (
     <div className="max-w-4xl mx-auto">
