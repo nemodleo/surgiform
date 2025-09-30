@@ -194,10 +194,24 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
           
         case 'diagnosis':
           const diagnosisValue = value as string
-          if (diagnosisValue && diagnosisValue.length < 2) {
+          if (!diagnosisValue) {
+            newErrors.diagnosis = '진단명을 입력해주세요'
+          } else if (diagnosisValue.length < 2) {
             newErrors.diagnosis = '2자 이상 입력해주세요'
-          } else if (diagnosisValue) {
+          } else {
             delete newErrors.diagnosis
+            isValid = true
+          }
+          break
+          
+        case 'surgery_name':
+          const surgeryValue = value as string
+          if (!surgeryValue) {
+            newErrors.surgery_name = '수술명을 입력해주세요'
+          } else if (surgeryValue.length < 2) {
+            newErrors.surgery_name = '2자 이상 입력해주세요'
+          } else {
+            delete newErrors.surgery_name
             isValid = true
           }
           break
@@ -286,7 +300,9 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
       'registration_number', 
       'patient_name', 
       'patient_age', 
-      'patient_gender'
+      'patient_gender',
+      'diagnosis',
+      'surgery_name'
     ]
     
     let hasError = false
@@ -551,17 +567,31 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-6 border-t border-slate-100">
               <div>
                 <Label className={labelStyle}>
-                  진단명
+                  진단명 <span className="text-red-500">*</span>
                 </Label>
                 <div className="flex gap-2 mt-1">
                   <div className="relative flex-1">
                     <Input
+                      ref={el => { inputRefs.current['diagnosis'] = el; }}
                       value={formData.diagnosis}
                       onChange={(e) => handleFieldChange('diagnosis', e.target.value)}
                       onBlur={() => handleBlur('diagnosis')}
+                      onCompositionStart={() => setIsComposing(true)}
+                      onCompositionEnd={(e) => {
+                        setIsComposing(false)
+                        const event = e as React.CompositionEvent<HTMLInputElement>
+                        handleFieldChange('diagnosis', event.currentTarget.value)
+                      }}
                       className={getInputStyle('diagnosis')}
                       placeholder="예: Acute cholecystitis"
+                      autoComplete="off"
                     />
+                    {isValidating.diagnosis && (
+                      <Loader2 className="absolute right-3 top-3.5 h-4 w-4 text-slate-400 animate-spin" />
+                    )}
+                    {!isValidating.diagnosis && completedFields.has('diagnosis') && (
+                      <Check className="absolute right-3 top-3.5 h-4 w-4 text-emerald-500" />
+                    )}
                   </div>
                   <Input
                     value={formData.diagnosis_detail}
@@ -581,16 +611,37 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
               <div className="flex gap-4">
                 <div className="flex-1">
                   <Label className={labelStyle}>
-                    수술명
+                    수술명 <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative mt-1">
                     <Input
+                      ref={el => { inputRefs.current['surgery_name'] = el; }}
                       value={formData.surgery_name}
-                      onChange={(e) => setFormData({...formData, surgery_name: e.target.value})}
-                      className="h-10 bg-white border border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 focus:outline-none rounded-md"
+                      onChange={(e) => handleFieldChange('surgery_name', e.target.value)}
+                      onBlur={() => handleBlur('surgery_name')}
+                      onCompositionStart={() => setIsComposing(true)}
+                      onCompositionEnd={(e) => {
+                        setIsComposing(false)
+                        const event = e as React.CompositionEvent<HTMLInputElement>
+                        handleFieldChange('surgery_name', event.currentTarget.value)
+                      }}
+                      className={getInputStyle('surgery_name')}
                       placeholder="예: 복강경하 담낭절제술"
+                      autoComplete="off"
                     />
+                    {isValidating.surgery_name && (
+                      <Loader2 className="absolute right-3 top-3.5 h-4 w-4 text-slate-400 animate-spin" />
+                    )}
+                    {!isValidating.surgery_name && completedFields.has('surgery_name') && (
+                      <Check className="absolute right-3 top-3.5 h-4 w-4 text-emerald-500" />
+                    )}
                   </div>
+                  {errors.surgery_name && touched.surgery_name && (
+                    <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.surgery_name}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex-1">
@@ -615,7 +666,7 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-base font-semibold text-slate-900">
-                참여 의료진
+                참여 의료진 <span className="text-red-500">*</span>
                 <span className="ml-2 text-xs font-normal text-slate-500">({formData.medical_team.length}명)</span>
               </h3>
               <Button
@@ -687,7 +738,7 @@ export default function BasicInfoPageMinimal({ onComplete, initialData }: BasicI
         <div className="bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors">
           <div className="p-6">
             <h3 className="text-base font-semibold text-slate-900 mb-6">
-              환자 상태 및 특이사항
+              환자 상태 및 특이사항  <span className="text-red-500">*</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {[
