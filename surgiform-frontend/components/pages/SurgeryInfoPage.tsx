@@ -264,16 +264,17 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
   }, [])
   
   // 일반 생성용 훅
-  const { 
-    generateConsent: generateConsentWithProgress, 
-    isGenerating, 
+  const {
+    generateConsent: generateConsentWithProgress,
+    isGenerating,
     showChat,
     setShowChat,
     chatMessages,
     setChatMessages,
     conversationId,
     setConversationId,
-    handleSendMessage
+    handleSendMessage,
+    handleEditMessage
   } = useConsentGeneration({
     onSuccess: (result) => {
       const { consents, references } = result;
@@ -1809,10 +1810,78 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                   setChatMessages(messages) // Save messages before hiding
                   setShowChat(false)
                 }} // Save and hide, keep conversation
-            onSendMessage={(message, history) => handleSendMessage(message, history, {
-              ...consentData,
-              formData: formData
-            })}
+                onSendMessage={(message, history) => handleSendMessage(message, history, {
+                  ...consentData,
+                  formData: formData
+                })}
+                onEditMessage={async (message, sections, history) => {
+                  try {
+                    const response = await handleEditMessage(message, sections, history, {
+                      ...consentData,
+                      formData: formData
+                    });
+
+                    // Update textareas with edited sections
+                    if (response.edited_sections) {
+                      const newTextareaValues = { ...textareaValues };
+
+                      Object.entries(response.edited_sections).forEach(([section, content]) => {
+                        newTextareaValues[section] = content as string;
+
+                        // Also update legacy field names for backwards compatibility
+                        switch (section) {
+                          case "2":
+                            newTextareaValues.general_info = content as string;
+                            break;
+                          case "3":
+                            newTextareaValues.surgical_site = content as string;
+                            break;
+                          case "4":
+                            newTextareaValues.purpose = content as string;
+                            break;
+                          case "5-1":
+                            newTextareaValues.overall_description = content as string;
+                            newTextareaValues.surgical_method = content as string;
+                            break;
+                          case "5-2":
+                            newTextareaValues.estimated_duration = content as string;
+                            break;
+                          case "5-3":
+                            newTextareaValues.method_change_or_addition = content as string;
+                            break;
+                          case "5-4":
+                            newTextareaValues.transfusion_possibility = content as string;
+                            break;
+                          case "5-5":
+                            newTextareaValues.surgeon_change_possibility = content as string;
+                            break;
+                          case "6":
+                            newTextareaValues.complications = content as string;
+                            break;
+                          case "7":
+                            newTextareaValues.postop_course = content as string;
+                            break;
+                          case "8":
+                            newTextareaValues.others = content as string;
+                            break;
+                        }
+                      });
+
+                      setTextareaValues(newTextareaValues);
+                      sessionStorage.setItem('surgeryInfoTextareas', JSON.stringify(newTextareaValues));
+
+                      // Update snapshot with new values
+                      if (response.updated_consents) {
+                        saveApiSnapshot(response.updated_consents, consentData?.references);
+                      }
+                    }
+
+                    return response;
+                  } catch (error) {
+                    console.error("[SurgeryInfoPage] Edit message error:", error);
+                    throw error;
+                  }
+                }}
                 conversationId={conversationId}
                 initialMessages={chatMessages} // Pass saved messages
                 title="이음"

@@ -145,6 +145,25 @@ export interface ChatResponse {
   is_content_modified: boolean;
 }
 
+export interface EditChatRequest {
+  message: string;
+  conversation_id?: string;
+  history?: ChatMessage[];
+  system_prompt?: string;
+  consents?: Record<string, unknown>;
+  references?: Record<string, unknown>;
+  edit_sections: string[];
+}
+
+export interface EditChatResponse {
+  message: string;
+  conversation_id: string;
+  history: ChatMessage[];
+  edited_sections: { [key: string]: string };
+  updated_consents?: Record<string, unknown>;
+  updated_references?: Record<string, unknown>;
+}
+
 export const surgiformAPI = {
   // Health check
   healthCheck: () => api.get('/health'),
@@ -174,6 +193,9 @@ export const surgiformAPI = {
 
   sendChatMessage: (data: ChatRequest) =>
     api.post<ChatResponse>('/chat', data),
+
+  sendEditChatMessage: (data: EditChatRequest) =>
+    api.post<EditChatResponse>('/chat/edit', data),
 
   getChatHistory: (conversationId: string) =>
     api.get<ChatMessage[]>(`/chat/${conversationId}/history`),

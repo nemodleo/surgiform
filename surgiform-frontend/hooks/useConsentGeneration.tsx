@@ -60,6 +60,101 @@ export const useConsentGeneration = ({ onSuccess, onError }: UseConsentGeneratio
   }, [onSuccess, onError]);
 
 
+  // ChatUI Edit 관련 함수
+  const handleEditMessage = useCallback(async (message: string, sections: string[], history: ChatMessage[], consentData?: any) => {
+    try {
+
+      // consentData가 없거나 consents가 없는 경우 기본값 제공
+      const consents = consentData?.consents || {};
+      // references는 빈 객체로 설정
+      const references = {};
+
+      // 2~8번 항목을 제외한 나머지 내용을 consent_information으로 통합
+      const consentInfoParts = [];
+
+      // 환자 정보
+      if (consentData?.formData?.patient_name) {
+        consentInfoParts.push(`환자명: ${consentData.formData.patient_name}`);
+      }
+      if (consentData?.formData?.patient_age) {
+        consentInfoParts.push(`나이: ${consentData.formData.patient_age}세`);
+      }
+      if (consentData?.formData?.patient_gender) {
+        consentInfoParts.push(`성별: ${consentData.formData.patient_gender}`);
+      }
+      if (consentData?.formData?.surgery_name) {
+        consentInfoParts.push(`수술명: ${consentData.formData.surgery_name}`);
+      }
+      if (consentData?.formData?.diagnosis) {
+        consentInfoParts.push(`진단명: ${consentData.formData.diagnosis}`);
+      }
+
+      // 의료진 정보
+      if (consentData?.formData?.medical_team && consentData.formData.medical_team.length > 0) {
+        const medicalTeamInfo = consentData.formData.medical_team.map((doctor: any) =>
+          `${doctor.name} (${doctor.is_specialist ? '전문의' : '전공의'}, ${doctor.department})`
+        ).join(', ');
+        consentInfoParts.push(`참여 의료진: ${medicalTeamInfo}`);
+      }
+
+      // 환자 상태 및 특이사항
+      if (consents.patient_condition) {
+        consentInfoParts.push(`환자 상태: ${consents.patient_condition}`);
+      }
+
+      // 특수 조건
+      if (consentData?.formData?.special_conditions) {
+        const specialConditions = consentData.formData.special_conditions;
+        const conditions = Object.entries(specialConditions)
+          .filter(([key, value]) => value && value !== '')
+          .map(([key, value]) => `${key}: ${value}`)
+          .join(', ');
+        if (conditions) {
+          consentInfoParts.push(`특수 조건: ${conditions}`);
+        }
+      }
+
+      const consentInformation = consentInfoParts.join('\n');
+
+      // 백엔드에서 요구하는 필수 필드들을 포함하는 필터링된 consents 생성
+      const filteredConsents = {
+        prognosis_without_surgery: consents.prognosis_without_surgery || '',
+        alternative_treatments: consents.alternative_treatments || '',
+        surgery_purpose_necessity_effect: consents.surgery_purpose_necessity_effect || '',
+        surgery_method_content: {
+          overall_description: consents.surgery_method_content?.overall_description || '',
+          estimated_duration: consents.surgery_method_content?.estimated_duration || '약 1-2시간 정도 소요될 예정입니다.',
+          method_change_or_addition: consents.surgery_method_content?.method_change_or_addition || '수술 중 상황에 따라 방법이 변경되거나 추가 수술이 필요할 수 있습니다.',
+          transfusion_possibility: consents.surgery_method_content?.transfusion_possibility || '수술 중 출혈이 발생할 경우 수혈이 필요할 수 있습니다.',
+          surgeon_change_possibility: consents.surgery_method_content?.surgeon_change_possibility || '응급상황이나 특별한 사정이 있을 경우 집도의가 변경될 수 있습니다.'
+        },
+        possible_complications_sequelae: consents.possible_complications_sequelae || '',
+        emergency_measures: consents.emergency_measures || '',
+        mortality_risk: consents.mortality_risk || '',
+        consent_information: consentInformation
+      };
+
+      const editChatRequest = {
+        message,
+        conversation_id: conversationId,
+        history,
+        consents: filteredConsents,
+        references: references,
+        edit_sections: sections
+      };
+
+      const response = await surgiformAPI.sendEditChatMessage(editChatRequest);
+      const editChatResponse = response.data;
+
+      setConversationId(editChatResponse.conversation_id);
+
+      return editChatResponse;
+    } catch (error) {
+      console.error('[useConsentGeneration] 편집 채팅 오류:', error);
+      throw error;
+    }
+  }, [conversationId]);
+
   // ChatUI 관련 함수
   const handleSendMessage = useCallback(async (message: string, history: ChatMessage[], consentData?: any) => {
     try {
@@ -169,6 +264,7 @@ export const useConsentGeneration = ({ onSuccess, onError }: UseConsentGeneratio
     conversationId,
     setConversationId,
     handleSendMessage,
+    handleEditMessage,
   };
 };
 

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Card } from "@/components/ui/card"
-import { X, Bot, Maximize2, Minimize2 } from "lucide-react"
+import { X, Bot, Maximize2, Minimize2, Edit3 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Message {
@@ -21,16 +21,24 @@ interface ChatUIProps {
     updated_consents?: unknown
     is_content_modified?: boolean
   }>
+  onEditMessage?: (message: string, sections: string[], history: Message[]) => Promise<{
+    message: string
+    conversation_id: string
+    history: Message[]
+    edited_sections: { [key: string]: string }
+    updated_consents?: unknown
+  }>
   conversationId?: string
   initialMessages?: Message[]
   placeholder?: string
   title?: string
 }
 
-export function ChatUI({ 
+export function ChatUI({
   onClose,
-  onMinimize, 
-  onSendMessage, 
+  onMinimize,
+  onSendMessage,
+  onEditMessage,
   conversationId: initialConversationId,
   initialMessages = [],
   title = "이음"
@@ -51,9 +59,57 @@ export function ChatUI({
       setMessages([introMessage])
     }
   }, [initialMessages]) // Only depend on initialMessages
+
+  // Edit mode states
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [selectedSections, setSelectedSections] = useState<string[]>([])
   const [inputMessage, setInputMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [, setConversationId] = useState(initialConversationId)
+
+  // Section data
+  const sections = [
+    { id: "all", label: "전체" },
+    { id: "2", label: "2" },
+    { id: "3", label: "3" },
+    { id: "4", label: "4" },
+    { id: "5-1", label: "5-1" },
+    { id: "5-2", label: "5-2" },
+    { id: "5-3", label: "5-3" },
+    { id: "5-4", label: "5-4" },
+    { id: "5-5", label: "5-5" },
+    { id: "6", label: "6" },
+    { id: "7", label: "7" },
+    { id: "8", label: "8" }
+  ]
+
+  // Edit mode handlers
+  const toggleEditMode = () => {
+    setIsEditMode(!isEditMode)
+    if (isEditMode) {
+      setSelectedSections([])
+    }
+  }
+
+  const toggleSection = (sectionId: string) => {
+    if (sectionId === "all") {
+      if (selectedSections.includes("all") || selectedSections.length === 11) { // 2-8까지 11개 섹션
+        setSelectedSections([])
+      } else {
+        setSelectedSections(["2", "3", "4", "5-1", "5-2", "5-3", "5-4", "5-5", "6", "7", "8"])
+      }
+    } else {
+      setSelectedSections(prev => {
+        // Remove "all" if it's selected when selecting individual sections
+        const filteredPrev = prev.filter(id => id !== "all")
+        if (filteredPrev.includes(sectionId)) {
+          return filteredPrev.filter(id => id !== sectionId)
+        } else {
+          return [...filteredPrev, sectionId]
+        }
+      })
+    }
+  }
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -266,7 +322,23 @@ export function ChatUI({
   }, [position, size])
 
   const handleSend = async () => {
-    if (!inputMessage.trim() || isLoading || !onSendMessage) return
+    if (!inputMessage.trim() || isLoading) return
+
+    // Edit mode: require sections and onEditMessage handler
+    if (isEditMode) {
+      if (selectedSections.length === 0) {
+        const errorMessage: Message = {
+          role: "assistant",
+          content: "수정하려는 섹션을 선택해주세요.",
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, errorMessage])
+        return
+      }
+      if (!onEditMessage) return
+    } else {
+      if (!onSendMessage) return
+    }
 
     const userMessage: Message = {
       role: "user",
@@ -285,8 +357,21 @@ export function ChatUI({
     setIsLoading(true)
 
     try {
-      const response = await onSendMessage(userMessage.content, newMessages)
-      
+      let response
+
+      if (isEditMode && onEditMessage) {
+        // Convert "all" to actual section IDs
+        const actualSections = selectedSections.includes("all")
+          ? ["2", "3", "4", "5-1", "5-2", "5-3", "5-4", "5-5", "6", "7", "8"]
+          : selectedSections
+
+        response = await onEditMessage(userMessage.content, actualSections, newMessages)
+      } else if (onSendMessage) {
+        response = await onSendMessage(userMessage.content, newMessages)
+      } else {
+        throw new Error("No handler available")
+      }
+
       // 서버 응답을 현재 메시지에 추가 (사용자 메시지는 이미 추가되어 있음)
       const assistantMessage: Message = {
         role: "assistant",
@@ -295,7 +380,13 @@ export function ChatUI({
       }
       setMessages([...newMessages, assistantMessage])
       setConversationId(response.conversation_id)
-      
+
+      // If this was an edit operation, reset edit mode
+      if (isEditMode) {
+        setIsEditMode(false)
+        setSelectedSections([])
+      }
+
     } catch (error) {
       console.error("[chat] 메시지 전송 오류:", error)
       const errorMessage: Message = {
@@ -524,60 +615,131 @@ export function ChatUI({
         {/* Input - Positioned at bottom, expands upward */}
         <div className="relative" style={{ backgroundColor: `rgba(17, 24, 39, ${opacity.bottom / 100})` }}>
           <div className="p-4">
-            <div className="relative flex items-end">
-              <textarea
-                ref={inputRef}
-                value={inputMessage}
-                onChange={(e) => {
-                  setInputMessage(e.target.value)
-                  // Auto-resize textarea
-                  if (inputRef.current) {
-                    inputRef.current.style.height = 'auto'
-                    inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 300) + 'px' // Max height ~300px (half of 600px window)
-                  }
-                }}
-                onKeyDown={handleKeyDown}
-                placeholder="Message..."
-                className="w-full resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all overflow-y-auto"
-                style={{ 
-                  // backgroundColor: '#1f2937', 
-                  backgroundColor: 'rgba(31, 41, 55, 0.5)',
-                  color: 'white',
-                  minHeight: '50px',
-                  maxHeight: '300px',
-                  padding: '12px 48px 12px 16px',
-                  fontSize: '14px',
-                  borderRadius: '1rem',
-                  height: '50px'
-                }}
-                disabled={isLoading}
-                rows={1}
-              />
-              <button
-                onClick={handleSend}
-                disabled={!inputMessage.trim() || isLoading}
-                className="absolute right-3 bottom-3 w-7 h-7 rounded-full flex items-center justify-center transition-all"
-                style={{ 
-                  backgroundColor: !inputMessage.trim() || isLoading ? '#374151' : '#4b5563',
-                  opacity: !inputMessage.trim() || isLoading ? 0.5 : 1,
-                  cursor: !inputMessage.trim() || isLoading ? 'not-allowed' : 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  if (inputMessage.trim() && !isLoading) {
-                    e.currentTarget.style.backgroundColor = '#6b7280'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (inputMessage.trim() && !isLoading) {
-                    e.currentTarget.style.backgroundColor = '#4b5563'
-                  }
-                }}
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="#e5e7eb" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                </svg>
-              </button>
+            {/* Main Input Container */}
+            <div
+              className={cn(
+                "relative rounded-xl transition-all p-2 focus-within:ring-1",
+                isEditMode
+                  ? "bg-white/10 focus-within:ring-white/50"
+                  : "bg-gray-800/50 focus-within:ring-white"
+              )}
+            >
+              {/* Input Container - macOS style */}
+              <div className="space-y-0">
+                {/* Text Input Area */}
+                <div className="relative">
+                  <textarea
+                    ref={inputRef}
+                    value={inputMessage}
+                    onChange={(e) => {
+                      setInputMessage(e.target.value)
+                      // Auto-resize textarea
+                      if (inputRef.current) {
+                        inputRef.current.style.height = 'auto'
+                        inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 150) + 'px'
+                      }
+                    }}
+                    onKeyDown={handleKeyDown}
+                    placeholder={isEditMode ? "수정 요청을 입력하세요" : "궁금한 점을 물어보세요"}
+                    className="w-full resize-none outline-none border-none overflow-y-auto bg-transparent text-white placeholder-gray-400"
+                    style={{
+                      minHeight: '32px',
+                      maxHeight: '150px',
+                      padding: '8px 12px 4px 12px',
+                      fontSize: '14px',
+                      lineHeight: '1.4',
+                      boxShadow: 'none'
+                    }}
+                    disabled={isLoading}
+                    rows={1}
+                  />
+                </div>
+
+                {/* Controls Row */}
+                <div className="flex items-center justify-between px-1 py-1">
+                  {/* Left Side - Edit Button and Sections */}
+                  <div className="flex items-center gap-1.5">
+                    {/* Edit Mode Toggle Button */}
+                    <button
+                      onClick={toggleEditMode}
+                      className="w-6 h-6 min-w-6 rounded-full flex items-center justify-center transition-all hover:bg-gray-600/50 flex-shrink-0"
+                      style={{
+                        backgroundColor: isEditMode ? '#ffffff' : 'transparent',
+                        cursor: 'pointer'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isEditMode) {
+                          e.currentTarget.style.backgroundColor = 'rgba(75, 85, 99, 0.5)'
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isEditMode) {
+                          e.currentTarget.style.backgroundColor = 'transparent'
+                        }
+                      }}
+                      title={isEditMode ? "수정 모드 해제" : "수정 모드 활성화"}
+                    >
+                      <Edit3 className="w-3.5 h-3.5 flex-shrink-0" stroke={isEditMode ? "#000000" : "#9ca3af"} />
+                    </button>
+
+                    {/* Section Selection - Show when edit mode is active */}
+                    {isEditMode && (
+                      <div className="flex items-center flex-wrap gap-1 ml-1">
+                        {sections.map((section) => {
+                          const isSelected = section.id === "all"
+                            ? selectedSections.length === 11
+                            : selectedSections.includes(section.id);
+
+                          return (
+                            <button
+                              key={section.id}
+                              onClick={() => toggleSection(section.id)}
+                              className={cn(
+                                "px-1.5 py-0.5 rounded text-xs font-medium transition-all",
+                                isSelected
+                                  ? "bg-white text-black"
+                                  : "bg-gray-700/60 text-gray-300 hover:bg-gray-600 hover:text-white"
+                              )}
+                            >
+                              {section.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Side - Send Button */}
+                  <button
+                    onClick={handleSend}
+                    disabled={!inputMessage.trim() || isLoading || (isEditMode && selectedSections.length === 0)}
+                    className="w-6 h-6 min-w-6 rounded-full flex items-center justify-center transition-all flex-shrink-0"
+                    style={{
+                      backgroundColor: (!inputMessage.trim() || isLoading || (isEditMode && selectedSections.length === 0))
+                        ? '#374151'
+                        : (isEditMode ? '#ffffff' : '#4b5563'),
+                      opacity: (!inputMessage.trim() || isLoading || (isEditMode && selectedSections.length === 0)) ? 0.5 : 1,
+                      cursor: (!inputMessage.trim() || isLoading || (isEditMode && selectedSections.length === 0)) ? 'not-allowed' : 'pointer'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (inputMessage.trim() && !isLoading && (!isEditMode || selectedSections.length > 0)) {
+                        e.currentTarget.style.backgroundColor = isEditMode ? '#e5e7eb' : '#6b7280'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (inputMessage.trim() && !isLoading && (!isEditMode || selectedSections.length > 0)) {
+                        e.currentTarget.style.backgroundColor = isEditMode ? '#ffffff' : '#4b5563'
+                      }
+                    }}
+                  >
+                    <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke={isEditMode ? "#000000" : "#e5e7eb"} strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
             </div>
+
             {/* Footer */}
             <div className="mt-3 text-center">
               <p className="text-xs" style={{ color: '#9ca3af' }}>
