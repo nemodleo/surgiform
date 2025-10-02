@@ -35,12 +35,6 @@ export const generateKoreanPDFFromDOM = async (
   consentData: ConsentData,
   signatureData: SignatureData
 ) => {
-  console.log('=== PDF Generation Debug ===')
-  console.log('FormData:', formData)
-  console.log('ConsentData:', consentData)
-  console.log('SignatureData:', signatureData)
-  console.log('Patient signature exists:', !!signatureData?.patient)
-  console.log('Doctor signature exists:', !!signatureData?.doctor)
   
   // 동적 import로 라이브러리 로드
   const html2canvasModule = await import('html2canvas')
@@ -763,12 +757,9 @@ export const generateKoreanPDFFromDOM = async (
     </div>
   `
 
-    console.log('Starting Korean PDF generation with HTML rendering...')
-    
     // Wait for fonts to load
     if (document.fonts) {
       await document.fonts.ready
-      console.log('Korean fonts loaded successfully')
     }
     await new Promise(resolve => setTimeout(resolve, 1000))
     
@@ -794,9 +785,6 @@ export const generateKoreanPDFFromDOM = async (
       foreignObjectRendering: true
     })
     
-    console.log('Canvas created with Korean text:', {
-      width: canvas.width,
-      height: canvas.height
     })
     
     if (canvas.width === 0 || canvas.height === 0) {
@@ -821,9 +809,6 @@ export const generateKoreanPDFFromDOM = async (
     const scale = contentWidth / canvasWidth
     const scaledCanvasHeight = canvasHeight * scale
     
-    console.log('Multi-page PDF calculation:', {
-      canvasSize: { width: canvasWidth, height: canvasHeight },
-      pdfPageSize: { width: pdfWidth, height: pdfHeight },
       contentSize: { width: contentWidth, height: contentHeight },
       scale: scale,
       scaledCanvasHeight: scaledCanvasHeight
@@ -831,7 +816,6 @@ export const generateKoreanPDFFromDOM = async (
     
     // Calculate number of pages needed
     const pagesNeeded = Math.ceil(scaledCanvasHeight / contentHeight)
-    console.log('Pages needed:', pagesNeeded)
     
     // Add content to multiple pages
     for (let i = 0; i < pagesNeeded; i++) {
@@ -864,9 +848,6 @@ export const generateKoreanPDFFromDOM = async (
       const pageImgData = pageCanvas.toDataURL('image/png', 1.0)
       const pageImgHeight = remainingHeight * scale
       
-      console.log(`Adding page ${i + 1}:`, {
-        yOffset: yOffset,
-        remainingHeight: remainingHeight,
         pageImgHeight: pageImgHeight
       })
       
@@ -884,14 +865,10 @@ export const generateKoreanPDFFromDOM = async (
     document.body.removeChild(container)
     
     // Try different output methods for better browser compatibility
-    console.log('Creating PDF blob with better compatibility...')
     
     // Method 1: Standard blob
     try {
       const blob = pdf.output('blob')
-      console.log('Standard blob created successfully:', {
-        size: blob.size,
-        type: blob.type
       })
       return blob
     } catch (error) {
@@ -899,12 +876,8 @@ export const generateKoreanPDFFromDOM = async (
       
       // Method 2: ArrayBuffer fallback
       try {
-        console.log('Trying ArrayBuffer fallback...')
         const arrayBuffer = pdf.output('arraybuffer')
         const blob = new Blob([arrayBuffer], { type: 'application/pdf' })
-        console.log('ArrayBuffer blob created successfully:', {
-          size: blob.size,
-          type: blob.type
         })
         return blob
       } catch (fallbackError) {

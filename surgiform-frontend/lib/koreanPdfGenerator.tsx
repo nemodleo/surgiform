@@ -181,10 +181,6 @@ const SurgicalConsentPDF = ({ formData = {}, consentData = {}, signatureData = {
   // Parse canvas drawings if they exist
   const canvasDrawings = Array.isArray(signatureData?.canvases) ? signatureData.canvases : []
   
-  console.log('PDF Component received signatureData:', signatureData)
-  console.log('Canvas drawings count:', canvasDrawings.length)
-  console.log('Patient signature exists:', !!signatureData?.patient)
-  console.log('Doctor signature exists:', !!signatureData?.doctor)
   
   return (
   <Document>
@@ -375,9 +371,6 @@ export const generateKoreanPDF = async (formData: FormData, consentData: Consent
       throw new Error('consentData is required for PDF generation')
     }
     
-    console.log('Starting PDF generation with data:', {
-      formData,
-      consentData,
       signatureData
     })
     
@@ -386,7 +379,6 @@ export const generateKoreanPDF = async (formData: FormData, consentData: Consent
     asPdf.updateContainer(doc)
     const blob = await asPdf.toBlob()
     
-    console.log('PDF generated successfully, blob size:', blob.size)
     return blob
   } catch (error) {
     console.error('[koreanPdfGenerator] PDF 생성 오류:', error)

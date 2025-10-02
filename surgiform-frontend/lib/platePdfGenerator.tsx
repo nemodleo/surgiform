@@ -35,10 +35,6 @@ export const generatePlatePDF = async (
   consentData: ConsentData,
   signatureData: SignatureData
 ) => {
-  console.log('=== Plate-based PDF Generation ===')
-  console.log('FormData:', formData)
-  console.log('ConsentData:', consentData)
-  console.log('SignatureData:', signatureData)
   
   // Create a hidden container to render the document
   const container = document.createElement('div')

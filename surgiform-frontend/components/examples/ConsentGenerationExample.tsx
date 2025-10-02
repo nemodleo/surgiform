@@ -13,7 +13,6 @@ export const ConsentGenerationExample: React.FC = () => {
   const { generateConsent, isGenerating } = useConsentGeneration({
     onSuccess: (result) => {
       setShowProgress(false);
-      console.log('생성 완료:', result);
       // 결과 처리 로직
     },
     onError: (error) => {

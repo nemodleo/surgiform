@@ -35,24 +35,9 @@ export const generateSimplePDF = async (
   consentData: ConsentData,
   signatureData: SignatureData
 ) => {
-  console.log('=== Simple PDF Generation ===')
-  console.log('FormData:', formData)
-  console.log('Full SignatureData:', signatureData)
-  console.log('SignatureData keys:', Object.keys(signatureData || {}))
-  console.log('Patient signature exists:', !!signatureData?.patient)
-  console.log('Doctor signature exists:', !!signatureData?.doctor)
   
-  if (signatureData?.patient) {
-    console.log('Patient signature preview:', signatureData.patient.substring(0, 100))
-  }
-  if (signatureData?.doctor) {
-    console.log('Doctor signature preview:', signatureData.doctor.substring(0, 100))
-  }
   
   // Check for canvas signatures
-  if (signatureData?.canvases && Array.isArray(signatureData.canvases)) {
-    console.log('Canvas signatures found:', signatureData.canvases.length, 'items')
-  }
   
   // Create a visible temporary container with A4 width
   const container = document.createElement('div')
@@ -90,10 +75,6 @@ export const generateSimplePDF = async (
   // Add consent items
   if (consentData?.consents) {
     consentData.consents.forEach((item, index) => {
-      // Debug log to check original data
-      console.log(`Item ${index + 1} description:`, item.description)
-      console.log(`Has line breaks: ${item.description?.includes('\n')}`)
-      console.log(`Has tabs: ${item.description?.includes('\t')}`)
       
       // Preserve original formatting including line breaks and tabs
       // Convert line breaks to <br> tags for HTML rendering
@@ -126,14 +107,12 @@ export const generateSimplePDF = async (
         <h2 style="font-size: 20px; margin-bottom: 20px;">서명</h2>
   `
   
-  console.log('Adding signatures section...')
   
   // Skip canvas drawings - they are not included in PDF
   // Only include patient and doctor signatures
   
   // Add patient signature
   if (signatureData?.patient) {
-    console.log('Adding patient signature')
     html += `
       <div style="margin-bottom: 30px;">
         <p style="font-weight: bold; margin-bottom: 10px;">환자: ${formData.patient_name || '환자'}</p>
@@ -141,7 +120,6 @@ export const generateSimplePDF = async (
       </div>
     `
   } else {
-    console.log('No patient signature found')
     html += `
       <div style="margin-bottom: 30px;">
         <p style="font-weight: bold; margin-bottom: 10px;">환자: ${formData.patient_name || '환자'}</p>
@@ -154,7 +132,6 @@ export const generateSimplePDF = async (
   
   // Add doctor signature
   if (signatureData?.doctor) {
-    console.log('Adding doctor signature')
     html += `
       <div style="margin-bottom: 30px;">
         <p style="font-weight: bold; margin-bottom: 10px;">의사: ${formData.medical_team?.[0]?.name || '의사'}</p>
@@ -162,7 +139,6 @@ export const generateSimplePDF = async (
       </div>
     `
   } else {
-    console.log('No doctor signature found')
     html += `
       <div style="margin-bottom: 30px;">
         <p style="font-weight: bold; margin-bottom: 10px;">의사: ${formData.medical_team?.[0]?.name || '의사'}</p>
@@ -185,7 +161,6 @@ export const generateSimplePDF = async (
   try {
     // Wait for images to load
     const images = container.getElementsByTagName('img')
-    console.log(`Found ${images.length} images in container`)
     
     // Wait for all images to load
     const imagePromises = Array.from(images).map(img => {
@@ -203,13 +178,10 @@ export const generateSimplePDF = async (
     })
     
     await Promise.all(imagePromises)
-    console.log('All images loaded')
     
     // Additional wait for rendering
     await new Promise(resolve => setTimeout(resolve, 500))
     
-    console.log('Container added to DOM, starting canvas conversion...')
-    console.log('Container dimensions:', container.offsetWidth, 'x', container.offsetHeight)
     
     // Convert to canvas with proper settings
     const canvas = await html2canvas(container, {
@@ -230,7 +202,6 @@ export const generateSimplePDF = async (
       }
     })
     
-    console.log('Canvas created:', canvas.width, 'x', canvas.height)
     
     // Create PDF with proper page handling
     const pdf = new jsPDF({
@@ -252,15 +223,12 @@ export const generateSimplePDF = async (
     const imgRatio = canvas.height / canvas.width
     const contentHeight = contentWidth * imgRatio
     
-    console.log(`PDF dimensions - Page: ${pageWidth}x${pageHeight}mm`)
-    console.log(`Content area: ${contentWidth}x${contentHeight}mm`)
     
     // Calculate usable height per page
     const usablePageHeight = pageHeight - marginTop - marginBottom
     
     // Calculate how many pages we need
     const totalPages = Math.ceil(contentHeight / usablePageHeight)
-    console.log(`Total pages needed: ${totalPages}`)
     
     // Add pages without overlap
     for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
@@ -276,9 +244,6 @@ export const generateSimplePDF = async (
       const actualSourceHeight = Math.min(sourceHeight, canvas.height - sourceY)
       const actualContentHeight = (actualSourceHeight * contentWidth) / canvas.width
       
-      console.log(`Page ${pageIndex + 1}:`)
-      console.log(`  Source Y: ${sourceY}px, Height: ${actualSourceHeight}px`)
-      console.log(`  Dest Y: ${marginTop}mm, Height: ${actualContentHeight}mm`)
       
       // Create a temporary canvas for this page's content
       const pageCanvas = document.createElement('canvas')

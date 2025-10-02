@@ -24,13 +24,9 @@ export default function ConfirmationRoute() {
     const savedConsentData = sessionStorage.getItem('consentData')
     const savedImageData = sessionStorage.getItem('imageData')
 
-    console.log('📦 ConfirmationRoute - Raw savedFormData:', savedFormData)
-    console.log('📦 ConfirmationRoute - Raw savedConsentData:', savedConsentData)
-    console.log('📦 ConfirmationRoute - Raw savedImageData:', savedImageData)
 
     if (!savedFormData || !savedConsentData) {
       // Redirect to start if data is missing
-      console.log('❌ Missing data, redirecting to basic-info')
       router.push('/consent/basic-info')
       return
     }
@@ -43,25 +39,15 @@ export default function ConfirmationRoute() {
     if (savedImageData) {
       try {
         parsedImageData = JSON.parse(savedImageData)
-        console.log('📦 ConfirmationRoute - Parsed imageData:', parsedImageData)
         setGeneratedImages(parsedImageData.images || [])
       } catch (error) {
         console.error('❌ Failed to parse image data:', error)
       }
     }
 
-    console.log('📦 ConfirmationRoute - Parsed formData:', parsedFormData)
-    console.log('📦 ConfirmationRoute - Special conditions:', {
-      medical_history: parsedFormData.medical_history,
-      diabetes: parsedFormData.diabetes,
-      other_conditions: parsedFormData.other_conditions,
-      mortality_risk: parsedFormData.mortality_risk,
-      morbidity_risk: parsedFormData.morbidity_risk
-    })
-
     setFormData(parsedFormData)
     setConsentData(parsedConsentData)
-  }, [router])
+  }, [])
   
   const handleComplete = () => {
     router.push('/consent/pdf')
