@@ -9,7 +9,8 @@ import { StepperMinimal } from '@/components/ui/stepper-minimal'
 
 const STEP_LABELS = [
   "정보 입력",
-  "동의서 작성", 
+  "동의서 작성",
+  "이미지 생성",
   "확인 · 서명",
   "PDF 변환"
 ]
@@ -17,6 +18,7 @@ const STEP_LABELS = [
 const STEP_PATHS = [
   "/consent/basic-info",
   "/consent/surgery-info",
+  "/consent/image",
   "/consent/confirmation",
   "/consent/pdf"
 ]
@@ -59,8 +61,10 @@ export default function App({ Component, pageProps }: AppProps) {
     } else if (step === 1) {
       router.push('/consent/surgery-info')
     } else if (step === 2) {
-      router.push('/consent/confirmation')
+      router.push('/consent/image')
     } else if (step === 3) {
+      router.push('/consent/confirmation')
+    } else if (step === 4) {
       router.push('/consent/pdf')
     }
   }

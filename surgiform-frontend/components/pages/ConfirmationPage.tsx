@@ -52,11 +52,19 @@ interface FormData extends Record<string, unknown> {
   participants?: { name: string }[]
 }
 
+interface GeneratedImage {
+  stepId: string;
+  mimeType: string;
+  data: string; // Base64 encoded image
+  url?: string;
+}
+
 interface ConfirmationPageProps {
   onComplete: () => void
   onBack?: () => void
   formData: FormData
   consentData: ConsentData
+  generatedImages?: GeneratedImage[]
 }
 
 interface CanvasData {
@@ -93,8 +101,18 @@ interface MediaElement {
   textData?: TextData
 }
 
-export default function ConfirmationPage({ onComplete, onBack, formData, consentData }: ConfirmationPageProps) {
+export default function ConfirmationPage({ onComplete, onBack, formData, consentData, generatedImages = [] }: ConfirmationPageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [imageSelectionModal, setImageSelectionModal] = useState<{
+    isOpen: boolean
+    canvasId: string
+  }>({ isOpen: false, canvasId: '' })
+
+  // 디버깅: generatedImages 확인
+  useEffect(() => {
+    console.log('🖼️ ConfirmationPage - generatedImages:', generatedImages)
+    console.log('🖼️ ConfirmationPage - generatedImages length:', generatedImages.length)
+  }, [generatedImages])
   const submissionRef = useRef(false)
   const [surgerySiteMarking, setSurgerySiteMarking] = useState<{
     marking: 'yes' | 'no' | null
@@ -1225,6 +1243,61 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     reader.readAsDataURL(file)
   }
 
+  // 생성된 이미지를 캔버스에 추가하는 함수
+  const handleGeneratedImageAdd = async (canvasId: string, generatedImage: GeneratedImage) => {
+    if (signatureRefs.current[canvasId]) {
+      try {
+        const imageData = `data:${generatedImage.mimeType};base64,${generatedImage.data}`
+
+        // 이미지를 250x400 크기로 미리 리사이즈
+        const resizedImageData = await resizeImageToFit(imageData, 335, 600, 1)
+
+        const canvas = signatureRefs.current[canvasId]
+        const img = new Image()
+        img.onload = () => {
+          // 캔버스에 리사이즈된 이미지를 배경으로 그리기
+          const canvasElement = canvas.getCanvas()
+          const ctx = canvasElement.getContext('2d')
+
+          if (ctx) {
+            // 캔버스 크기 가져오기
+            const canvasWidth = canvasElement.width
+            const canvasHeight = canvasElement.height
+
+            // 캔버스 좌측 상단에 배치하기 위한 오프셋 계산
+            const offsetX = 0  // 좌측 정렬
+            const offsetY = 0  // 상단 정렬
+
+            // 캔버스 지우기 (투명하게)
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight)
+
+            // 리사이즈된 이미지를 캔버스에 그리기 (좌측 상단 배치)
+            ctx.drawImage(img, offsetX, offsetY)
+
+            // 캔버스 데이터 저장 (PNG로 투명성 보장)
+            const dataUrl = canvas.toDataURL('image/png')
+
+            setCanvases(prev => {
+              const updated = prev.map(canvas =>
+                canvas.id === canvasId ? { ...canvas, imageData: dataUrl } : canvas
+              )
+              saveCanvasesToStorage(updated)
+              return updated
+            })
+
+            toast.success('생성된 이미지가 캔버스에 추가되었습니다.')
+          } else {
+            toast.error('캔버스 컨텍스트를 가져올 수 없습니다.')
+          }
+        }
+        img.src = resizedImageData
+      } catch (error) {
+        console.error('[ConfirmationPage] 생성된 이미지 처리 실패:', error)
+        toast.error('이미지 처리 중 오류가 발생했습니다.')
+      }
+    }
+  }
+
   const handleComplete = async () => {
     if (isSubmitting || submissionRef.current) {
       console.log('Already submitting, ignoring duplicate call')
@@ -1330,6 +1403,18 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                     <div className="flex gap-1">
                       {mediaElement.type === 'canvas' && canvas && (
                         <>
+                          {/* 생성된 이미지 선택 버튼 */}
+                          {generatedImages.length > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setImageSelectionModal({ isOpen: true, canvasId: mediaElement.id })}
+                              className="h-6 w-6 p-0 text-slate-400 hover:text-green-500"
+                              title="AI 생성 이미지 선택"
+                            >
+                              <ImageIcon className="h-3 w-3" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
@@ -1711,6 +1796,18 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                     <div className="flex gap-1">
                       {mediaElement.type === 'canvas' && canvas && (
                         <>
+                          {/* 생성된 이미지 선택 버튼 */}
+                          {generatedImages.length > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setImageSelectionModal({ isOpen: true, canvasId: mediaElement.id })}
+                              className="h-6 w-6 p-0 text-slate-400 hover:text-green-500"
+                              title="AI 생성 이미지 선택"
+                            >
+                              <ImageIcon className="h-3 w-3" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
@@ -1957,6 +2054,18 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                     <div className="flex gap-1">
                       {mediaElement.type === 'canvas' && canvas && (
                         <>
+                          {/* 생성된 이미지 선택 버튼 */}
+                          {generatedImages.length > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setImageSelectionModal({ isOpen: true, canvasId: mediaElement.id })}
+                              className="h-6 w-6 p-0 text-slate-400 hover:text-green-500"
+                              title="AI 생성 이미지 선택"
+                            >
+                              <ImageIcon className="h-3 w-3" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
@@ -2232,6 +2341,18 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                     <div className="flex gap-1">
                       {mediaElement.type === 'canvas' && canvas && (
                         <>
+                          {/* 생성된 이미지 선택 버튼 */}
+                          {generatedImages.length > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setImageSelectionModal({ isOpen: true, canvasId: mediaElement.id })}
+                              className="h-6 w-6 p-0 text-slate-400 hover:text-green-500"
+                              title="AI 생성 이미지 선택"
+                            >
+                              <ImageIcon className="h-3 w-3" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
@@ -2542,6 +2663,18 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                           <div className="flex gap-1">
                             {mediaElement.type === 'canvas' && canvas && (
                               <>
+                                {/* 생성된 이미지 선택 버튼 */}
+                                {generatedImages.length > 0 && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setImageSelectionModal({ isOpen: true, canvasId: mediaElement.id })}
+                                    className="h-6 w-6 p-0 text-slate-400 hover:text-green-500"
+                                    title="AI 생성 이미지 선택"
+                                  >
+                                    <ImageIcon className="h-3 w-3" />
+                                  </Button>
+                                )}
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -2861,6 +2994,18 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                       <div className="flex gap-1">
                         {mediaElement.type === 'canvas' && canvas && (
                           <>
+                            {/* 생성된 이미지 선택 버튼 */}
+                            {generatedImages.length > 0 && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setImageSelectionModal({ isOpen: true, canvasId: mediaElement.id })}
+                                className="h-6 w-6 p-0 text-slate-400 hover:text-green-500"
+                                title="AI 생성 이미지 선택"
+                              >
+                                <ImageIcon className="h-3 w-3" />
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"
@@ -3181,6 +3326,55 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
           </Button>
         </div>
       </div>
+
+      {/* 이미지 선택 모달 */}
+      {imageSelectionModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-slate-900">AI 생성 이미지 선택</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setImageSelectionModal({ isOpen: false, canvasId: '' })}
+                className="h-6 w-6 p-0 text-slate-400 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {generatedImages.map((genImage, index) => (
+                <div
+                  key={index}
+                  className="relative group cursor-pointer border-2 border-slate-200 hover:border-blue-500 rounded-lg overflow-hidden transition-colors"
+                  onClick={() => {
+                    handleGeneratedImageAdd(imageSelectionModal.canvasId, genImage)
+                    setImageSelectionModal({ isOpen: false, canvasId: '' })
+                  }}
+                >
+                  <img
+                    src={`data:${genImage.mimeType};base64,${genImage.data}`}
+                    alt={`Generated ${index + 1}`}
+                    className="w-full h-32 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium transition-opacity">
+                      선택
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {generatedImages.length === 0 && (
+              <div className="text-center py-8 text-slate-500">
+                생성된 이미지가 없습니다.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

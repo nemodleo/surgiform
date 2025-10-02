@@ -164,6 +164,46 @@ export interface EditChatResponse {
   updated_references?: Record<string, unknown>;
 }
 
+// Surgical Image Types
+export interface StepExtractionRequest {
+  procedure_name: string;
+  max_steps?: number;
+  language?: 'ko' | 'en';
+}
+
+export interface SurgicalStep {
+  id: string;
+  index: number;
+  title: string;
+  desc: string;
+  geminiPrompt: string;
+}
+
+export interface StepExtractionResponse {
+  version: string;
+  procedure: {
+    name: string;
+    language: string;
+  };
+  steps: SurgicalStep[];
+}
+
+export interface ImageGenerationRequest {
+  steps: SurgicalStep[];
+}
+
+export interface GeneratedImage {
+  stepId: string;
+  mimeType: string;
+  data: string; // Base64 encoded image
+  url?: string;
+}
+
+export interface ImageGenerationResponse {
+  jobId: string;
+  images: GeneratedImage[];
+}
+
 export const surgiformAPI = {
   // Health check
   healthCheck: () => api.get('/health'),
@@ -205,4 +245,14 @@ export const surgiformAPI = {
 
   deleteChatSession: (conversationId: string) =>
     api.delete(`/chat/${conversationId}`),
+
+  // Surgical Image APIs
+  extractSurgicalSteps: (data: StepExtractionRequest) =>
+    api.post<StepExtractionResponse>('/surgical-image/extract-steps', data),
+
+  generateSurgicalImages: (data: ImageGenerationRequest) =>
+    api.post<ImageGenerationResponse>('/surgical-image/generate-images', data),
+
+  generateSurgicalImagesComplete: (data: StepExtractionRequest) =>
+    api.post('/surgical-image/generate', data),
 };

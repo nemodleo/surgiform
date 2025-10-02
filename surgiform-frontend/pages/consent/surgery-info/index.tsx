@@ -67,7 +67,7 @@ export default function SurgeryInfoRoute() {
   const handleComplete = (data: ConsentData) => {
     // Store consent data
     sessionStorage.setItem('consentData', JSON.stringify(data))
-    router.push('/consent/confirmation')
+    router.push('/consent/image')
   }
   
   const handleBack = () => {
