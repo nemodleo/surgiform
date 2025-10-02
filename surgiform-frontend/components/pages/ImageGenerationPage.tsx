@@ -5,9 +5,11 @@ import styles from "@/styles/page-layout.module.css"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Plus, Loader2, Image as ImageIcon, ChevronLeft, ChevronRight, Trash2, RefreshCw } from "lucide-react"
+import { Plus, Loader2, Image as ImageIcon, ChevronLeft, ChevronRight, Trash2, RefreshCw, Bot, Sparkles } from "lucide-react"
 import { surgiformAPI, type SurgicalStep, type GeneratedImage } from "@/lib/api"
 import toast from "react-hot-toast"
+import { ChatUI } from "@/components/ui/chat"
+import { useConsentGeneration } from "@/hooks/useConsentGeneration"
 
 interface ImageData {
   steps: SurgicalStep[]
@@ -45,6 +47,15 @@ export default function ImageGenerationPage({
   const [cards, setCards] = useState<ImageCard[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [hasExtractedSteps, setHasExtractedSteps] = useState(false)
+
+  // ChatUI 관련 상태
+  const {
+    showChat,
+    setShowChat,
+    chatMessages,
+    setChatMessages,
+    handleSendMessage: handleChatMessage,
+  } = useConsentGeneration()
 
   // Cache key for extracted steps
   const getCacheKey = (surgeryName: string) => `extracted_steps_${surgeryName}`
@@ -181,6 +192,21 @@ export default function ImageGenerationPage({
 
   const removeCard = (cardId: string) => {
     setCards(prev => prev.filter(c => c.id !== cardId))
+  }
+
+  // Chat 메시지 전송 핸들러 (질문만 가능)
+  const handleSendMessage = async (message: string, history: any[]) => {
+    try {
+      const response = await handleChatMessage(message, history, {
+        formData,
+        consents: {},
+      })
+
+      return response
+    } catch (error) {
+      console.error('[ImageGenerationPage] Chat message error:', error)
+      throw error
+    }
   }
 
   const handleComplete = () => {
@@ -381,6 +407,117 @@ export default function ImageGenerationPage({
           </div>
         </div>
       </div>
+
+      {/* Chat UI */}
+      {showChat && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <ChatUI
+            onClose={() => {
+              setShowChat(false)
+              setChatMessages([]) // Clear messages on close
+            }}
+            onMinimize={(messages) => {
+              setChatMessages(messages) // Save messages before hiding
+              setShowChat(false)
+            }}
+            onSendMessage={handleSendMessage}
+            initialMessages={chatMessages} // Pass saved messages
+            disableEdit={true} // 수정 기능 완전 비활성화
+          />
+        </div>
+      )}
+
+      {/* Chat Button with Animation - Hide when chat is open */}
+      {!showChat && (
+        <div style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 40 }}>
+          {/* Pulsing background effect */}
+          <div
+            className="absolute inset-0 rounded-full"
+            style={{
+              width: '64px',
+              height: '64px',
+              background: 'linear-gradient(to right, #3b82f6, #a855f7)',
+              animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              opacity: 0.75
+            }}
+          />
+
+          {/* Main button */}
+          <button
+            onClick={() => setShowChat(true)}
+            className="relative flex items-center justify-center overflow-hidden group"
+            style={{
+              width: '64px',
+              height: '64px',
+              background: 'linear-gradient(to right, #2563eb, #9333ea)',
+              color: 'white',
+              borderRadius: '50%',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              transition: 'all 0.3s',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)'
+              e.currentTarget.style.boxShadow = '0 35px 60px -15px rgba(0, 0, 0, 0.3)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)'
+              e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            {/* Sparkle effect */}
+            <Sparkles
+              className="absolute"
+              style={{
+                top: '4px',
+                right: '4px',
+                width: '16px',
+                height: '16px',
+                color: '#fde047',
+                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+              }}
+            />
+
+            {/* AI Bot Icon */}
+            <Bot
+              className="transition-transform group-hover:scale-110"
+              style={{
+                width: '32px',
+                height: '32px',
+                zIndex: 10,
+                color: 'white'
+              }}
+            />
+
+            {/* Rotating gradient overlay */}
+            <div
+              className="absolute inset-0 rotate-45 transition-transform duration-700 group-hover:translate-x-[-12rem]"
+              style={{
+                background: 'linear-gradient(to top right, transparent, rgba(255,255,255,0.2), transparent)',
+                transform: 'translateX(48px) rotate(45deg)'
+              }}
+            />
+          </button>
+
+          {/* "이음" label */}
+          <div
+            className="absolute whitespace-nowrap pointer-events-none transition-opacity opacity-0 group-hover:opacity-100"
+            style={{
+              top: '-32px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: '#1f2937',
+              color: 'white',
+              fontSize: '12px',
+              padding: '4px 8px',
+              borderRadius: '4px'
+            }}
+          >
+            이음 - 의료진과 환자를 잇는 AI
+          </div>
+        </div>
+      )}
     </div>
   )
 }
