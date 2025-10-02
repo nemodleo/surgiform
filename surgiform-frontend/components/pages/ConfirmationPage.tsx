@@ -640,59 +640,8 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       return
     }
 
-    // 권한 상태 미리 확인 (선택적)
-    let permissionState = 'unknown'
-    try {
-      permissionState = await checkMicrophonePermission()
-      console.log('🎤 Current permission state:', permissionState)
-    } catch (error) {
-      console.log('🎤 권한 상태 확인 실패, 직접 시도:', error)
-    }
-    
-    if (permissionState === 'denied') {
-      const userConfirmed = window.confirm(
-        '마이크 권한이 거부되었습니다.\n\n' +
-        '다음 방법으로 권한을 허용해주세요:\n\n' +
-        'Chrome:\n' +
-        '1. 주소창 왼쪽 🔒 아이콘 클릭\n' +
-        '2. 마이크를 "허용"으로 변경\n' +
-        '또는\n' +
-        'chrome://settings/content/microphone 접속\n' +
-        'localhost:3000 찾아서 권한 삭제 후 재시도\n\n' +
-        'Safari:\n' +
-        'Safari → 환경설정 → 웹사이트 → 마이크\n' +
-        'localhost 항목 찾아서 권한 삭제\n\n' +
-        '권한 설정 후 페이지를 새로고침하시겠습니까?'
-      )
-      
-      if (userConfirmed) {
-        window.location.reload()
-      }
-      return
-    }
-    
-    // 권한 요청 대신 바로 권한 설정 안내 팝업 표시
-    console.log('🎤 마이크 권한 설정 안내 팝업 표시')
-    
-    const userConfirmed = window.confirm(
-      '마이크 권한이 필요합니다.\n\n' +
-      '허용 방법:\n' +
-      '1. 브라우저 주소창 왼쪽 🔒 아이콘 클릭\n' +
-      '2. "마이크"를 허용으로 변경\n\n' +
-      'Chrome: chrome://settings/content/microphone\n' +
-      'Safari(mac): Safari > 설정 > 웹사이트 > 마이크\n' +
-      'iOS Safari: 설정 > Safari > 마이크\n' +
-      'Android Chrome: 설정 > 앱 > Chrome > 권한 > 마이크\n\n' +
-      '권한 설정을 완료한 뒤 "확인"을 눌러주세요.'
-    )
-    
-    if (!userConfirmed) {
-      console.log('🎤 사용자가 권한 설정을 취소했습니다.')
-      return
-    }
-    
-    console.log('🎤 사용자가 권한 설정을 확인했습니다. 이제 getUserMedia 호출을 시도합니다.')
-    
+    console.log('🎤 getUserMedia 호출을 시도합니다.')
+
     try {
       console.log('🎤 Requesting microphone access...')
       console.log('🎤 getUserMedia 호출 시작...')
