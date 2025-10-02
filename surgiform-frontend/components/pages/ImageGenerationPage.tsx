@@ -199,9 +199,7 @@ export default function ImageGenerationPage({
     onComplete({ steps, images })
   }
 
-  const canProceed = cards.length > 0 && cards.every(card =>
-    card.title.trim() && card.desc.trim() && card.geminiPrompt.trim()
-  )
+  const canProceed = true
 
   return (
     <div className={`max-w-4xl mx-auto ${styles.pageBottomSpacing}`}>
