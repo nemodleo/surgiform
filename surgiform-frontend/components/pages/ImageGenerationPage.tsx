@@ -120,7 +120,7 @@ export default function ImageGenerationPage({
       toast.success('수술 단계가 성공적으로 재생성되었습니다')
     } catch (error) {
       console.error('Failed to extract steps:', error)
-      toast.error('수술 이미지 추출에 실패했습니다')
+      toast.error('수술 단계 추출에 실패했습니다')
     } finally {
       setIsLoading(false)
     }
