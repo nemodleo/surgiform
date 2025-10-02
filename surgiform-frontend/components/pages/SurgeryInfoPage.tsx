@@ -1389,7 +1389,7 @@ export default function SurgeryInfoPage({ onComplete, onBack, formData, initialD
                     </tr>
                     <tr>
                       <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">나이/성별</th>
-                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.patient_age}세 / {formData.patient_gender === "MALE" ? "남성" : "여성"}</td>
+                      <td className="px-4 py-3 text-sm text-slate-900 border-r border-slate-200">{formData.patient_age}세 / {formData.patient_gender === "남" ? "남성" : "여성"}</td>
                       <th className="bg-slate-50 px-4 py-3 text-left text-xs font-medium text-slate-700 border-r border-slate-200">시행예정일</th>
                       <td className="px-4 py-3 text-sm text-slate-900">{formData.surgery_date || ""}</td>
                     </tr>
