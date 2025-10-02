@@ -1325,18 +1325,23 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
 
       console.log('Saving signature data:', Object.keys(allSignatureData))
 
-      // Save to sessionStorage for consent flow persistence
-      sessionStorage.setItem('signatureData', JSON.stringify(allSignatureData))
-      sessionStorage.setItem('confirmationCompleted', 'true')
-      sessionStorage.setItem('canvasDrawings', JSON.stringify(canvases))
-      // Also save to localStorage as backup
-      localStorage.setItem('signatureData', JSON.stringify(allSignatureData))
-      localStorage.setItem('canvasDrawings', JSON.stringify(canvases))
-      // Save consent submission data for future use
-      sessionStorage.setItem('consentSubmissionData', JSON.stringify(consentSubmissionData))
-      localStorage.setItem('consentSubmissionData', JSON.stringify(consentSubmissionData))
+      // Save to localStorage only (sessionStorage has size limits)
+      try {
+        localStorage.setItem('signatureData', JSON.stringify(allSignatureData))
+        localStorage.setItem('canvasDrawings', JSON.stringify(canvases))
+        localStorage.setItem('consentSubmissionData', JSON.stringify(consentSubmissionData))
+        localStorage.setItem('confirmationCompleted', 'true')
 
-      console.log('Data saved to storage')
+        // Save minimal data to sessionStorage for flow control
+        sessionStorage.setItem('confirmationCompleted', 'true')
+
+        console.log('Data saved to storage')
+      } catch (storageError) {
+        console.error('[ConfirmationPage] Storage error:', storageError)
+        // Continue even if storage fails - data is already submitted to backend
+        toast('데이터가 서버에 저장되었습니다')
+      }
+
       onComplete()
     } catch (error) {
       console.error('[ConfirmationPage] 동의서 데이터 제출 오류:', error)
