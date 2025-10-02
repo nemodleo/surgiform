@@ -212,7 +212,7 @@ export default function ImageGenerationPage({
               수술 이미지 생성
             </h2>
             <p className="text-sm text-slate-600">
-              프롬프트를 수정하여 원하는 이미지를 생성할 수 있고, 생성된 이미지는 다음 단계인 "확인 · 서명" 그림 캔버스에서 사용할 수 있습니다.
+              프롬프트를 수정하여 원하는 이미지를 생성할 수 있고, 생성된 이미지는 다음 단계인 &ldquo;확인 · 서명&rdquo; 그림 캔버스에서 사용할 수 있습니다.
             </p>
           </div>
         </div>

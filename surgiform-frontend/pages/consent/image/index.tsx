@@ -22,9 +22,14 @@ export interface ImageData {
   images: GeneratedImage[]
 }
 
+interface FormData extends Record<string, unknown> {
+  surgery_name: string
+  patient_name: string
+}
+
 export default function ImageGenerationRoute() {
   const router = useRouter()
-  const [formData, setFormData] = useState<Record<string, unknown>>({})
+  const [formData, setFormData] = useState<FormData>({} as FormData)
   const [imageData, setImageData] = useState<ImageData | null>(null)
 
   useEffect(() => {
