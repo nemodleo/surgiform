@@ -84,7 +84,7 @@ export default function HeaderMinimal({ onNavigate, currentPage = 'home' }: Head
                 <p className="text-xs text-muted-foreground">서울OO병원</p>
               </div>
               <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
-                JY
+                JO
               </div>
             </div>
 
@@ -149,7 +149,7 @@ export default function HeaderMinimal({ onNavigate, currentPage = 'home' }: Head
             </nav>
             <div className="mt-4 pt-4 border-t border-light flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
-                JY
+                JO
               </div>
               <div>
                 <p className="text-sm font-medium">장OO</p>

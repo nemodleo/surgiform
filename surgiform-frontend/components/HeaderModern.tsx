@@ -72,7 +72,7 @@ export default function HeaderModern({ onNavigate, currentPage = 'home' }: Heade
                 <p className="text-xs text-muted-foreground">서울OO병원</p>
               </div>
               <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-white font-semibold">
-                JY
+                JO
               </div>
             </div>
 
@@ -114,7 +114,7 @@ export default function HeaderModern({ onNavigate, currentPage = 'home' }: Heade
             </nav>
             <div className="mt-4 pt-4 border-t flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-white font-semibold">
-                JY
+                JO
               </div>
               <div>
                 <p className="text-sm font-medium">장OO 교수님</p>
