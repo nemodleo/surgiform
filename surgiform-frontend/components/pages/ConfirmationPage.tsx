@@ -3,10 +3,12 @@
 import { useState, useRef, useEffect } from "react"
 import styles from "@/styles/page-layout.module.css"
 import { Button } from "@/components/ui/button"
-import { RotateCcw, Check, Plus, ChevronLeft, ChevronRight, X, Loader2, Upload, Image as ImageIcon, Mic, Play, Square, FileText, Eraser, Pause } from "lucide-react"
+import { RotateCcw, Check, Plus, ChevronLeft, ChevronRight, X, Loader2, Upload, Image as ImageIcon, Mic, Play, Square, FileText, Eraser, Pause, Bot, Sparkles } from "lucide-react"
 import SignatureCanvas from "react-signature-canvas"
 import { createConsentSubmission } from "@/lib/consentDataFormatter"
 import toast from "react-hot-toast"
+import { ChatUI } from "@/components/ui/chat"
+import { useConsentGeneration } from "@/hooks/useConsentGeneration"
 
 interface ConsentItem {
   item_title: string
@@ -107,6 +109,15 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     isOpen: boolean
     canvasId: string
   }>({ isOpen: false, canvasId: '' })
+
+  // ChatUI 관련 상태
+  const {
+    showChat,
+    setShowChat,
+    chatMessages,
+    setChatMessages,
+    handleSendMessage: handleChatMessage,
+  } = useConsentGeneration()
 
   // 디버깅: generatedImages 확인
   useEffect(() => {
@@ -1244,6 +1255,28 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         console.error('[ConfirmationPage] 생성된 이미지 처리 실패:', error)
         toast.error('이미지 처리 중 오류가 발생했습니다.')
       }
+    }
+  }
+
+  // Chat 메시지 전송 핸들러 (질문만 가능)
+  const handleSendMessage = async (message: string, history: any[]) => {
+    try {
+      // consentData를 변환하여 전달
+      const consents = consentData.consents.reduce((acc, item) => {
+        const key = item.item_title.toLowerCase().replace(/\s+/g, '_')
+        acc[key] = item.description
+        return acc
+      }, {} as Record<string, string>)
+
+      const response = await handleChatMessage(message, history, {
+        formData,
+        consents,
+      })
+
+      return response
+    } catch (error) {
+      console.error('[ConfirmationPage] Chat message error:', error)
+      throw error
     }
   }
 
@@ -3504,6 +3537,117 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                 생성된 이미지가 없습니다.
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Chat UI */}
+      {showChat && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <ChatUI
+            onClose={() => {
+              setShowChat(false)
+              setChatMessages([]) // Clear messages on close
+            }}
+            onMinimize={(messages) => {
+              setChatMessages(messages) // Save messages before hiding
+              setShowChat(false)
+            }}
+            onSendMessage={handleSendMessage}
+            initialMessages={chatMessages} // Pass saved messages
+            disableEdit={true} // 수정 기능 완전 비활성화
+          />
+        </div>
+      )}
+
+      {/* Chat Button with Animation - Hide when chat is open */}
+      {!showChat && (
+        <div style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 40 }}>
+          {/* Pulsing background effect */}
+          <div
+            className="absolute inset-0 rounded-full"
+            style={{
+              width: '64px',
+              height: '64px',
+              background: 'linear-gradient(to right, #3b82f6, #a855f7)',
+              animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              opacity: 0.75
+            }}
+          />
+
+          {/* Main button */}
+          <button
+            onClick={() => setShowChat(true)}
+            className="relative flex items-center justify-center overflow-hidden group"
+            style={{
+              width: '64px',
+              height: '64px',
+              background: 'linear-gradient(to right, #2563eb, #9333ea)',
+              color: 'white',
+              borderRadius: '50%',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              transition: 'all 0.3s',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)'
+              e.currentTarget.style.boxShadow = '0 35px 60px -15px rgba(0, 0, 0, 0.3)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)'
+              e.currentTarget.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            {/* Sparkle effect */}
+            <Sparkles
+              className="absolute"
+              style={{
+                top: '4px',
+                right: '4px',
+                width: '16px',
+                height: '16px',
+                color: '#fde047',
+                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+              }}
+            />
+
+            {/* AI Bot Icon */}
+            <Bot
+              className="transition-transform group-hover:scale-110"
+              style={{
+                width: '32px',
+                height: '32px',
+                zIndex: 10,
+                color: 'white'
+              }}
+            />
+
+            {/* Rotating gradient overlay */}
+            <div
+              className="absolute inset-0 rotate-45 transition-transform duration-700 group-hover:translate-x-[-12rem]"
+              style={{
+                background: 'linear-gradient(to top right, transparent, rgba(255,255,255,0.2), transparent)',
+                transform: 'translateX(48px) rotate(45deg)'
+              }}
+            />
+          </button>
+
+          {/* "이음" label */}
+          <div
+            className="absolute whitespace-nowrap pointer-events-none transition-opacity opacity-0 group-hover:opacity-100"
+            style={{
+              top: '-32px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: '#1f2937',
+              color: 'white',
+              fontSize: '12px',
+              padding: '4px 8px',
+              borderRadius: '4px'
+            }}
+          >
+            이음 - 의료진과 환자를 잇는 AI
           </div>
         </div>
       )}

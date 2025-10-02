@@ -32,6 +32,7 @@ interface ChatUIProps {
   initialMessages?: Message[]
   placeholder?: string
   title?: string
+  disableEdit?: boolean // 수정 기능 완전 비활성화
 }
 
 export function ChatUI({
@@ -41,7 +42,8 @@ export function ChatUI({
   onEditMessage,
   conversationId: initialConversationId,
   initialMessages = [],
-  title = "이음"
+  title = "이음",
+  disableEdit = false
 }: ChatUIProps) {
   const [messages, setMessages] = useState<Message[]>([])
 
@@ -659,28 +661,30 @@ export function ChatUI({
                 <div className="flex items-center justify-between px-1 py-1">
                   {/* Left Side - Edit Button and Sections */}
                   <div className="flex items-center gap-1.5">
-                    {/* Edit Mode Toggle Button */}
-                    <button
-                      onClick={toggleEditMode}
-                      className="w-6 h-6 min-w-6 rounded-full flex items-center justify-center transition-all hover:bg-gray-600/50 flex-shrink-0"
-                      style={{
-                        backgroundColor: isEditMode ? '#ffffff' : 'transparent',
-                        cursor: 'pointer'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isEditMode) {
-                          e.currentTarget.style.backgroundColor = 'rgba(75, 85, 99, 0.5)'
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isEditMode) {
-                          e.currentTarget.style.backgroundColor = 'transparent'
-                        }
-                      }}
-                      title={isEditMode ? "수정 모드 해제" : "수정 모드 활성화"}
-                    >
-                      <Edit3 className="w-3.5 h-3.5 flex-shrink-0" stroke={isEditMode ? "#000000" : "#9ca3af"} />
-                    </button>
+                    {/* Edit Mode Toggle Button - Only show if not disabled */}
+                    {!disableEdit && (
+                      <button
+                        onClick={toggleEditMode}
+                        className="w-6 h-6 min-w-6 rounded-full flex items-center justify-center transition-all hover:bg-gray-600/50 flex-shrink-0"
+                        style={{
+                          backgroundColor: isEditMode ? '#ffffff' : 'transparent',
+                          cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isEditMode) {
+                            e.currentTarget.style.backgroundColor = 'rgba(75, 85, 99, 0.5)'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isEditMode) {
+                            e.currentTarget.style.backgroundColor = 'transparent'
+                          }
+                        }}
+                        title={isEditMode ? "수정 모드 해제" : "수정 모드 활성화"}
+                      >
+                        <Edit3 className="w-3.5 h-3.5 flex-shrink-0" stroke={isEditMode ? "#000000" : "#9ca3af"} />
+                      </button>
+                    )}
 
                     {/* Section Selection - Show when edit mode is active */}
                     {isEditMode && (
