@@ -1080,7 +1080,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     delete signatureRefs.current[canvasId]
   }
 
-  // 이미지를 350x600 크기로 리사이즈하는 함수
+  // 이미지를 335x600 크기로 리사이즈하는 함수
   const resizeImageToFit = (dataUrl: string, maxWidth: number = 335, maxHeight: number = 600, quality: number = 1): Promise<string> => {
     return new Promise((resolve) => {
       const img = new window.Image()
@@ -1104,7 +1104,11 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         // 캔버스 크기 설정
         canvas.width = resizedWidth
         canvas.height = resizedHeight
-        
+
+        // 고품질 이미지 스무딩 설정
+        ctx.imageSmoothingEnabled = true
+        ctx.imageSmoothingQuality = 'high'
+
         // 이미지를 캔버스에 그리기
         ctx.drawImage(img, 0, 0, resizedWidth, resizedHeight)
         
@@ -1151,7 +1155,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       const originalImageData = e.target?.result as string
       if (signatureRefs.current[canvasId]) {
         try {
-          // 이미지를 250x400 크기로 미리 리사이즈
+          // 이미지를 335x600 크기로 미리 리사이즈
           const resizedImageData = await resizeImageToFit(originalImageData, 335, 600, 1)
           
           const canvas = signatureRefs.current[canvasId]
@@ -1209,8 +1213,8 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       try {
         const imageData = `data:${generatedImage.mimeType};base64,${generatedImage.data}`
 
-        // 이미지를 250x400 크기로 미리 리사이즈
-        const resizedImageData = await resizeImageToFit(imageData, 335, 600, 1)
+        // 이미지를 335x600 크기로 미리 리사이즈
+        const resizedImageData = await resizeImageToFit(imageData, 250, 600, 1)
 
         const canvas = signatureRefs.current[canvasId]
         const img = new Image()
