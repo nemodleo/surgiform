@@ -1,14 +1,26 @@
-/* 페이지 하단 여백을 위한 공통 스타일 */
+/* 페이지 하단 여백과 좌우 패딩을 위한 공통 스타일 */
 
-/* 기본 페이지 하단 여백 */
+/* 기본 페이지 하단 여백 및 좌우 패딩 */
 .pageBottomSpacing {
   padding-bottom: 30px; /* 나중에 내용 추가할 때까지 최소한의 여백 */
+  padding-left: 24px; /* 좌우 패딩 추가 */
+  padding-right: 24px;
 }
 
-/* 모바일에서는 조금 더 작은 여백 */
+/* 모바일에서는 조금 더 작은 여백과 패딩 */
 @media (max-width: 768px) {
   .pageBottomSpacing {
     padding-bottom: 20px;
+    padding-left: 16px; /* 모바일에서는 작은 패딩 */
+    padding-right: 16px;
+  }
+}
+
+/* 아주 작은 화면에서는 더 작은 패딩 */
+@media (max-width: 480px) {
+  .pageBottomSpacing {
+    padding-left: 12px;
+    padding-right: 12px;
   }
 }
 
