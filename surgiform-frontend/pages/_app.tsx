@@ -6,6 +6,7 @@ import '@/styles/globals.css'
 import '@/styles/mobbin-design-system.css'
 import HeaderMinimal from '@/components/HeaderMinimal'
 import { StepperMinimal } from '@/components/ui/stepper-minimal'
+import { Toaster } from 'react-hot-toast'
 
 const STEP_LABELS = [
   "정보 입력",
@@ -76,22 +77,48 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="description" content="Surgiform - AI-powered surgical consent form generation" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      
+
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#4ade80',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
+
       <div className="min-h-screen bg-white">
         <HeaderMinimal onNavigate={handleNavigate} currentPage={currentPage} />
-        
+
         {isConsentPage && currentStep >= 0 && (
           <div className="container mx-auto px-4 py-4">
             <div className="mb-8 bg-white rounded-xl px-8 py-4">
-              <StepperMinimal 
-                steps={STEP_LABELS} 
-                currentStep={currentStep} 
+              <StepperMinimal
+                steps={STEP_LABELS}
+                currentStep={currentStep}
                 onStepClick={handleStepClick}
               />
             </div>
           </div>
         )}
-        
+
         <Component {...pageProps} />
       </div>
     </>
