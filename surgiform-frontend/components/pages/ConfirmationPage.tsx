@@ -1814,33 +1814,33 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                       )}
                       
                       {mediaElement.type === 'audio' && audio && (
-                        <div className="flex items-center gap-2">
-                          {audio.audioBlob ? (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => playAudio(mediaElement.id)}
-                                className="h-6 w-6 p-0 text-slate-400 hover:text-blue-500"
-                                title={playingId === mediaElement.id ? "일시정지" : "재생"}
-                              >
-                                {playingId === mediaElement.id ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
-                              </Button>
-                              <div className="flex items-center gap-1">
-                                <span className="text-slate-400 text-xs">
-                                  {(() => {
-                                    const totalDuration = audio.duration && !isNaN(audio.duration) && isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0
-                                    return totalDuration > 0 ? formatTime(Math.floor(totalDuration)) : '00:00'
-                                  })()}
-                                </span>
-                              </div>
-                              
-                              {playingId === mediaElement.id && (
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-3">
+                            {recordingId === mediaElement.id ? (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={stopRecording}
+                                  className="h-8 w-8 p-0 bg-red-500 hover:bg-red-600 text-white rounded-full"
+                                  title="녹음 중지"
+                                >
+                                  <Square className="h-4 w-4" />
+                                </Button>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-red-600 font-mono text-sm font-medium">
+                                    {formatTime(recordingTime)}
+                                  </span>
+                                  <span className="text-slate-400 text-xs">/</span>
+                                  <span className="text-slate-400 text-xs">
+                                    {formatTime(300)}
+                                  </span>
+                                </div>
                                 <div className="flex items-center gap-0.5 h-4">
                                   {waveformData.slice(-15).map((value, index) => (
                                     <div
                                       key={index}
-                                      className="bg-blue-500 rounded-full transition-all duration-75"
+                                      className="bg-red-500 rounded-full transition-all duration-75"
                                       style={{
                                         width: '2px',
                                         height: `${Math.max(value * 12 + 1, 1)}px`,
@@ -1849,25 +1849,86 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                                     />
                                   ))}
                                 </div>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => startRecording(mediaElement.id)}
-                                className="h-8 w-8 p-0 bg-green-500 hover:bg-green-600 text-white rounded-full"
-                                title="녹음 시작"
-                                disabled={isRecording}
-                              >
-                                <Mic className="h-4 w-4" />
-                              </Button>
-                            </>
-                          )}
+                              </>
+                            ) : audio.audioUrl ? (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    if (playingId === mediaElement.id) {
+                                      stopAudio()
+                                    } else {
+                                      playAudio(mediaElement.id)
+                                    }
+                                  }}
+                                  className="h-8 w-8 p-0 bg-blue-500 hover:bg-blue-600 text-white rounded-full"
+                                  title={playingId === mediaElement.id ? "재생 중지" : "재생"}
+                                >
+                                  {playingId === mediaElement.id ? (
+                                    <Square className="h-4 w-4" />
+                                  ) : (
+                                    <Play className="h-4 w-4 ml-0.5" />
+                                  )}
+                                </Button>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-blue-600 font-mono text-sm font-medium">
+                                    {playingId === mediaElement.id ? formatTime(playingTime) : (() => {
+                                      const duration = audio.duration && !isNaN(audio.duration) && isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0
+                                      return duration > 0 ? formatTime(Math.floor(duration)) : '00:00'
+                                    })()}
+                                  </span>
+                                  <span className="text-slate-400 text-xs">/</span>
+                                  <span className="text-slate-400 text-xs">
+                                    {(() => {
+                                      const totalDuration = audio.duration && !isNaN(audio.duration) && isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0
+                                      return totalDuration > 0 ? formatTime(Math.floor(totalDuration)) : '00:00'
+                                    })()}
+                                  </span>
+                                </div>
+                                {playingId === mediaElement.id && (
+                                  <div className="flex items-center gap-0.5 h-4">
+                                    {waveformData.slice(-15).map((value, index) => (
+                                      <div
+                                        key={index}
+                                        className="bg-blue-500 rounded-full transition-all duration-75"
+                                        style={{
+                                          width: '2px',
+                                          height: `${Math.max(value * 12 + 1, 1)}px`,
+                                          opacity: 0.7 + (value * 0.3)
+                                        }}
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => startRecording(mediaElement.id)}
+                                  className="h-8 w-8 p-0 bg-green-500 hover:bg-green-600 text-white rounded-full"
+                                  title="녹음 시작"
+                                  disabled={isRecording}
+                                >
+                                  <Mic className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeAudioRecording(mediaElement.id)}
+                            className="h-6 w-6 p-0 text-slate-400 hover:text-red-500"
+                            title="삭제"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
                         </div>
                       )}
-                      
+
                       {mediaElement.type === 'text' && text && (
                         <Button
                           variant="ghost"
@@ -2072,33 +2133,33 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                       )}
                       
                       {mediaElement.type === 'audio' && audio && (
-                        <div className="flex items-center gap-2">
-                          {audio.audioBlob ? (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => playAudio(mediaElement.id)}
-                                className="h-6 w-6 p-0 text-slate-400 hover:text-blue-500"
-                                title={playingId === mediaElement.id ? "일시정지" : "재생"}
-                              >
-                                {playingId === mediaElement.id ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
-                              </Button>
-                              <div className="flex items-center gap-1">
-                                <span className="text-slate-400 text-xs">
-                                  {(() => {
-                                    const totalDuration = audio.duration && !isNaN(audio.duration) && isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0
-                                    return totalDuration > 0 ? formatTime(Math.floor(totalDuration)) : '00:00'
-                                  })()}
-                                </span>
-                              </div>
-                              
-                              {playingId === mediaElement.id && (
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-3">
+                            {recordingId === mediaElement.id ? (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={stopRecording}
+                                  className="h-8 w-8 p-0 bg-red-500 hover:bg-red-600 text-white rounded-full"
+                                  title="녹음 중지"
+                                >
+                                  <Square className="h-4 w-4" />
+                                </Button>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-red-600 font-mono text-sm font-medium">
+                                    {formatTime(recordingTime)}
+                                  </span>
+                                  <span className="text-slate-400 text-xs">/</span>
+                                  <span className="text-slate-400 text-xs">
+                                    {formatTime(300)}
+                                  </span>
+                                </div>
                                 <div className="flex items-center gap-0.5 h-4">
                                   {waveformData.slice(-15).map((value, index) => (
                                     <div
                                       key={index}
-                                      className="bg-blue-500 rounded-full transition-all duration-75"
+                                      className="bg-red-500 rounded-full transition-all duration-75"
                                       style={{
                                         width: '2px',
                                         height: `${Math.max(value * 12 + 1, 1)}px`,
@@ -2107,25 +2168,86 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                                     />
                                   ))}
                                 </div>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => startRecording(mediaElement.id)}
-                                className="h-8 w-8 p-0 bg-green-500 hover:bg-green-600 text-white rounded-full"
-                                title="녹음 시작"
-                                disabled={isRecording}
-                              >
-                                <Mic className="h-4 w-4" />
-                              </Button>
-                            </>
-                          )}
+                              </>
+                            ) : audio.audioUrl ? (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    if (playingId === mediaElement.id) {
+                                      stopAudio()
+                                    } else {
+                                      playAudio(mediaElement.id)
+                                    }
+                                  }}
+                                  className="h-8 w-8 p-0 bg-blue-500 hover:bg-blue-600 text-white rounded-full"
+                                  title={playingId === mediaElement.id ? "재생 중지" : "재생"}
+                                >
+                                  {playingId === mediaElement.id ? (
+                                    <Square className="h-4 w-4" />
+                                  ) : (
+                                    <Play className="h-4 w-4 ml-0.5" />
+                                  )}
+                                </Button>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-blue-600 font-mono text-sm font-medium">
+                                    {playingId === mediaElement.id ? formatTime(playingTime) : (() => {
+                                      const duration = audio.duration && !isNaN(audio.duration) && isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0
+                                      return duration > 0 ? formatTime(Math.floor(duration)) : '00:00'
+                                    })()}
+                                  </span>
+                                  <span className="text-slate-400 text-xs">/</span>
+                                  <span className="text-slate-400 text-xs">
+                                    {(() => {
+                                      const totalDuration = audio.duration && !isNaN(audio.duration) && isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0
+                                      return totalDuration > 0 ? formatTime(Math.floor(totalDuration)) : '00:00'
+                                    })()}
+                                  </span>
+                                </div>
+                                {playingId === mediaElement.id && (
+                                  <div className="flex items-center gap-0.5 h-4">
+                                    {waveformData.slice(-15).map((value, index) => (
+                                      <div
+                                        key={index}
+                                        className="bg-blue-500 rounded-full transition-all duration-75"
+                                        style={{
+                                          width: '2px',
+                                          height: `${Math.max(value * 12 + 1, 1)}px`,
+                                          opacity: 0.7 + (value * 0.3)
+                                        }}
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => startRecording(mediaElement.id)}
+                                  className="h-8 w-8 p-0 bg-green-500 hover:bg-green-600 text-white rounded-full"
+                                  title="녹음 시작"
+                                  disabled={isRecording}
+                                >
+                                  <Mic className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeAudioRecording(mediaElement.id)}
+                            className="h-6 w-6 p-0 text-slate-400 hover:text-red-500"
+                            title="삭제"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
                         </div>
                       )}
-                      
+
                       {mediaElement.type === 'text' && text && (
                         <Button
                           variant="ghost"
@@ -2359,33 +2481,33 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                       )}
                       
                       {mediaElement.type === 'audio' && audio && (
-                        <div className="flex items-center gap-2">
-                          {audio.audioBlob ? (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => playAudio(mediaElement.id)}
-                                className="h-6 w-6 p-0 text-slate-400 hover:text-blue-500"
-                                title={playingId === mediaElement.id ? "일시정지" : "재생"}
-                              >
-                                {playingId === mediaElement.id ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
-                              </Button>
-                              <div className="flex items-center gap-1">
-                                <span className="text-slate-400 text-xs">
-                                  {(() => {
-                                    const totalDuration = audio.duration && !isNaN(audio.duration) && isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0
-                                    return totalDuration > 0 ? formatTime(Math.floor(totalDuration)) : '00:00'
-                                  })()}
-                                </span>
-                              </div>
-                              
-                              {playingId === mediaElement.id && (
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-3">
+                            {recordingId === mediaElement.id ? (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={stopRecording}
+                                  className="h-8 w-8 p-0 bg-red-500 hover:bg-red-600 text-white rounded-full"
+                                  title="녹음 중지"
+                                >
+                                  <Square className="h-4 w-4" />
+                                </Button>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-red-600 font-mono text-sm font-medium">
+                                    {formatTime(recordingTime)}
+                                  </span>
+                                  <span className="text-slate-400 text-xs">/</span>
+                                  <span className="text-slate-400 text-xs">
+                                    {formatTime(300)}
+                                  </span>
+                                </div>
                                 <div className="flex items-center gap-0.5 h-4">
                                   {waveformData.slice(-15).map((value, index) => (
                                     <div
                                       key={index}
-                                      className="bg-blue-500 rounded-full transition-all duration-75"
+                                      className="bg-red-500 rounded-full transition-all duration-75"
                                       style={{
                                         width: '2px',
                                         height: `${Math.max(value * 12 + 1, 1)}px`,
@@ -2394,25 +2516,86 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                                     />
                                   ))}
                                 </div>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => startRecording(mediaElement.id)}
-                                className="h-8 w-8 p-0 bg-green-500 hover:bg-green-600 text-white rounded-full"
-                                title="녹음 시작"
-                                disabled={isRecording}
-                              >
-                                <Mic className="h-4 w-4" />
-                              </Button>
-                            </>
-                          )}
+                              </>
+                            ) : audio.audioUrl ? (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    if (playingId === mediaElement.id) {
+                                      stopAudio()
+                                    } else {
+                                      playAudio(mediaElement.id)
+                                    }
+                                  }}
+                                  className="h-8 w-8 p-0 bg-blue-500 hover:bg-blue-600 text-white rounded-full"
+                                  title={playingId === mediaElement.id ? "재생 중지" : "재생"}
+                                >
+                                  {playingId === mediaElement.id ? (
+                                    <Square className="h-4 w-4" />
+                                  ) : (
+                                    <Play className="h-4 w-4 ml-0.5" />
+                                  )}
+                                </Button>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-blue-600 font-mono text-sm font-medium">
+                                    {playingId === mediaElement.id ? formatTime(playingTime) : (() => {
+                                      const duration = audio.duration && !isNaN(audio.duration) && isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0
+                                      return duration > 0 ? formatTime(Math.floor(duration)) : '00:00'
+                                    })()}
+                                  </span>
+                                  <span className="text-slate-400 text-xs">/</span>
+                                  <span className="text-slate-400 text-xs">
+                                    {(() => {
+                                      const totalDuration = audio.duration && !isNaN(audio.duration) && isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0
+                                      return totalDuration > 0 ? formatTime(Math.floor(totalDuration)) : '00:00'
+                                    })()}
+                                  </span>
+                                </div>
+                                {playingId === mediaElement.id && (
+                                  <div className="flex items-center gap-0.5 h-4">
+                                    {waveformData.slice(-15).map((value, index) => (
+                                      <div
+                                        key={index}
+                                        className="bg-blue-500 rounded-full transition-all duration-75"
+                                        style={{
+                                          width: '2px',
+                                          height: `${Math.max(value * 12 + 1, 1)}px`,
+                                          opacity: 0.7 + (value * 0.3)
+                                        }}
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => startRecording(mediaElement.id)}
+                                  className="h-8 w-8 p-0 bg-green-500 hover:bg-green-600 text-white rounded-full"
+                                  title="녹음 시작"
+                                  disabled={isRecording}
+                                >
+                                  <Mic className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeAudioRecording(mediaElement.id)}
+                            className="h-6 w-6 p-0 text-slate-400 hover:text-red-500"
+                            title="삭제"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
                         </div>
                       )}
-                      
+
                       {mediaElement.type === 'text' && text && (
                         <Button
                           variant="ghost"
