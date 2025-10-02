@@ -70,7 +70,7 @@ export default function Header({ onNavigate, currentPage = 'home' }: HeaderProps
 
           <div className="flex items-center gap-4">
             <span className="text-sm text-white">
-              장재율 교수님, 안녕하세요
+              장OO 교수님, 안녕하세요
             </span>
             <span className="px-3 py-1 text-xs font-medium bg-white text-green-dark rounded-full">
               ● 시스템 정상

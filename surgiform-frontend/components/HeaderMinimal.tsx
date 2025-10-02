@@ -80,8 +80,8 @@ export default function HeaderMinimal({ onNavigate, currentPage = 'home' }: Head
             {/* User Avatar */}
             <div className="hidden sm:flex items-center gap-3 pl-3 border-l border-light">
               <div className="text-right">
-                <p className="text-sm font-medium">장재율</p>
-                <p className="text-xs text-muted-foreground">서울대학교병원</p>
+                <p className="text-sm font-medium">장OO</p>
+                <p className="text-xs text-muted-foreground">서울OO병원</p>
               </div>
               <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
                 JY
@@ -152,8 +152,8 @@ export default function HeaderMinimal({ onNavigate, currentPage = 'home' }: Head
                 JY
               </div>
               <div>
-                <p className="text-sm font-medium">장재율</p>
-                <p className="text-xs text-muted-foreground">서울대학교병원</p>
+                <p className="text-sm font-medium">장OO</p>
+                <p className="text-xs text-muted-foreground">서울OO병원</p>
               </div>
             </div>
           </div>

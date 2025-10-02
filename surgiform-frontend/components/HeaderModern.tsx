@@ -68,8 +68,8 @@ export default function HeaderModern({ onNavigate, currentPage = 'home' }: Heade
             {/* User Profile */}
             <div className="hidden sm:flex items-center gap-3 pl-3 border-l">
               <div className="text-right">
-                <p className="text-sm font-medium">장재율 교수님</p>
-                <p className="text-xs text-muted-foreground">서울대학교병원</p>
+                <p className="text-sm font-medium">장OO 교수님</p>
+                <p className="text-xs text-muted-foreground">서울OO병원</p>
               </div>
               <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-white font-semibold">
                 JY
@@ -117,8 +117,8 @@ export default function HeaderModern({ onNavigate, currentPage = 'home' }: Heade
                 JY
               </div>
               <div>
-                <p className="text-sm font-medium">장재율 교수님</p>
-                <p className="text-xs text-muted-foreground">서울대학교병원</p>
+                <p className="text-sm font-medium">장OO 교수님</p>
+                <p className="text-xs text-muted-foreground">서울OO병원</p>
               </div>
             </div>
           </div>
