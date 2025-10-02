@@ -92,7 +92,6 @@ interface TextData {
   createdAt: number // 추가: 생성 시간
 }
 
-// 통합된 미디어 요소 인터페이스
 interface MediaElement {
   id: string
   title: string
@@ -110,7 +109,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     canvasId: string
   }>({ isOpen: false, canvasId: '' })
 
-  // ChatUI 관련 상태
   const {
     showChat,
     setShowChat,
@@ -119,31 +117,25 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     handleSendMessage: handleChatMessage,
   } = useConsentGeneration()
 
-  // 디버깅: generatedImages 확인
   useEffect(() => {
-    console.log('🖼️ ConfirmationPage - generatedImages:', generatedImages)
-    console.log('🖼️ ConfirmationPage - generatedImages length:', generatedImages.length)
   }, [generatedImages])
   const submissionRef = useRef(false)
   const [surgerySiteMarking, setSurgerySiteMarking] = useState<{
     marking: 'yes' | 'no' | null
     reason: string
   }>(() => {
-    // Try to restore from sessionStorage
     if (typeof window !== 'undefined') {
       const saved = sessionStorage.getItem('surgerySiteMarking')
       if (saved) {
         try {
           return JSON.parse(saved)
         } catch (e) {
-          console.error('[ConfirmationPage] 저장된 수술 부위 표시 파싱 실패:', e)
         }
       }
     }
     return { marking: null, reason: '' }
   })
   const [signatures, setSignatures] = useState<Record<string, string>>(() => {
-    // Try to restore signatures from sessionStorage on initial load
     if (typeof window !== 'undefined') {
       const saved = sessionStorage.getItem('confirmationSignatures')
       if (saved) {
@@ -151,30 +143,25 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
           const parsed = JSON.parse(saved)
           return parsed
         } catch (e) {
-          console.error('[ConfirmationPage] 저장된 서명 파싱 실패:', e)
         }
       }
     }
     return {}
   })
   const [canvases, setCanvases] = useState<CanvasData[]>(() => {
-    // Try to restore canvases from sessionStorage on initial load
     if (typeof window !== 'undefined') {
       const saved = sessionStorage.getItem('confirmationCanvases')
       if (saved) {
         try {
           const parsed = JSON.parse(saved)
-          console.log('🎨 Restored canvases from sessionStorage on init:', parsed.length, 'canvases')
           return parsed
         } catch (e) {
-          console.error('[ConfirmationPage] 저장된 캔버스 파싱 실패:', e)
         }
       }
     }
     return []
   })
 
-  // 음성 녹음 관련 상태
   const [audioRecordings, setAudioRecordings] = useState<AudioData[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = sessionStorage.getItem('confirmationAudioRecordings')
@@ -182,14 +169,12 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         try {
           return JSON.parse(saved)
         } catch (e) {
-          console.error('[ConfirmationPage] 저장된 음성 녹음 파싱 실패:', e)
         }
       }
     }
     return []
   })
 
-  // 텍스트 관련 상태
   const [textNotes, setTextNotes] = useState<TextData[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = sessionStorage.getItem('confirmationTextNotes')
@@ -197,7 +182,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         try {
           return JSON.parse(saved)
         } catch (e) {
-          console.error('[ConfirmationPage] 저장된 텍스트 노트 파싱 실패:', e)
         }
       }
     }
@@ -224,30 +208,23 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
   const restoredCanvases = useRef<Set<string>>(new Set())
   const pendingRestores = useRef<Record<string, string>>({})
 
-  // Debug: Monitor sessionStorage changes
   const checkSessionStorage = () => {
     const current = sessionStorage.getItem('confirmationCanvases')
-    console.log('🔍 Current sessionStorage confirmationCanvases:', current ? `${current.length} chars` : 'null')
     if (current) {
       try {
         const parsed = JSON.parse(current)
-        console.log('🔍 Parsed:', parsed.length, 'canvases with data:', parsed.filter((c: CanvasData) => c.imageData).length)
       } catch (e) {
-        console.error('[ConfirmationPage] 데이터 파싱 오류:', e)
       }
     }
   }
 
-  // Check sessionStorage every 2 seconds
   useEffect(() => {
     const interval = setInterval(checkSessionStorage, 2000)
     return () => clearInterval(interval)
   }, [])
 
-  // 컴포넌트 언마운트 시 정리
   useEffect(() => {
     return () => {
-      // 타이머 정리
       if (recordingTimerRef.current) {
         clearInterval(recordingTimerRef.current)
       }
@@ -255,12 +232,10 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         clearInterval(playingTimerRef.current)
       }
       
-      // 애니메이션 프레임 정리
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
       }
       
-      // 오디오 정리
       if (audioRef.current) {
         audioRef.current.pause()
         audioRef.current.src = ''
@@ -268,38 +243,24 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     }
   }, [])
 
-  // Debug: Log when state changes
   useEffect(() => {
-    console.log('📊 Canvases state changed:', canvases.length, 'canvases')
     canvases.forEach((c, i) => {
-      console.log(`📊 Canvas ${i}: ${c.id} - ${c.title} - hasData: ${!!c.imageData}`)
     })
   }, [canvases])
 
-  // Debug: Component lifecycle
   useEffect(() => {
-    console.log('🔄 ConfirmationPage mounted')
     
-    // Expose debug functions to window for manual testing
     if (typeof window !== 'undefined') {
       (window as unknown as { debugCanvas?: { checkStorage: () => void; forceRestore: () => void; clearStorage: () => void } }).debugCanvas = {
         checkStorage: () => {
-          console.log('=== MANUAL STORAGE CHECK ===')
           const storage = sessionStorage.getItem('confirmationCanvases')
-          console.log('Raw storage:', storage)
           if (storage) {
             const parsed = JSON.parse(storage)
-            console.log('Parsed storage:', parsed)
             parsed.forEach((c: CanvasData, i: number) => {
-              console.log(`Canvas ${i}: ${c.id}, title: ${c.title}, hasData: ${!!c.imageData}, dataLength: ${c.imageData?.length || 0}`)
             })
           }
-          console.log('Current state canvases:', canvases)
-          console.log('Restored canvases:', Array.from(restoredCanvases.current))
-          console.log('Pending restores:', pendingRestores.current)
         },
         forceRestore: () => {
-          console.log('=== FORCING RESTORE ===')
           restoredCanvases.current.clear()
           canvases.forEach(canvas => {
             if (canvas.imageData) {
@@ -308,69 +269,46 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
           })
         },
         clearStorage: () => {
-          console.log('=== CLEARING STORAGE ===')
           sessionStorage.removeItem('confirmationCanvases')
         }
       }
     }
     
     return () => {
-      console.log('🔄 ConfirmationPage unmounting')
       if (typeof window !== 'undefined') {
         delete (window as unknown as { debugCanvas?: unknown }).debugCanvas
       }
     }
   }, [])
 
-  // Load saved data on mount
   useEffect(() => {
-    console.log('🚀 ConfirmationPage mounting, checking sessionStorage...')
     
-    // Debug: Show all sessionStorage keys
     const allKeys = Object.keys(sessionStorage)
-    console.log('📦 All sessionStorage keys:', allKeys)
     
-    // Signature data is now loaded in the state initializer
-    // Just log what we have
-    console.log('🖋️ Current signatures on mount:', Object.keys(signatures))
 
-    // Canvas data is now loaded in the state initializer
-    // Just log what we have
-    console.log('🎨 Current canvases on mount:', canvases.length, 'canvases')
     canvases.forEach((c: CanvasData, index: number) => {
-      console.log(`📋 Canvas ${index + 1}: id=${c.id}, title="${c.title}", hasData=${!!c.imageData}, dataLength=${c.imageData?.length || 0}`)
     })
   }, [canvases, signatures])
 
-  // Save signatures whenever they change
   useEffect(() => {
     if (Object.keys(signatures).length > 0) {
       sessionStorage.setItem('confirmationSignatures', JSON.stringify(signatures))
     }
   }, [signatures])
 
-  // Save canvases whenever they change (including empty array to handle deletions)
   useEffect(() => {
-    console.log('💾 Saving canvases to storage:', canvases.length, 'canvases')
     canvases.forEach((c, index) => {
-      console.log(`💾 Canvas ${index + 1}: id=${c.id}, title="${c.title}", hasData=${!!c.imageData}, dataLength=${c.imageData?.length || 0}`)
     })
     saveCanvasesToStorage(canvases)
-    console.log('💾 Saved to storage successfully')
   }, [canvases])
 
-  // Attempt to restore all canvases when they're loaded
   useEffect(() => {
-    console.log(`🔄 Canvas data loaded, attempting to restore ${canvases.length} canvases`)
     canvases.forEach(canvas => {
       if (canvas.imageData && !restoredCanvases.current.has(canvas.id)) {
-        console.log(`📋 Scheduling restore for loaded canvas ${canvas.id}`)
-        // Try to restore after a delay
         setTimeout(() => {
           if (signatureRefs.current[canvas.id]) {
             restoreCanvas(canvas.id, canvas.imageData!)
           } else {
-            console.log(`⏳ Canvas ${canvas.id} ref not ready, storing for later`)
             pendingRestores.current[canvas.id] = canvas.imageData!
           }
         }, 500)
@@ -378,20 +316,15 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     })
   }, [canvases]) // Trigger when canvases changes
 
-  // Function to restore a specific canvas
   const restoreCanvas = (canvasId: string, imageData: string) => {
-    console.log(`Restore request for canvas ${canvasId}, data length: ${imageData.length}`)
     
     if (restoredCanvases.current.has(canvasId)) {
-      console.log(`Canvas ${canvasId} already restored, skipping`)
       return
     }
     
-    // Store pending restore data
     pendingRestores.current[canvasId] = imageData
     
     if (!signatureRefs.current[canvasId]) {
-      console.log(`Canvas ${canvasId} ref not ready, will restore when ref is set`)
       return
     }
     
@@ -401,18 +334,14 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         ref.fromDataURL(imageData)
         restoredCanvases.current.add(canvasId)
         delete pendingRestores.current[canvasId]
-        console.log(`✅ Canvas ${canvasId} restored successfully on attempt ${attempts + 1}`)
       } catch (e) {
-        console.log(`❌ Canvas ${canvasId} restore attempt ${attempts + 1} failed:`, (e as Error).message)
         if (attempts < 15) {
           setTimeout(() => attemptRestore(attempts + 1), 100 + (attempts * 50))
         } else {
-          console.error(`[ConfirmationPage] 캔버스 복원 실패 (${attempts + 1}회 시도 후):`, canvasId)
         }
       }
     }
     
-    // Start restoration immediately, then with delays if it fails
     attemptRestore()
   }
 
@@ -422,7 +351,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       setSignatures(prev => {
         const newSigs = { ...prev }
         delete newSigs[key]
-        // Update sessionStorage after clearing
         sessionStorage.setItem('confirmationSignatures', JSON.stringify(newSigs))
         return newSigs
       })
@@ -430,23 +358,17 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
   }
 
   const handleSignatureSave = (key: string) => {
-    console.log('handleSignatureSave called for:', key)
     if (signatureRefs.current[key]) {
       if (!signatureRefs.current[key].isEmpty()) {
         const dataUrl = signatureRefs.current[key].toDataURL()
-        console.log('Saving signature:', key, 'Data URL length:', dataUrl.length)
         setSignatures(prev => {
           const updated = { ...prev, [key]: dataUrl }
-          console.log('Updated signatures state:', Object.keys(updated))
-          // Also save to sessionStorage immediately
           sessionStorage.setItem('tempSignatures', JSON.stringify(updated))
           return updated
         })
       } else {
-        console.log('Signature canvas is empty for:', key)
       }
     } else {
-      console.log('Signature ref not found for:', key)
     }
   }
 
@@ -457,18 +379,13 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       title: `${section} - 그림`,
       createdAt: now
     }
-    console.log('➕ Adding new canvas:', newCanvas.id, 'for section:', section)
     setCanvases(prev => {
       const updated = [...prev, newCanvas]
-      console.log('➕ New canvas added, total canvases:', updated.length)
-      // Immediately save to storage
       saveCanvasesToStorage(updated)
-      console.log('💾 Saved new canvas to storage')
       return updated
     })
   }
 
-  // 음성 녹음 요소 추가
   const addAudioRecording = (section: string) => {
     const now = Date.now()
     const newAudio: AudioData = {
@@ -476,29 +393,21 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       title: `${section} - 음성`,
       createdAt: now
     }
-    console.log('🎤 Adding new audio recording:', newAudio.id, 'for section:', section)
     setAudioRecordings(prev => {
       const updated = [...prev, newAudio]
-      console.log('🎤 New audio added, total recordings:', updated.length)
-      // Immediately save to storage
       sessionStorage.setItem('confirmationAudioRecordings', JSON.stringify(updated))
-      console.log('💾 Saved new audio to storage')
       return updated
     })
   }
 
-  // 음성 녹음 요소 삭제
   const removeAudioRecording = (audioId: string) => {
-    console.log('🗑️ Removing audio recording:', audioId)
     setAudioRecordings(prev => {
       const updated = prev.filter(audio => audio.id !== audioId)
       sessionStorage.setItem('confirmationAudioRecordings', JSON.stringify(updated))
-      console.log('🗑️ Audio removed, remaining recordings:', updated.length)
       return updated
     })
   }
 
-  // 텍스트 노트 추가
   const addTextNote = (section: string) => {
     const now = Date.now()
     const newText: TextData = {
@@ -507,29 +416,21 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       content: '',
       createdAt: now
     }
-    console.log('📝 Adding new text note:', newText.id, 'for section:', section)
     setTextNotes(prev => {
       const updated = [...prev, newText]
-      console.log('📝 New text added, total notes:', updated.length)
-      // Immediately save to storage
       sessionStorage.setItem('confirmationTextNotes', JSON.stringify(updated))
-      console.log('💾 Saved new text to storage')
       return updated
     })
   }
 
-  // 텍스트 노트 삭제
   const removeTextNote = (textId: string) => {
-    console.log('🗑️ Removing text note:', textId)
     setTextNotes(prev => {
       const updated = prev.filter(text => text.id !== textId)
       sessionStorage.setItem('confirmationTextNotes', JSON.stringify(updated))
-      console.log('🗑️ Text removed, remaining notes:', updated.length)
       return updated
     })
   }
 
-  // 텍스트 노트 내용 업데이트
   const updateTextNote = (textId: string, content: string) => {
     setTextNotes(prev => {
       const updated = prev.map(text => 
@@ -540,7 +441,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     })
   }
 
-  // 통합된 미디어 요소 생성 (입력 순서대로 정렬)
   const getSortedMediaElements = (section: string): MediaElement[] => {
     const sectionCanvases = canvases
       .filter(c => c.title.includes(section))
@@ -572,14 +472,11 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         textData: text
       }))
 
-    // 생성 시간순으로 정렬
     return [...sectionCanvases, ...sectionAudios, ...sectionTexts].sort((a, b) => a.createdAt - b.createdAt)
   }
 
 
-  // 시간 포맷 함수
   const formatTime = (seconds: number) => {
-    // Infinity, NaN, 또는 음수 값 처리
     if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) {
       return '00:00'
     }
@@ -589,78 +486,55 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
-  // 음성 크기 분석 및 파형 시각화 함수
   const analyzeAudioLevel = (analyser: AnalyserNode) => {
     const dataArray = new Uint8Array(analyser.frequencyBinCount)
     analyser.getByteFrequencyData(dataArray)
     
-    // 평균 음성 레벨 계산
     const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length
     
-    // 파형 데이터 생성 (iOS Voice Memo 스타일)
     const normalizedValue = Math.min(average / 255, 1)
     waveformRef.current.push(normalizedValue)
     
-    // 파형 데이터 길이 제한 (최대 100개)
     if (waveformRef.current.length > 100) {
       waveformRef.current = waveformRef.current.slice(-100)
     }
     
     setWaveformData([...waveformRef.current])
     
-    // 계속 분석
     animationFrameRef.current = requestAnimationFrame(() => analyzeAudioLevel(analyser))
   }
 
-  // 마이크 권한 상태 확인
   const checkMicrophonePermission = async () => {
     try {
-      console.log('🎤 권한 상태 확인 시작...')
       const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName })
-      console.log('🎤 마이크 권한 상태:', permissionStatus.state)
-      console.log('🎤 권한 상태 객체:', permissionStatus)
       return permissionStatus.state
     } catch (error) {
-      console.log('🎤 권한 상태 확인 실패 (일부 브라우저에서 지원하지 않음):', error)
-      console.log('🎤 에러 상세:', error instanceof Error ? error.name : 'unknown', error instanceof Error ? error.message : 'unknown')
       return 'unknown'
     }
   }
 
-  // 음성 녹음 함수들
   const startRecording = async (audioId: string) => {
-    console.log('🎤 startRecording called with audioId:', audioId)
     
-    // 5분 제한 확인
     const existingRecording = audioRecordings.find(rec => rec.id === audioId)
     if (existingRecording && existingRecording.audioBlob) {
       toast.error('이미 녹음된 음성이 있습니다. 새로 녹음하려면 기존 음성을 삭제해주세요.')
       return
     }
     
-    // MediaRecorder 지원 확인
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      console.error('[ConfirmationPage] MediaDevices API 미지원')
       toast.error('이 브라우저는 음성 녹음을 지원하지 않습니다.')
       return
     }
     
     if (!window.MediaRecorder) {
-      console.error('[ConfirmationPage] MediaRecorder API 미지원')
       toast.error('이 브라우저는 MediaRecorder를 지원하지 않습니다.')
       return
     }
 
-    console.log('🎤 getUserMedia 호출을 시도합니다.')
 
     try {
-      console.log('🎤 Requesting microphone access...')
-      console.log('🎤 getUserMedia 호출 시작...')
       
-      console.log('🎤 navigator.mediaDevices:', navigator.mediaDevices)
-      console.log('🎤 getUserMedia 함수:', navigator.mediaDevices.getUserMedia)
       
-      // 타임아웃과 함께 getUserMedia 호출
       const streamPromise = navigator.mediaDevices.getUserMedia({ 
         audio: true
       })
@@ -671,11 +545,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       
       const stream = await Promise.race([streamPromise, timeoutPromise]) as MediaStream
       
-      console.log('🎤 getUserMedia 성공! 스트림 받음:', stream)
-      console.log('🎤 Microphone access granted, stream:', stream)
-      console.log('🎤 Stream tracks:', stream.getTracks())
       
-      // 오디오 분석 설정
       const audioContext = new AudioContext()
       const source = audioContext.createMediaStreamSource(stream)
       const analyser = audioContext.createAnalyser()
@@ -683,10 +553,8 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       source.connect(analyser)
       audioAnalyserRef.current = analyser
       
-      // 음성 크기 분석 시작
       analyzeAudioLevel(analyser)
       
-      // MediaRecorder 지원 형식 확인 (3초 제한 문제 해결을 위해)
       const supportedTypes = [
         'audio/webm;codecs=opus',  // 최우선 - 가장 안정적
         'audio/webm',
@@ -699,54 +567,42 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       for (const type of supportedTypes) {
         if (MediaRecorder.isTypeSupported(type)) {
           mimeType = type
-          console.log('🎤 Using MIME type:', mimeType)
           break
         }
       }
       
-      // MIME 타입이 없으면 기본값 사용
       if (!mimeType) {
         mimeType = 'audio/webm'
-        console.log('🎤 Using default MIME type:', mimeType)
       }
 
-      // MediaRecorder 생성 (3초 제한 문제 해결을 위한 옵션 추가)
       const mediaRecorderOptions: MediaRecorderOptions = {
         mimeType: mimeType,
         audioBitsPerSecond: 128000, // 적절한 비트레이트 설정
       }
       
       const mediaRecorder = new MediaRecorder(stream, mediaRecorderOptions)
-      console.log('🎤 MediaRecorder created with options:', mediaRecorderOptions)
 
       mediaRecorderRef.current = mediaRecorder
       audioChunksRef.current = []
 
-      console.log('🎤 Setting recording states...')
 
-      // 상태를 즉시 업데이트
       setRecordingId(audioId)
       setIsRecording(true)
       setRecordingTime(0)
 
-      console.log('🎤 Recording states set - recordingId:', audioId, 'isRecording:', true)
       
-      // 녹음 시간 타이머 시작 (ref로도 추적)
       currentRecordingTimeRef.current = 0
       recordingTimerRef.current = setInterval(() => {
         currentRecordingTimeRef.current += 1
         setRecordingTime(currentRecordingTimeRef.current)
         
-        // 5분(300초) 제한
         if (currentRecordingTimeRef.current >= 300) {
           stopRecording()
           toast.error('녹음 시간이 5분을 초과했습니다.')
         }
         
-        // 3초마다 수동으로 데이터 요청 (브라우저 호환성을 위해)
         if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
           try {
-            // requestData를 사용하여 수동으로 데이터 요청
             if (typeof mediaRecorderRef.current.requestData === 'function') {
               mediaRecorderRef.current.requestData()
             }
@@ -759,12 +615,10 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data)
           
-          // timecode가 있으면 더 정확한 시간 사용
           if (event.timecode && event.timecode > 0) {
             const timecodeSeconds = event.timecode / 1000
             const currentTime = currentRecordingTimeRef.current
             
-            // timecode와 타이머 시간 중 더 큰 값 사용
             const moreAccurateTime = Math.max(currentTime, timecodeSeconds)
             if (moreAccurateTime > currentTime) {
               currentRecordingTimeRef.current = moreAccurateTime
@@ -777,19 +631,15 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType })
         const audioUrl = URL.createObjectURL(audioBlob)
 
-        // STT 텍스트 생성
         generateSTTText()
 
-        // recordingTime을 ref에서 안전하게 가져오기
         const capturedRecordingTime = currentRecordingTimeRef.current
         const stateRecordingTime = recordingTime
 
-        // 다중 방법으로 duration 설정 (안정성 향상)
         const updateAudioDuration = (duration: number) => {
           setAudioRecordings(prev => {
             const updated = prev.map(recording => {
               if (recording.id === audioId) {
-                // 기존 duration과 비교하여 더 큰 값만 업데이트
                 const currentDuration = recording.duration || 0
                 const finalDuration = Math.max(duration, currentDuration)
                 
@@ -806,65 +656,50 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
           })
         }
 
-        // 방법 1: 즉시 더 정확한 시간으로 설정 (백업용)
         const bestDuration = Math.max(capturedRecordingTime, stateRecordingTime)
         updateAudioDuration(bestDuration)
 
-        // 방법 2: 실제 오디오 duration 가져오기 (비동기)
         const tempAudio = new Audio(audioUrl)
         
-        // 여러 이벤트 리스너 등록
         const updateFromAudio = () => {
           const actualDuration = tempAudio.duration
           
           if (actualDuration && isFinite(actualDuration) && !isNaN(actualDuration) && actualDuration > 0) {
-            // 실제 duration과 우리가 추적한 시간 중 더 큰 값 사용 (추적된 시간이 더 정확할 수 있음)
             const mostAccurateDuration = Math.max(actualDuration, bestDuration)
             updateAudioDuration(mostAccurateDuration)
           }
         }
 
-        // loadedmetadata 이벤트
         tempAudio.addEventListener('loadedmetadata', updateFromAudio)
         
-        // durationchange 이벤트
         tempAudio.addEventListener('durationchange', updateFromAudio)
         
-        // canplay 이벤트
         tempAudio.addEventListener('canplay', updateFromAudio)
 
-        // 방법 3: 여러 시점에서 체크 (타임아웃)
         const checkDuration = (delay: number) => {
           setTimeout(() => {
             if (tempAudio.readyState >= 1) { // HAVE_METADATA
               const actualDuration = tempAudio.duration
               
               if (actualDuration && isFinite(actualDuration) && !isNaN(actualDuration) && actualDuration > 0) {
-                // 메타데이터 duration과 추적된 시간 중 더 큰 값 사용 (추적된 시간이 더 정확할 수 있음)
                 const finalDuration = Math.max(actualDuration, bestDuration)
                 updateAudioDuration(finalDuration)
               } else if (bestDuration > 0) {
-                // 메타데이터가 없으면 bestDuration 사용
                 updateAudioDuration(bestDuration)
               }
             }
           }, delay)
         }
 
-        // 여러 시점에서 체크
         checkDuration(100)
         checkDuration(500)
         checkDuration(1000)
         checkDuration(2000)
 
-        // 녹음 시간 리셋은 stopRecording에서 처리됨
 
-        // 스트림 정리
         stream.getTracks().forEach(track => {
-          console.log('🎤 Stopping track:', track.kind, track.label)
           track.stop()
         })
-        console.log('🎤 Stream tracks stopped')
         toast.success('음성 녹음이 완료되었습니다.')
       }
       
@@ -872,12 +707,8 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       }
       
       mediaRecorder.onerror = (event) => {
-        console.error('[ConfirmationPage] MediaRecorder 오류:', event)
-        console.error('[ConfirmationPage] 오류 상세:', event.error)
         
-        // 3초 제한 관련 오류인지 확인
         if (event.error && event.error.name === 'NotSupportedError') {
-          console.error('[ConfirmationPage] NotSupportedError - 3초 제한 관련 가능성')
         }
         
         toast.error('음성 녹음 중 오류가 발생했습니다.')
@@ -885,20 +716,13 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         setRecordingId(null)
       }
       
-      console.log('🎤 Starting MediaRecorder...')
       mediaRecorder.start() // timeSlice 없이 시작 - 브라우저 호환성 향상
-      console.log('🎤 MediaRecorder.start() called')
       toast('음성 녹음을 시작했습니다.')
       
     } catch (error) {
       const errorObj = error as Error
-      console.error('[ConfirmationPage] 음성 녹음 시작 실패:', errorObj)
-      console.error('[ConfirmationPage] 오류 이름:', errorObj.name)
-      console.error('[ConfirmationPage] 오류 메시지:', errorObj.message)
-      console.error('[ConfirmationPage] 오류 스택:', errorObj.stack)
 
       if (errorObj.name === 'NotAllowedError') {
-        // 사용자에게 마이크 권한 허용 방법 안내
         const userConfirmed = window.confirm(
           '마이크 권한이 거부되었습니다.\n\n' +
           '다음 방법으로 권한을 허용해주세요:\n\n' +
@@ -917,19 +741,13 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
           window.location.reload()
         }
         
-        console.log('🎤 마이크 권한 해결 방법:')
-        console.log('🎤 1. 브라우저 주소창 왼쪽의 🔒 설정 아이콘 클릭')
-        console.log('🎤 2. 마이크 권한을 "허용"으로 변경')
-        console.log('🎤 3. 페이지를 새로고침 후 다시 시도')
       } else if (errorObj.name === 'NotFoundError') {
         toast.error('마이크를 찾을 수 없습니다. 마이크가 연결되어 있는지 확인해주세요.')
       } else if (errorObj.name === 'NotSupportedError') {
         toast.error('이 브라우저는 음성 녹음을 지원하지 않습니다.')
       } else if (errorObj.message && errorObj.message.includes('timeout')) {
         toast.error('마이크 권한 요청이 시간 초과되었습니다. 브라우저 설정에서 마이크 권한을 확인해주세요.')
-        console.log('🎤 getUserMedia 타임아웃 - 권한 요청이 5초 내에 응답하지 않음')
         
-        // 권한 설정 후 다시 시도할지 확인
         const retryConfirmed = window.confirm(
           '마이크 권한이 아직 허용되지 않았습니다.\n\n' +
           '브라우저 설정에서 마이크 권한을 허용한 후\n' +
@@ -937,7 +755,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         )
         
         if (retryConfirmed) {
-          // 재귀 호출로 다시 시도
           startRecording(audioId)
         }
       } else {
@@ -946,27 +763,17 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     }
   }
   
-  // STT 텍스트 생성 함수
   const generateSTTText = () => {
-    // 실제 STT 구현 시:
-    // 1. audioBlob을 FormData로 변환
-    // 2. STT API 엔드포인트로 전송
-    // 3. 응답받은 텍스트를 setSttText에 설정
     
-    // 현재는 STT 기능이 구현되지 않았으므로 텍스트를 설정하지 않음
-    // "음성을 텍스트로 변환하는 중..." 메시지가 계속 표시됨
   }
 
   const stopRecording = () => {
-    console.log('🛑 stopRecording called')
     
-    // 타이머 정리
     if (recordingTimerRef.current) {
       clearInterval(recordingTimerRef.current)
       recordingTimerRef.current = null
     }
     
-    // 음성 분석 정리
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current)
       animationFrameRef.current = null
@@ -977,7 +784,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       setIsRecording(false)
       setRecordingId(null)
       
-      // 상태 리셋 (onstop 이벤트에서 duration 설정 후)
       setTimeout(() => {
         setRecordingTime(0)
         setWaveformData([])
@@ -998,12 +804,10 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       audioRef.current = audio
       setPlayingId(audioId)
       
-      // 재생 시간 추적 시작
       setPlayingTime(0)
       playingTimerRef.current = setInterval(() => {
         if (audio && !audio.paused) {
           setPlayingTime(audio.currentTime)
-          // 재생 중에도 파형 데이터 업데이트 (실제 오디오 레벨 대신 랜덤값 사용)
           const randomValue = Math.random() * 0.8 + 0.2
           setWaveformData(prev => {
             const newData = [...prev, randomValue]
@@ -1040,47 +844,34 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     }
   }
 
-  // Auto-save canvas on every stroke
   const handleCanvasEnd = (canvasId: string) => {
-    console.log(`🖌️ handleCanvasEnd called for canvas ${canvasId}`)
     if (signatureRefs.current[canvasId]) {
       const isEmpty = signatureRefs.current[canvasId].isEmpty()
-      console.log(`🖌️ Canvas ${canvasId} isEmpty: ${isEmpty}`)
       if (!isEmpty) {
         const dataUrl = signatureRefs.current[canvasId].toDataURL()
-        console.log('💾 Saving canvas drawing:', canvasId, 'Data length:', dataUrl.length)
         setCanvases(prev => {
           const updated = prev.map(canvas => 
             canvas.id === canvasId ? { ...canvas, imageData: dataUrl } : canvas
           )
-          console.log('💾 Updated canvases state, total canvases:', updated.length)
-          // Immediately save to storage
           saveCanvasesToStorage(updated)
-          console.log('💾 Saved to storage immediately')
           return updated
         })
       } else {
-        console.log('⚠️ Canvas is empty, not saving')
       }
     } else {
-      console.log('❌ No canvas ref found for', canvasId)
     }
   }
 
   const deleteCanvas = (canvasId: string) => {
     setCanvases(prev => {
       const updated = prev.filter(c => c.id !== canvasId)
-      // Update storage after deletion
       saveCanvasesToStorage(updated)
       return updated
     })
-    // Clean up restored state
     restoredCanvases.current.delete(canvasId)
-    // Clean up ref
     delete signatureRefs.current[canvasId]
   }
 
-  // 이미지를 335x600 크기로 리사이즈하는 함수
   const resizeImageToFit = (dataUrl: string, maxWidth: number = 335, maxHeight: number = 600, quality: number = 1): Promise<string> => {
     return new Promise((resolve) => {
       const img = new window.Image()
@@ -1088,31 +879,24 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')!
         
-        // 원본 이미지 크기
         const originalWidth = img.width
         const originalHeight = img.height
         
-        // 비율을 유지하면서 최대 크기에 맞도록 계산
         const scaleX = maxWidth / originalWidth
         const scaleY = maxHeight / originalHeight
         const scale = Math.min(scaleX, scaleY) // 더 작은 스케일 사용
         
-        // 리사이즈된 크기 계산
         const resizedWidth = Math.floor(originalWidth * scale)
         const resizedHeight = Math.floor(originalHeight * scale)
         
-        // 캔버스 크기 설정
         canvas.width = resizedWidth
         canvas.height = resizedHeight
 
-        // 고품질 이미지 스무딩 설정
         ctx.imageSmoothingEnabled = true
         ctx.imageSmoothingQuality = 'high'
 
-        // 이미지를 캔버스에 그리기
         ctx.drawImage(img, 0, 0, resizedWidth, resizedHeight)
         
-        // JPEG로 압축하여 반환
         const compressedDataUrl = canvas.toDataURL('image/jpeg', quality)
         resolve(compressedDataUrl)
       }
@@ -1120,31 +904,26 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     })
   }
 
-  // 스토리지 저장 함수 (용량 초과 시 localStorage 사용)
   const saveCanvasesToStorage = (canvases: CanvasData[]) => {
     try {
       const data = JSON.stringify(canvases)
       sessionStorage.setItem('confirmationCanvases', data)
     } catch (error) {
-      console.warn('SessionStorage 용량 초과, localStorage 사용:', error)
       try {
         localStorage.setItem('confirmationCanvases', JSON.stringify(canvases))
         toast('데이터가 localStorage에 저장되었습니다.')
       } catch (localError) {
-        console.error('[ConfirmationPage] localStorage 용량 초과:', localError)
         toast.error('저장 공간이 부족합니다. 이미지를 다시 업로드해주세요.')
       }
     }
   }
 
-  // 이미지 업로드 처리
   const handleImageUpload = async (canvasId: string, file: File) => {
     if (!file.type.startsWith('image/')) {
       toast.error('이미지 파일만 업로드 가능합니다.')
       return
     }
 
-    // 파일 크기 제한 (50MB) - 리사이즈되므로 더 큰 파일도 허용
     if (file.size > 50 * 1024 * 1024) {
       toast.error('이미지 크기가 너무 큽니다. 50MB 이하의 파일을 선택해주세요.')
       return
@@ -1155,33 +934,26 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
       const originalImageData = e.target?.result as string
       if (signatureRefs.current[canvasId]) {
         try {
-          // 이미지를 335x600 크기로 미리 리사이즈
           const resizedImageData = await resizeImageToFit(originalImageData, 335, 600, 1)
           
           const canvas = signatureRefs.current[canvasId]
           const img = new window.Image()
           img.onload = () => {
-            // 캔버스에 리사이즈된 이미지를 배경으로 그리기
             const canvasElement = canvas.getCanvas()
             const ctx = canvasElement.getContext('2d')
             
             if (ctx) {
-              // 캔버스 크기 가져오기
               const canvasWidth = canvasElement.width
               const canvasHeight = canvasElement.height
               
               
-              // 캔버스 좌측 상단에 배치하기 위한 오프셋 계산
               const offsetX = 0  // 좌측 정렬
               const offsetY = 0  // 상단 정렬
               
-              // 캔버스 지우기
               ctx.clearRect(0, 0, canvasWidth, canvasHeight)
               
-              // 리사이즈된 이미지를 캔버스에 그리기 (좌측 상단 배치)
               ctx.drawImage(img, offsetX, offsetY)
               
-              // 캔버스 데이터 저장
               const dataUrl = canvas.toDataURL('image/jpeg', 0.9)
               
               setCanvases(prev => {
@@ -1199,7 +971,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
           }
           img.src = resizedImageData
         } catch (error) {
-          console.error('[ConfirmationPage] 이미지 리사이즈 실패:', error)
           toast.error('이미지 처리 중 오류가 발생했습니다.')
         }
       }
@@ -1207,38 +978,30 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     reader.readAsDataURL(file)
   }
 
-  // 생성된 이미지를 캔버스에 추가하는 함수
   const handleGeneratedImageAdd = async (canvasId: string, generatedImage: GeneratedImage) => {
     if (signatureRefs.current[canvasId]) {
       try {
         const imageData = `data:${generatedImage.mimeType};base64,${generatedImage.data}`
 
-        // 이미지를 335x600 크기로 미리 리사이즈
         const resizedImageData = await resizeImageToFit(imageData, 250, 600, 1)
 
         const canvas = signatureRefs.current[canvasId]
         const img = new Image()
         img.onload = () => {
-          // 캔버스에 리사이즈된 이미지를 배경으로 그리기
           const canvasElement = canvas.getCanvas()
           const ctx = canvasElement.getContext('2d')
 
           if (ctx) {
-            // 캔버스 크기 가져오기
             const canvasWidth = canvasElement.width
             const canvasHeight = canvasElement.height
 
-            // 캔버스 좌측 상단에 배치하기 위한 오프셋 계산
             const offsetX = 0  // 좌측 정렬
             const offsetY = 0  // 상단 정렬
 
-            // 캔버스 지우기 (투명하게)
             ctx.clearRect(0, 0, canvasWidth, canvasHeight)
 
-            // 리사이즈된 이미지를 캔버스에 그리기 (좌측 상단 배치)
             ctx.drawImage(img, offsetX, offsetY)
 
-            // 캔버스 데이터 저장 (PNG로 투명성 보장)
             const dataUrl = canvas.toDataURL('image/png')
 
             setCanvases(prev => {
@@ -1256,16 +1019,13 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         }
         img.src = resizedImageData
       } catch (error) {
-        console.error('[ConfirmationPage] 생성된 이미지 처리 실패:', error)
         toast.error('이미지 처리 중 오류가 발생했습니다.')
       }
     }
   }
 
-  // Chat 메시지 전송 핸들러 (질문만 가능)
   const handleSendMessage = async (message: string, history: any[]) => {
     try {
-      // consentData를 변환하여 전달
       const consents = consentData.consents.reduce((acc, item) => {
         const key = item.item_title.toLowerCase().replace(/\s+/g, '_')
         acc[key] = item.description
@@ -1279,45 +1039,26 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
 
       return response
     } catch (error) {
-      console.error('[ConfirmationPage] Chat message error:', error)
       throw error
     }
   }
 
   const handleComplete = async () => {
     if (isSubmitting || submissionRef.current) {
-      console.log('Already submitting, ignoring duplicate call')
       return
     }
 
-    console.log('handleComplete called')
-    console.log('Current signatures:', Object.keys(signatures))
-    console.log('Signatures patient exists:', !!signatures.patient)
-    console.log('Signatures doctor exists:', !!signatures.doctor)
 
     setIsSubmitting(true)
     submissionRef.current = true
 
     try {
-      // Debug: Log original form data
-      console.log('Original formData before transformation:', formData)
-      console.log('formData.other_conditions:', formData.other_conditions)
-      console.log('formData.medical_history:', formData.medical_history)
-      console.log('formData.diabetes:', formData.diabetes)
 
-      // Prepare consent data for backend submission
       const consentSubmissionData = createConsentSubmission(formData)
-      console.log('Submitting consent data to backend:', consentSubmissionData)
-      console.log('special_conditions.other:', consentSubmissionData.special_conditions.other)
-      console.log('special_conditions.past_history:', consentSubmissionData.special_conditions.past_history)
 
-      // TODO: 백엔드에 동의서 데이터 저장이 필요한 경우 /consent/submit 엔드포인트 구현 필요
-      // 현재는 로컬 저장만 수행
-      console.log('Consent data prepared for submission:', consentSubmissionData)
       
       toast.success('동의서가 성공적으로 저장되었습니다')
 
-      // 서명 데이터와 캔버스 데이터를 모두 저장 (페이지에서는 사용, PDF에서는 제외)
       const allSignatureData = {
         ...signatures,
         canvases: canvases.map(c => ({
@@ -1327,28 +1068,21 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         }))
       }
 
-      console.log('Saving signature data:', Object.keys(allSignatureData))
 
-      // Save to localStorage only (sessionStorage has size limits)
       try {
         localStorage.setItem('signatureData', JSON.stringify(allSignatureData))
         localStorage.setItem('canvasDrawings', JSON.stringify(canvases))
         localStorage.setItem('consentSubmissionData', JSON.stringify(consentSubmissionData))
         localStorage.setItem('confirmationCompleted', 'true')
 
-        // Save minimal data to sessionStorage for flow control
         sessionStorage.setItem('confirmationCompleted', 'true')
 
-        console.log('Data saved to storage')
       } catch (storageError) {
-        console.error('[ConfirmationPage] Storage error:', storageError)
-        // Continue even if storage fails - data is already submitted to backend
         toast('데이터가 서버에 저장되었습니다')
       }
 
       onComplete()
     } catch (error) {
-      console.error('[ConfirmationPage] 동의서 데이터 제출 오류:', error)
       toast.error('동의서 제출 중 오류가 발생했습니다')
     } finally {
       setIsSubmitting(false)
@@ -1627,7 +1361,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                         handleCanvasEnd(canvas.id)
                       }}
                       onBegin={() => {
-                        console.log(`✏️ Drawing started on canvas ${canvas.id}`)
                       }}
                     />
                   </div>
@@ -1710,12 +1443,10 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1 cursor-pointer" onClick={() => {
                             if (surgerySiteMarking.marking === 'yes') {
-                              // 이미 선택된 경우 취소
                               const newMarking = { ...surgerySiteMarking, marking: null }
                               setSurgerySiteMarking(newMarking)
                               sessionStorage.setItem('surgerySiteMarking', JSON.stringify(newMarking))
                             } else {
-                              // 선택되지 않은 경우 선택
                               const newMarking = { ...surgerySiteMarking, marking: 'yes' as 'yes' | 'no' }
                               setSurgerySiteMarking(newMarking)
                               sessionStorage.setItem('surgerySiteMarking', JSON.stringify(newMarking))
@@ -1733,12 +1464,10 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                           </div>
                           <div className="flex items-center gap-1 cursor-pointer" onClick={() => {
                             if (surgerySiteMarking.marking === 'no') {
-                              // 이미 선택된 경우 취소
                               const newMarking = { ...surgerySiteMarking, marking: null }
                               setSurgerySiteMarking(newMarking)
                               sessionStorage.setItem('surgerySiteMarking', JSON.stringify(newMarking))
                             } else {
-                              // 선택되지 않은 경우 선택
                               const newMarking = { ...surgerySiteMarking, marking: 'no' as 'yes' | 'no' }
                               setSurgerySiteMarking(newMarking)
                               sessionStorage.setItem('surgerySiteMarking', JSON.stringify(newMarking))
@@ -2019,7 +1748,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                         handleCanvasEnd(canvas.id)
                       }}
                       onBegin={() => {
-                        console.log(`✏️ Drawing started on canvas ${canvas.id}`)
                       }}
                     />
                   </div>
@@ -2338,7 +2066,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                         handleCanvasEnd(canvas.id)
                       }}
                       onBegin={() => {
-                        console.log(`✏️ Drawing started on canvas ${canvas.id}`)
                       }}
                     />
                   </div>
@@ -2686,7 +2413,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                         handleCanvasEnd(canvas.id)
                       }}
                       onBegin={() => {
-                        console.log(`✏️ Drawing started on canvas ${canvas.id}`)
                       }}
                     />
                   </div>
@@ -2746,11 +2472,9 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                 const saved = sessionStorage.getItem('surgeryInfoTextareas');
                 const surgeryData = saved ? JSON.parse(saved) : {};
                 
-                // consentData에서도 데이터를 가져와서 병합
                 const consentConsents = consentData?.consents || {};
                 
                 const allItems = [
-                  // 1. 환자 상태 및 특이사항은 상단 환자 정보 섹션에서 이미 표시되므로 생략
                   { number: "2", title: "예정된 수술/시술/검사를 하지 않을 경우의 예후", key: "2", consentKey: "prognosis_without_surgery" },
                   { number: "3", title: "예정된 수술 이외의 시행 가능한 다른 방법", key: "3", consentKey: "alternative_treatments" },
                   { number: "4", title: "수술 목적/필요/효과", key: "4", consentKey: "surgery_purpose_necessity_effect" },
@@ -2766,13 +2490,10 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                 ];
                 
                 return allItems.map((item, index) => {
-                  // 여러 소스에서 데이터 가져오기 (우선순위: surgeryData 번호키 > consentData > surgeryData 기존키)
                   let content = surgeryData[item.key] || "";
                   
-                  // consentData에서 데이터 가져오기
                   if (!content && item.consentKey) {
                     if (item.consentKey.includes('.')) {
-                      // 중첩된 키 처리 (예: surgery_method_content.overall_description)
                       const keys = item.consentKey.split('.');
                       let value: unknown = consentConsents;
                       for (const key of keys) {
@@ -2785,7 +2506,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                     }
                   }
                   
-                  // 모든 항목을 표시 (내용이 없어도 제목은 보여줌)
                   
                   return (
                   <div key={index} className="mb-10">
@@ -2825,7 +2545,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                     
                     {/* 통합된 미디어 요소들 (입력 순서대로) */}
                     {getSortedMediaElements(`${item.number}. ${item.title}`).map(mediaElement => {
-                      // 캔버스 요소인 경우 canvas 변수로 참조
                       const canvas = mediaElement.type === 'canvas' ? mediaElement.canvasData : null
                       const audio = mediaElement.type === 'audio' ? mediaElement.audioData : null
                       const text = mediaElement.type === 'text' ? mediaElement.textData : null
@@ -2978,7 +2697,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                                         <span className="text-blue-600 font-mono text-sm font-medium">
                                           {playingId === mediaElement.id ? formatTime(playingTime) : (() => {
                                             const duration = audio.duration && !isNaN(audio.duration) && isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0
-                                            console.log('🎤 Display duration for', mediaElement.id, ':', audio.duration, '->', duration)
                                             return duration > 0 ? formatTime(Math.floor(duration)) : '00:00'
                                           })()}
                                         </span>
@@ -2986,7 +2704,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                                         <span className="text-slate-400 text-xs">
                                           {(() => {
                                             const totalDuration = audio.duration && !isNaN(audio.duration) && isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0
-                                            console.log('🎤 Display total duration for', mediaElement.id, ':', audio.duration, '->', totalDuration)
                                             return totalDuration > 0 ? formatTime(Math.floor(totalDuration)) : '00:00'
                                           })()}
                                         </span>
@@ -3072,12 +2789,10 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                           <SignatureCanvas
                             ref={(ref) => {
                               if (ref) {
-                                console.log(`🎨 Setting ref for canvas ${canvas.id}`)
                                 signatureRefs.current[canvas.id] = ref
                                 
                                 const imageData = pendingRestores.current[canvas.id] || canvas.imageData
                                 if (imageData && !restoredCanvases.current.has(canvas.id)) {
-                                  console.log(`📦 Found image data for canvas ${canvas.id}, restoring...`)
                                   setTimeout(() => restoreCanvas(canvas.id, imageData), 300)
                                 }
                               }
@@ -3087,11 +2802,9 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                                 height: 500
                             }}
                             onEnd={() => {
-                              console.log(`🎨 onEnd triggered for canvas ${canvas.id}`)
                               handleCanvasEnd(canvas.id)
                             }}
                             onBegin={() => {
-                              console.log(`✏️ Drawing started on canvas ${canvas.id}`)
                             }}
                           />
                         </div>
@@ -3142,7 +2855,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                   );
                 }).filter(Boolean); // null 항목 제거
               } catch (e) {
-                console.error('[ConfirmationPage] 수술 정보 데이터 로드 오류:', e);
                 return null;
               }
             })()}
@@ -3339,7 +3051,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                           handleCanvasEnd(canvas.id)
                         }}
                         onBegin={() => {
-                          console.log(`✏️ Drawing started on canvas ${canvas.id}`)
                         }}
                       />
                     </div>
@@ -3445,7 +3156,6 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                       ref={(ref) => {
                         if (ref) {
                           signatureRefs.current[sig.key] = ref
-                          // Restore saved signature if exists
                           if (signatures[sig.key] && ref.isEmpty()) {
                             ref.fromDataURL(signatures[sig.key])
                           }
