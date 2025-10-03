@@ -918,6 +918,72 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     }
   }
 
+  const drawDataUrlOnCanvas = async (
+    canvasRef: SignatureCanvas,
+    dataUrl: string,
+    targetW: number,
+    targetH: number,
+    successMessage: string
+  ): Promise<void> => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const resizedImageData = await resizeImageToFit(dataUrl, targetW, targetH, 1)
+
+        const img = new Image()
+        img.onload = () => {
+          const canvasElement = canvasRef.getCanvas()
+          const ctx = canvasElement.getContext('2d')
+
+          if (!ctx) {
+            toast.error('캔버스 컨텍스트를 가져올 수 없습니다.')
+            return reject(new Error('no ctx'))
+          }
+
+          const dpr = window.devicePixelRatio || 1
+
+          // CSS 실제 표시 크기 읽기
+          const cssW = canvasElement.clientWidth
+          const cssH = canvasElement.clientHeight
+
+          // 비트맵을 CSS×DPR로 정규화 (가로/세로 모두 일치)
+          const bw = Math.round(cssW * dpr)
+          const bh = Math.round(cssH * dpr)
+          if (canvasElement.width !== bw || canvasElement.height !== bh) {
+            canvasElement.width = bw
+            canvasElement.height = bh
+            ctx.setTransform(1, 0, 0, 1, 0, 0)  // 기존 스케일 초기화
+            ctx.scale(dpr, dpr)                  // 이후 그리기는 CSS 좌표로
+          }
+
+          // CSS 기준으로 스케일 계산하고 CSS 좌표로 draw
+          const scale = Math.min(cssW / img.width, cssH / img.height)
+          const dw = img.width * scale
+          const dh = img.height * scale
+          const dx = 0  // 좌측 정렬
+          const dy = 0  // 상단 정렬
+
+          ctx.clearRect(0, 0, cssW, cssH)
+          ctx.drawImage(img, dx, dy, dw, dh)
+
+          console.log({
+            cssW: canvasElement.clientWidth,
+            cssH: canvasElement.clientHeight,
+            bmpW: canvasElement.width,
+            bmpH: canvasElement.height,
+            dpr
+          });
+
+          toast.success(successMessage)
+          resolve()
+        }
+        img.onerror = reject
+        img.src = resizedImageData
+      } catch (error) {
+        reject(error)
+      }
+    })
+  }
+
   const handleImageUpload = async (canvasId: string, file: File) => {
     if (!file.type.startsWith('image/')) {
       toast.error('이미지 파일만 업로드 가능합니다.')
@@ -931,45 +997,27 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
 
     const reader = new FileReader()
     reader.onload = async (e) => {
-      const originalImageData = e.target?.result as string
+      const dataUrl = e.target?.result as string
       if (signatureRefs.current[canvasId]) {
         try {
-          const resizedImageData = await resizeImageToFit(originalImageData, 335, 600, 1)
-          
+          await drawDataUrlOnCanvas(
+            signatureRefs.current[canvasId],
+            dataUrl,
+            900,
+            600,
+            '이미지가 캔버스에 추가되었습니다.'
+          )
+
           const canvas = signatureRefs.current[canvasId]
-          const img = new window.Image()
-          img.onload = () => {
-            const canvasElement = canvas.getCanvas()
-            const ctx = canvasElement.getContext('2d')
-            
-            if (ctx) {
-              const canvasWidth = canvasElement.width
-              const canvasHeight = canvasElement.height
-              
-              
-              const offsetX = 0  // 좌측 정렬
-              const offsetY = 0  // 상단 정렬
-              
-              ctx.clearRect(0, 0, canvasWidth, canvasHeight)
-              
-              ctx.drawImage(img, offsetX, offsetY)
-              
-              const dataUrl = canvas.toDataURL('image/jpeg', 0.9)
-              
-              setCanvases(prev => {
-                const updated = prev.map(canvas => 
-                  canvas.id === canvasId ? { ...canvas, imageData: dataUrl } : canvas
-                )
-                saveCanvasesToStorage(updated)
-                return updated
-              })
-              
-              toast.success('이미지가 캔버스에 추가되었습니다.')
-            } else {
-              toast.error('캔버스 컨텍스트를 가져올 수 없습니다.')
-            }
-          }
-          img.src = resizedImageData
+          const finalDataUrl = canvas.toDataURL('image/png')
+
+          setCanvases(prev => {
+            const updated = prev.map(canvas =>
+              canvas.id === canvasId ? { ...canvas, imageData: finalDataUrl } : canvas
+            )
+            saveCanvasesToStorage(updated)
+            return updated
+          })
         } catch (error) {
           toast.error('이미지 처리 중 오류가 발생했습니다.')
         }
@@ -981,43 +1029,26 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
   const handleGeneratedImageAdd = async (canvasId: string, generatedImage: GeneratedImage) => {
     if (signatureRefs.current[canvasId]) {
       try {
-        const imageData = `data:${generatedImage.mimeType};base64,${generatedImage.data}`
+        const dataUrl = `data:${generatedImage.mimeType};base64,${generatedImage.data}`
 
-        const resizedImageData = await resizeImageToFit(imageData, 250, 600, 1)
+        await drawDataUrlOnCanvas(
+          signatureRefs.current[canvasId],
+          dataUrl,
+          900,
+          600,
+          '생성된 이미지가 캔버스에 추가되었습니다.'
+        )
 
         const canvas = signatureRefs.current[canvasId]
-        const img = new Image()
-        img.onload = () => {
-          const canvasElement = canvas.getCanvas()
-          const ctx = canvasElement.getContext('2d')
+        const finalDataUrl = canvas.toDataURL('image/png')
 
-          if (ctx) {
-            const canvasWidth = canvasElement.width
-            const canvasHeight = canvasElement.height
-
-            const offsetX = 0  // 좌측 정렬
-            const offsetY = 0  // 상단 정렬
-
-            ctx.clearRect(0, 0, canvasWidth, canvasHeight)
-
-            ctx.drawImage(img, offsetX, offsetY)
-
-            const dataUrl = canvas.toDataURL('image/png')
-
-            setCanvases(prev => {
-              const updated = prev.map(canvas =>
-                canvas.id === canvasId ? { ...canvas, imageData: dataUrl } : canvas
-              )
-              saveCanvasesToStorage(updated)
-              return updated
-            })
-
-            toast.success('생성된 이미지가 캔버스에 추가되었습니다.')
-          } else {
-            toast.error('캔버스 컨텍스트를 가져올 수 없습니다.')
-          }
-        }
-        img.src = resizedImageData
+        setCanvases(prev => {
+          const updated = prev.map(canvas =>
+            canvas.id === canvasId ? { ...canvas, imageData: finalDataUrl } : canvas
+          )
+          saveCanvasesToStorage(updated)
+          return updated
+        })
       } catch (error) {
         toast.error('이미지 처리 중 오류가 발생했습니다.')
       }
@@ -1342,7 +1373,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                   
                   {/* 캔버스 요소인 경우에만 SignatureCanvas 렌더링 */}
                   {mediaElement.type === 'canvas' && canvas && (
-                  <div className="border border-slate-200 rounded bg-white relative">
+                  <div className="border border-slate-200 rounded bg-white relative overflow-hidden h-[300px]">
                     <SignatureCanvas
                       ref={(ref) => {
                         if (ref) {
@@ -1354,8 +1385,8 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                         }
                       }}
                       canvasProps={{
-                        className: "w-full",
-                        height: 500
+                        className: "w-full h-[300px]",
+                        height: 300
                       }}
                       onEnd={() => {
                         handleCanvasEnd(canvas.id)
@@ -1729,7 +1760,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                   
                   {/* 캔버스 요소인 경우에만 SignatureCanvas 렌더링 */}
                   {mediaElement.type === 'canvas' && canvas && (
-                  <div className="border border-slate-200 rounded bg-white relative">
+                  <div className="border border-slate-200 rounded bg-white relative overflow-hidden h-[300px]">
                     <SignatureCanvas
                       ref={(ref) => {
                         if (ref) {
@@ -1741,8 +1772,8 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                         }
                       }}
                       canvasProps={{
-                        className: "w-full",
-                        height: 500
+                        className: "w-full h-[300px]",
+                        height: 300
                       }}
                       onEnd={() => {
                         handleCanvasEnd(canvas.id)
@@ -2047,7 +2078,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                   
                   {/* 캔버스 요소인 경우에만 SignatureCanvas 렌더링 */}
                   {mediaElement.type === 'canvas' && canvas && (
-                  <div className="border border-slate-200 rounded bg-white relative">
+                  <div className="border border-slate-200 rounded bg-white relative overflow-hidden h-[300px]">
                     <SignatureCanvas
                       ref={(ref) => {
                         if (ref) {
@@ -2059,8 +2090,8 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                         }
                       }}
                       canvasProps={{
-                        className: "w-full",
-                        height: 500
+                        className: "w-full h-[300px]",
+                        height: 300
                       }}
                       onEnd={() => {
                         handleCanvasEnd(canvas.id)
@@ -2394,7 +2425,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                   
                   {/* 캔버스 요소인 경우에만 SignatureCanvas 렌더링 */}
                   {mediaElement.type === 'canvas' && canvas && (
-                  <div className="border border-slate-200 rounded bg-white relative">
+                  <div className="border border-slate-200 rounded bg-white relative overflow-hidden h-[300px]">
                     <SignatureCanvas
                       ref={(ref) => {
                         if (ref) {
@@ -2406,8 +2437,8 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                         }
                       }}
                       canvasProps={{
-                        className: "w-full",
-                        height: 500
+                        className: "w-full h-[300px]",
+                        height: 300
                       }}
                       onEnd={() => {
                         handleCanvasEnd(canvas.id)
@@ -2799,7 +2830,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                             }}
                             canvasProps={{
                               className: "w-full",
-                                height: 500
+                                height: 300
                             }}
                             onEnd={() => {
                               handleCanvasEnd(canvas.id)
@@ -3045,7 +3076,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
                         }}
                         canvasProps={{
                           className: "w-full",
-                          height: 500
+                          height: 300
                         }}
                         onEnd={() => {
                           handleCanvasEnd(canvas.id)
