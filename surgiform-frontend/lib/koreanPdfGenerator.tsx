@@ -371,9 +371,6 @@ export const generateKoreanPDF = async (formData: FormData, consentData: Consent
       throw new Error('consentData is required for PDF generation')
     }
     
-      signatureData
-    })
-    
     const doc = <SurgicalConsentPDF formData={formData} consentData={consentData} signatureData={signatureData} />
     const asPdf = pdf()
     asPdf.updateContainer(doc)

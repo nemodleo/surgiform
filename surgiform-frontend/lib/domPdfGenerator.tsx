@@ -785,8 +785,6 @@ export const generateKoreanPDFFromDOM = async (
       foreignObjectRendering: true
     })
     
-    })
-    
     if (canvas.width === 0 || canvas.height === 0) {
       throw new Error('Canvas is empty - Korean text not rendered properly')
     }
@@ -808,11 +806,6 @@ export const generateKoreanPDFFromDOM = async (
     // Scale canvas to fit page width
     const scale = contentWidth / canvasWidth
     const scaledCanvasHeight = canvasHeight * scale
-    
-      contentSize: { width: contentWidth, height: contentHeight },
-      scale: scale,
-      scaledCanvasHeight: scaledCanvasHeight
-    })
     
     // Calculate number of pages needed
     const pagesNeeded = Math.ceil(scaledCanvasHeight / contentHeight)
@@ -848,9 +841,6 @@ export const generateKoreanPDFFromDOM = async (
       const pageImgData = pageCanvas.toDataURL('image/png', 1.0)
       const pageImgHeight = remainingHeight * scale
       
-        pageImgHeight: pageImgHeight
-      })
-      
       pdf.addImage(
         pageImgData, 
         'PNG', 
@@ -865,20 +855,18 @@ export const generateKoreanPDFFromDOM = async (
     document.body.removeChild(container)
     
     // Try different output methods for better browser compatibility
-    
+
     // Method 1: Standard blob
     try {
       const blob = pdf.output('blob')
-      })
       return blob
     } catch (error) {
       console.error('[domPdfGenerator] 표준 blob 생성 실패:', error)
-      
+
       // Method 2: ArrayBuffer fallback
       try {
         const arrayBuffer = pdf.output('arraybuffer')
         const blob = new Blob([arrayBuffer], { type: 'application/pdf' })
-        })
         return blob
       } catch (fallbackError) {
         console.error('[domPdfGenerator] ArrayBuffer 대체 방법도 실패:', fallbackError)

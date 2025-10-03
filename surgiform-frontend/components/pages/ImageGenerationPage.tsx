@@ -195,7 +195,7 @@ export default function ImageGenerationPage({
   }
 
   // Chat 메시지 전송 핸들러 (질문만 가능)
-  const handleSendMessage = async (message: string, history: any[]) => {
+  const handleSendMessage = async (message: string, history: Array<{role: 'user' | 'assistant' | 'system'; content: string}>) => {
     try {
       const response = await handleChatMessage(message, history, {
         formData,

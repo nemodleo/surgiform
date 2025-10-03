@@ -1055,7 +1055,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     }
   }
 
-  const handleSendMessage = async (message: string, history: any[]) => {
+  const handleSendMessage = async (message: string, history: Array<{role: 'user' | 'assistant' | 'system'; content: string}>) => {
     try {
       const consents = consentData.consents.reduce((acc, item) => {
         const key = item.item_title.toLowerCase().replace(/\s+/g, '_')
