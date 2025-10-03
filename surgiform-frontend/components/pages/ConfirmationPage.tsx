@@ -911,7 +911,7 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
     } catch (error) {
       try {
         localStorage.setItem('confirmationCanvases', JSON.stringify(canvases))
-        toast('데이터가 localStorage에 저장되었습니다.')
+        // toast('데이터가 localStorage에 저장되었습니다.')
       } catch (localError) {
         toast.error('저장 공간이 부족합니다. 이미지를 다시 업로드해주세요.')
       }
@@ -1109,7 +1109,8 @@ export default function ConfirmationPage({ onComplete, onBack, formData, consent
         sessionStorage.setItem('confirmationCompleted', 'true')
 
       } catch (storageError) {
-        toast('데이터가 서버에 저장되었습니다')
+        // toast('데이터가 서버에 저장되었습니다')
+        console.error(storageError)
       }
 
       onComplete()
